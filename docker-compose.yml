@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: hotel_booking_db
+    environment:
+      POSTGRES_DB: hotel_booking
+      POSTGRES_USER: hb_user
+      POSTGRES_PASSWORD: hb_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - hotel_network
+
+  # Adminer for database GUI (optional)
+  adminer:
+    image: adminer:latest
+    container_name: hotel_booking_admin
+    ports:
+      - "8080:8080"
+    networks:
+      - hotel_network
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
+
+networks:
+  hotel_network:
+    driver: bridge
