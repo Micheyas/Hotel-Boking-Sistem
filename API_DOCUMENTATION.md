@@ -360,6 +360,165 @@ Authorization: Bearer <token>
 
 ---
 
+## Payments
+
+### Create Checkout Session (Stripe)
+```
+POST /payments/create-checkout-session
+Authorization: Bearer <token>
+```
+
+**Request Body:**
+```json
+{
+  "bookingId": 1,
+  "amount": 5000,
+  "roomType": "Deluxe Room",
+  "customerEmail": "guest@example.com"
+}
+```
+
+**Response:**
+```json
+{
+  "url": "https://checkout.stripe.com/pay/cs_test_...",
+  "sessionId": "cs_test_..."
+}
+```
+
+**Note:** Redirect user to the URL for secure payment processing. Stripe will redirect back to `FRONTEND_URL/payment-success` or `FRONTEND_URL/payment-cancel`.
+
+---
+
+## Analytics
+
+### Get Dashboard Metrics (Admin/Manager only)
+```
+GET /analytics
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "totalBookings": 45,
+  "totalRevenue": 450000,
+  "occupancyRate": 78,
+  "statusBreakdown": [
+    {
+      "status": "confirmed",
+      "count": 32
+    },
+    {
+      "status": "checked_in",
+      "count": 10
+    },
+    {
+      "status": "pending",
+      "count": 3
+    },
+    {
+      "status": "cancelled",
+      "count": 0
+    }
+  ]
+}
+```
+
+**Metrics Explanation:**
+- **totalBookings**: Total number of bookings in the system
+- **totalRevenue**: Sum of all booking prices (in ETB)
+- **occupancyRate**: Percentage of occupied rooms (0-100)
+- **statusBreakdown**: Count of bookings grouped by status
+
+---
+
+## Reviews
+
+### Get Reviews for a Room (Public)
+```
+GET /reviews?roomId=1
+```
+
+**Response:**
+```json
+[
+  {
+    "id": 1,
+    "userId": 5,
+    "roomId": 1,
+    "rating": 5,
+    "comment": "Excellent room with great service!",
+    "createdAt": "2026-05-09T10:30:00Z",
+    "updatedAt": "2026-05-09T10:30:00Z"
+  },
+  {
+    "id": 2,
+    "userId": 6,
+    "roomId": 1,
+    "rating": 4,
+    "comment": "Good value for money",
+    "createdAt": "2026-05-08T15:45:00Z",
+    "updatedAt": "2026-05-08T15:45:00Z"
+  }
+]
+```
+
+### Submit a Review (Authenticated)
+```
+POST /reviews
+Authorization: Bearer <token>
+```
+
+**Request Body:**
+```json
+{
+  "roomId": 1,
+  "rating": 5,
+  "comment": "Amazing experience, highly recommended!"
+}
+```
+
+**Response:**
+```json
+{
+  "id": 3,
+  "userId": 7,
+  "roomId": 1,
+  "rating": 5,
+  "comment": "Amazing experience, highly recommended!",
+  "createdAt": "2026-05-09T14:20:00Z"
+}
+```
+
+**Validation:**
+- `roomId` (required): Valid room ID
+- `rating` (required): Integer between 1 and 5
+- `comment` (optional): String, max 1000 characters
+
+### Get All Reviews (Admin/Manager only)
+```
+GET /reviews/all
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+[
+  {
+    "id": 1,
+    "userId": 5,
+    "roomId": 1,
+    "rating": 5,
+    "comment": "Excellent room!",
+    "user": { "name": "John Doe", "email": "john@example.com" },
+    "room": { "roomNumber": "101", "roomType": "Deluxe" }
+  }
+]
+```
+
+---
+
 ## Error Responses
 
 ### 400 Bad Request

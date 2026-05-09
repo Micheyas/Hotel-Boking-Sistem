@@ -25,6 +25,14 @@
    DB_PASS=hb_password
    JWT_SECRET=your_secret_key_here
    PORT=5000
+   EXCHANGE_API_KEY=your_exchange_api_key
+   EMAIL_SERVICE=gmail
+   EMAIL_USER=your_email@gmail.com
+   EMAIL_PASS=your_app_password
+   STRIPE_SECRET_KEY=sk_test_xxxxxxxxxxxxx
+   STRIPE_PUBLISHABLE_KEY=pk_test_xxxxxxxxxxxxx
+   STRIPE_WEBHOOK_SECRET=whsec_xxxxxxxxxxxxx
+   FRONTEND_URL=http://localhost:3000
    ```
 
 3. **Start Backend Server**
@@ -113,9 +121,95 @@
 - Manage all bookings
 - View and manage active offers
 
+### 6. View Analytics Dashboard (Admin/Manager Only)
+- Click "Analytics" to view real-time metrics
+- See total bookings, revenue, and occupancy rates
+- View booking status breakdown
+
+### 7. Submit Guest Reviews
+- After viewing a room, submit a 1-5 star rating with optional comments
+- View average ratings and recent reviews for rooms
+
+### 8. Make Secure Payments (Stripe)
+- During checkout, click "Pay with Stripe"
+- Use test card: `4242 4242 4242 4242` (any future expiry, any CVC)
+- Confirm payment and receive booking confirmation email
+
 ---
 
-## Default Test Credentials
+## Configuration Guide
+
+### Email Notifications Setup
+
+1. **Enable Gmail:**
+   - Go to https://myaccount.google.com/apppasswords
+   - Generate an App Password
+   - Add to `.env`:
+     ```
+     EMAIL_SERVICE=gmail
+     EMAIL_USER=your_email@gmail.com
+     EMAIL_PASS=your_app_password
+     ```
+
+2. **Test Email:**
+   - Create a booking to receive confirmation email
+   - Check spam folder if not in inbox
+
+### Stripe Payment Setup
+
+1. **Create Stripe Account:**
+   - Sign up at https://stripe.com
+   - Get API keys from Dashboard → Developers → API Keys
+
+2. **Add Keys to .env:**
+   ```
+   STRIPE_SECRET_KEY=sk_test_xxxxx
+   STRIPE_PUBLISHABLE_KEY=pk_test_xxxxx
+   STRIPE_WEBHOOK_SECRET=whsec_xxxxx (optional)
+   ```
+
+3. **Test Payments:**
+   - Use test mode by default
+   - Test card: `4242 4242 4242 4242`
+
+### Real-Time Updates (WebSocket)
+
+- Socket.io is automatically initialized when server starts
+- Clients connect automatically when logged in
+- Room status updates appear instantly across all connected browsers
+- No refresh needed to see changes
+
+---
+
+## Advanced Features Added
+
+### 1. Real-Time Availability
+- Live room status updates via WebSocket
+- Instant notification when rooms become available/occupied
+- Refresh-free UI updates
+
+### 2. Email Notifications
+- Automatic booking confirmation emails
+- Status change notifications
+- Cancellation confirmations
+
+### 3. Stripe Payment Integration
+- Secure online payment processing
+- Hosted checkout page
+- Automatic payment confirmation
+
+### 4. Guest Review System
+- 1-5 star rating system
+- Optional guest comments
+- Average rating display per room
+
+### 5. Advanced Analytics
+- Total bookings and revenue tracking
+- Occupancy rate calculation
+- Booking status breakdown with visual charts
+- Admin/Manager dashboard access only
+
+---
 
 ### Admin User
 - Email: `admin@hotel.com`

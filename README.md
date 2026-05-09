@@ -12,6 +12,11 @@ A full-stack hotel booking platform with online reservations, manual receptionis
 - ✅ **Booking Management** - View, update status, and manage all bookings
 - ✅ **Hotel Offers** - Create and manage promotional offers with eligibility rules
 - ✅ **Dashboard** - Statistics and recent activity overview
+- ✅ **Stripe Payment Integration** - Secure online payment processing
+- ✅ **Email Notifications** - Booking confirmations and status updates via email
+- ✅ **Real-Time Availability** - WebSocket updates for live room status
+- ✅ **Guest Reviews & Ratings** - 1-5 star ratings with comments
+- ✅ **Advanced Analytics** - Dashboard with occupancy rates, revenue, and booking breakdowns
 
 ## Project Structure
 
@@ -22,24 +27,33 @@ Hotel Boking/
 │   │   ├── bookingController.js
 │   │   ├── currencyController.js
 │   │   ├── offerController.js
-│   │   └── roomController.js
+│   │   ├── roomController.js
+│   │   ├── paymentController.js
+│   │   ├── analyticsController.js
+│   │   └── reviewController.js
 │   ├── middleware/
-│   │   └── auth.js
+│   │   ├── auth.js
+│   │   └── mailer.js
 │   ├── models/
 │   │   ├── Booking.js
 │   │   ├── ExchangeRate.js
 │   │   ├── Offer.js
 │   │   ├── Room.js
 │   │   ├── RoomType.js
-│   │   └── User.js
+│   │   ├── User.js
+│   │   └── Review.js
 │   ├── routes/
 │   │   ├── auth.js
 │   │   ├── bookings.js
 │   │   ├── currency.js
 │   │   ├── offers.js
-│   │   └── rooms.js
+│   │   ├── rooms.js
+│   │   ├── payments.js
+│   │   ├── analytics.js
+│   │   └── reviews.js
 │   ├── config/
 │   │   └── database.js
+│   ├── socket.js
 │   ├── server.js
 │   ├── package.json
 │   └── .env
@@ -50,7 +64,10 @@ Hotel Boking/
     │   │   ├── BookingForm.js
     │   │   ├── Dashboard.js
     │   │   ├── Login.js
-    │   │   └── Register.js
+    │   │   ├── Register.js
+    │   │   ├── PaymentForm.js
+    │   │   ├── ReviewForm.js
+    │   │   └── AnalyticsDashboard.js
     │   ├── App.js
     │   ├── App.css
     │   ├── index.js
@@ -66,12 +83,17 @@ Hotel Boking/
 - **Framework**: Express.js (Node.js)
 - **Database**: PostgreSQL (with Sequelize ORM)
 - **Authentication**: JWT + bcryptjs
+- **Real-Time**: Socket.io (WebSocket)
+- **Email**: Nodemailer
+- **Payments**: Stripe API
 - **Validation**: Built-in Express middleware
 
 ### Frontend
 - **Framework**: React 18
 - **Routing**: React Router v6
 - **HTTP Client**: Axios
+- **Real-Time**: Socket.io Client
+- **Payments**: Stripe React Components
 - **Styling**: CSS3 with responsive design
 
 ## Installation
@@ -103,6 +125,13 @@ DB_PASS=your_password
 JWT_SECRET=your_jwt_secret
 PORT=5000
 EXCHANGE_API_KEY=your_api_key
+EMAIL_SERVICE=gmail
+EMAIL_USER=your_email@gmail.com
+EMAIL_PASS=your_app_password
+STRIPE_SECRET_KEY=sk_test_xxxxxxxxxxxxx
+STRIPE_PUBLISHABLE_KEY=pk_test_xxxxxxxxxxxxx
+STRIPE_WEBHOOK_SECRET=whsec_xxxxxxxxxxxxx
+FRONTEND_URL=http://localhost:3000
 ```
 
 4. Start the backend server:
@@ -164,6 +193,17 @@ The frontend will run on `http://localhost:3000`
 - `POST /api/currency/convert` - Convert price between currencies
 - `POST /api/currency/rates/update` - Update exchange rates (admin)
 
+### Payments
+- `POST /api/payments/create-checkout-session` - Create Stripe checkout session
+
+### Analytics (Admin/Manager only)
+- `GET /api/analytics` - Get dashboard metrics (occupancy, revenue, bookings)
+
+### Reviews
+- `GET /api/reviews?roomId=:id` - Get reviews for a room
+- `POST /api/reviews` - Submit a review (authenticated)
+- `GET /api/reviews/all` - Get all reviews (admin/manager)
+
 ## Database Schema
 
 ### Users Table
@@ -183,6 +223,9 @@ The frontend will run on `http://localhost:3000`
 
 ### ExchangeRates Table
 - id, baseCurrency, targetCurrency, rate, lastUpdated
+
+### Reviews Table
+- id, userId (FK), roomId (FK), rating (1-5), comment (TEXT), createdAt, updatedAt
 
 ## Role-Based Access Control
 
