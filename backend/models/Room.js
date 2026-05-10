@@ -27,6 +27,12 @@ const Room = sequelize.define('Room', {
   floor: {
     type: DataTypes.INTEGER,
   },
+  image: {
+    type: DataTypes.STRING,
+  },
+  amenities: {
+    type: DataTypes.TEXT,
+  },
   createdAt: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,

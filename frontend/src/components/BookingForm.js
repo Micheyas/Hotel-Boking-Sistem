@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api';
 
 const BookingForm = () => {
   const [roomTypes, setRoomTypes] = useState([]);
@@ -11,7 +11,7 @@ const BookingForm = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const token = localStorage.getItem('token');
+  const [guestInfo, setGuestInfo] = useState({ name: '', email: '', phone: '' });
 
   useEffect(() => {
     fetchRoomTypes();
@@ -19,10 +19,11 @@ const BookingForm = () => {
 
   const fetchRoomTypes = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/rooms/types');
+      const response = await api.get('/rooms/types');
       setRoomTypes(response.data);
     } catch (err) {
-      setError('Failed to fetch room types');
+      setError('Failed to fetch room types. Please ensure the backend server is running on port 5000.');
+      console.error('Error fetching room types:', err);
     }
   };
 
@@ -43,30 +44,32 @@ const BookingForm = () => {
 
   const handleBook = async (e) => {
     e.preventDefault();
-    if (!token) {
-      setError('Please login to book a room');
+    
+    // Validate guest info
+    if (!guestInfo.name || !guestInfo.email || !guestInfo.phone) {
+      setError('Please fill in your name, email, and phone');
       return;
     }
 
     setLoading(true);
     try {
-      await axios.post(
-        'http://localhost:5000/api/bookings',
-        {
-          roomId: roomTypeId,
-          checkInDate,
-          checkOutDate,
-          totalPrice: price,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setSuccess('Booking created successfully!');
+      await api.post('/bookings/guest', {
+        roomTypeId,
+        checkInDate,
+        checkOutDate,
+        totalPrice: price,
+        guestName: guestInfo.name,
+        guestEmail: guestInfo.email,
+        guestPhone: guestInfo.phone,
+      });
+      setSuccess('Booking created successfully! We will send you a confirmation email shortly.');
       setCheckInDate('');
       setCheckOutDate('');
       setRoomTypeId('');
       setPrice(0);
+      setGuestInfo({ name: '', email: '', phone: '' });
     } catch (err) {
-      setError(err.response?.data?.error || 'Booking failed');
+      setError(err.response?.data?.error || 'Booking failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -102,6 +105,33 @@ const BookingForm = () => {
             type="date"
             value={checkOutDate}
             onChange={(e) => setCheckOutDate(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <label>Your Name:</label>
+          <input
+            type="text"
+            value={guestInfo.name}
+            onChange={(e) => setGuestInfo({...guestInfo, name: e.target.value})}
+            required
+          />
+        </div>
+        <div>
+          <label>Your Email:</label>
+          <input
+            type="email"
+            value={guestInfo.email}
+            onChange={(e) => setGuestInfo({...guestInfo, email: e.target.value})}
+            required
+          />
+        </div>
+        <div>
+          <label>Phone:</label>
+          <input
+            type="tel"
+            value={guestInfo.phone}
+            onChange={(e) => setGuestInfo({...guestInfo, phone: e.target.value})}
             required
           />
         </div>

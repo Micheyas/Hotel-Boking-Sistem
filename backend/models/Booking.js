@@ -9,11 +9,23 @@ const Booking = sequelize.define('Booking', {
   },
   userId: {
     type: DataTypes.INTEGER,
-    allowNull: false,
+    allowNull: true,
     references: {
       model: 'Users',
       key: 'id',
     },
+  },
+  guestName: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  guestEmail: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  guestPhone: {
+    type: DataTypes.STRING,
+    allowNull: false,
   },
   roomId: {
     type: DataTypes.INTEGER,
@@ -40,7 +52,7 @@ const Booking = sequelize.define('Booking', {
     defaultValue: 'pending',
   },
   bookingType: {
-    type: DataTypes.ENUM('online', 'manual'),
+    type: DataTypes.ENUM('online', 'manual', 'guest'),
     defaultValue: 'online',
   },
   createdAt: {

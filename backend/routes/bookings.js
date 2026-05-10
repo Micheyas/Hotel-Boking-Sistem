@@ -3,8 +3,11 @@ const router = express.Router();
 const { authenticateToken, authorizeRole } = require('../middleware/auth');
 const bookingController = require('../controllers/bookingController');
 
-// Create booking (online booking)
+// Create booking (online booking) - for logged-in customers
 router.post('/', authenticateToken, authorizeRole(['customer']), bookingController.createBooking);
+
+// Create guest booking (no login required)
+router.post('/guest', bookingController.createGuestBooking);
 
 // Get user's bookings
 router.get('/my-bookings', authenticateToken, bookingController.getUserBookings);
