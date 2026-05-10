@@ -33,6 +33,19 @@ const Room = sequelize.define('Room', {
   amenities: {
     type: DataTypes.TEXT,
   },
+  maxGuests: {
+    type: DataTypes.INTEGER,
+    defaultValue: 2,
+  },
+  roomSize: {
+    type: DataTypes.STRING,
+  },
+  bedType: {
+    type: DataTypes.STRING,
+  },
+  description: {
+    type: DataTypes.TEXT,
+  },
   createdAt: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,

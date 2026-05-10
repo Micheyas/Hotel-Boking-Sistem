@@ -51,6 +51,14 @@ const Booking = sequelize.define('Booking', {
     type: DataTypes.ENUM('pending', 'confirmed', 'checked_in', 'checked_out', 'cancelled'),
     defaultValue: 'pending',
   },
+  paymentProof: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  paymentStatus: {
+    type: DataTypes.ENUM('unpaid', 'proof_submitted', 'verified'),
+    defaultValue: 'unpaid',
+  },
   bookingType: {
     type: DataTypes.ENUM('online', 'manual', 'guest'),
     defaultValue: 'online',

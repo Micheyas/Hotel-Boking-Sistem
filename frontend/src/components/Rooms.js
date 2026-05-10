@@ -1,85 +1,155 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api';
 import { Link } from 'react-router-dom';
+import AvailabilitySearch from './AvailabilitySearch';
+
+const STATUS_LABEL = {
+  available:   { text: 'Available',   color: '#2e7d32', bg: '#e8f5e9' },
+  occupied:    { text: 'Occupied',    color: '#b71c1c', bg: '#ffebee' },
+  maintenance: { text: 'Maintenance', color: '#e65100', bg: '#fff3e0' },
+};
 
 const Rooms = () => {
-  const [roomTypes, setRoomTypes] = useState([]);
+  const [rooms, setRooms]     = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError]     = useState('');
+  const [filter, setFilter]   = useState('all'); // all | available | occupied | maintenance
 
   useEffect(() => {
-    fetchRoomTypes();
+    fetchRooms();
   }, []);
 
-  const fetchRoomTypes = async () => {
+  const fetchRooms = async () => {
     try {
-      const response = await api.get('/rooms/types');
-      setRoomTypes(response.data);
-      setLoading(false);
+      // Public endpoint — returns all rooms with their type info
+      const response = await api.get('/rooms/public');
+      setRooms(response.data);
     } catch (err) {
       setError('Failed to load rooms. Please try again.');
-      setLoading(false);
       console.error('Error fetching rooms:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('en-US').format(price);
+  const formatPrice = (price) =>
+    new Intl.NumberFormat('en-US').format(price);
+
+  const parseAmenities = (amenities) => {
+    if (!amenities) return [];
+    try {
+      const parsed = typeof amenities === 'string' ? JSON.parse(amenities) : amenities;
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return typeof amenities === 'string' ? amenities.split(',').map(a => a.trim()) : [];
+    }
   };
 
-  if (loading) {
-    return (
-      <div className="rooms-container">
-        <div className="loading">Loading rooms...</div>
-      </div>
-    );
-  }
+  const filtered = filter === 'all' ? rooms : rooms.filter(r => r.status === filter);
 
-  if (error) {
-    return (
-      <div className="rooms-container">
-        <div className="error-message">{error}</div>
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="rooms-container">
+      <div className="loading">Loading rooms...</div>
+    </div>
+  );
+
+  if (error) return (
+    <div className="rooms-container">
+      <div className="error-message">{error}</div>
+    </div>
+  );
 
   return (
     <div className="rooms-container">
       <div className="rooms-header">
         <h2>Our Rooms</h2>
-        <p>Choose from our selection of luxurious accommodations</p>
+        <p>Browse all {rooms.length} rooms and check availability</p>
       </div>
 
-      <div className="rooms-grid">
-        {roomTypes.map((room) => (
-          <div key={room.id} className="room-card">
-            <div className="room-image">
-              <img 
-                src={room.imageUrl || "https://images.unsplash.com/photo-1631049307038-da0ec9d70304?w=600&q=80"} 
-                alt={room.name}
-              />
-              <div className="room-price">
-                <span className="price">{formatPrice(room.basePrice)}</span>
-                <span className="per-night"> ETB/night</span>
-              </div>
-            </div>
-            <div className="room-details">
-              <h3>{room.name}</h3>
-              <p className="room-description">{room.description}</p>
-              <div className="room-amenities">
-                {room.amenities && room.amenities.map((amenity, index) => (
-                  <span key={index} className="amenity-tag">{amenity}</span>
-                ))}
-              </div>
-              <Link to="/booking" className="book-room-btn">Book Now</Link>
-            </div>
-          </div>
+      {/* Availability search */}
+      <div className="rooms-search-bar">
+        <AvailabilitySearch />
+      </div>
+
+      {/* Filter tabs */}
+      <div className="rooms-filter-tabs">
+        {['all', 'available', 'occupied', 'maintenance'].map(f => (
+          <button
+            key={f}
+            className={`filter-tab ${filter === f ? 'active' : ''}`}
+            onClick={() => setFilter(f)}
+          >
+            {f === 'all' ? `All (${rooms.length})` : `${f.charAt(0).toUpperCase() + f.slice(1)} (${rooms.filter(r => r.status === f).length})`}
+          </button>
         ))}
       </div>
 
-      {roomTypes.length === 0 && (
+      {/* Rooms grid */}
+      <div className="rooms-grid">
+        {filtered.map((room) => {
+          const statusInfo = STATUS_LABEL[room.status] || STATUS_LABEL.available;
+          const amenities  = parseAmenities(room.amenities);
+          const price      = room.roomType?.basePrice;
+          const typeName   = room.roomType?.name || 'Room';
+          const image      = room.image
+            ? `http://localhost:5000${room.image}`
+            : 'https://images.unsplash.com/photo-1631049307038-da0ec9d70304?w=600&q=80';
+
+          return (
+            <div key={room.id} className="room-card">
+              <div className="room-image">
+                <img src={image} alt={`Room ${room.roomNumber}`} />
+                {/* Status badge */}
+                <span
+                  className="room-status-badge"
+                  style={{ background: statusInfo.bg, color: statusInfo.color }}
+                >
+                  {statusInfo.text}
+                </span>
+                {/* Price */}
+                {price && (
+                  <div className="room-price">
+                    <span className="price">{formatPrice(price)}</span>
+                    <span className="per-night"> ETB/night</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="room-details">
+                <div className="room-title-row">
+                  <h3>Room {room.roomNumber}</h3>
+                  <span className="room-type-tag">{typeName}</span>
+                </div>
+                <p className="room-meta">Floor {room.floor}</p>
+                {room.roomType?.description && (
+                  <p className="room-description">{room.roomType.description}</p>
+                )}
+                {amenities.length > 0 && (
+                  <div className="room-amenities">
+                    {amenities.slice(0, 5).map((a, i) => (
+                      <span key={i} className="amenity-tag">{a}</span>
+                    ))}
+                    {amenities.length > 5 && (
+                      <span className="amenity-tag">+{amenities.length - 5} more</span>
+                    )}
+                  </div>
+                )}
+                {room.status === 'available' ? (
+                  <Link to="/booking" className="book-room-btn">Book Now</Link>
+                ) : (
+                  <button className="book-room-btn disabled" disabled>
+                    {statusInfo.text}
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {filtered.length === 0 && (
         <div className="no-rooms">
-          <p>No rooms available at the moment.</p>
+          <p>No {filter !== 'all' ? filter : ''} rooms found.</p>
         </div>
       )}
     </div>

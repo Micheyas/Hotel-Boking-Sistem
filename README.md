@@ -1,316 +1,102 @@
 # Hotel Booking Management System
 
-A full-stack hotel booking platform with online reservations, manual receptionist bookings, room management, and multi-currency support. Base currency is Ethiopian Birr (ETB).
+A modern, full-stack hotel booking platform featuring a streamlined "Check Availability" workflow, individual room management, and a powerful admin dashboard.
 
-## Features
+## 🚀 Key Features
 
-- ✅ **Online Booking** - Customers can book rooms online with multi-currency display
-- ✅ **Manual Booking** - Receptionists can create bookings for walk-in guests
-- ✅ **Room Management** - Manage room types, individual rooms, amenities, and pricing
-- ✅ **Multi-Currency Support** - Auto-fetched exchange rates (USD, GBP, EUR, ETB)
-- ✅ **Role-Based Access** - Admin, Manager, Receptionist, and Customer permissions
-- ✅ **Booking Management** - View, update status, and manage all bookings
-- ✅ **Hotel Offers** - Create and manage promotional offers with eligibility rules
-- ✅ **Dashboard** - Statistics and recent activity overview
-- ✅ **Stripe Payment Integration** - Secure online payment processing
-- ✅ **Email Notifications** - Booking confirmations and status updates via email
-- ✅ **Real-Time Availability** - WebSocket updates for live room status
-- ✅ **Guest Reviews & Ratings** - 1-5 star ratings with comments
-- ✅ **Advanced Analytics** - Dashboard with occupancy rates, revenue, and booking breakdowns
+- ✅ **Availability-First Flow** - Guests must check availability (dates & guests) before booking.
+- ✅ **Individual Room Booking** - List and book specific physical rooms (e.g., Room 101) with unique images and details.
+- ✅ **Advanced Admin Panel** - Full-screen room management with drag-and-drop image uploads and amenity selection.
+- ✅ **Multi-Currency Support** - Real-time conversion between ETB (Base), USD, GBP, and EUR.
+- ✅ **Real-Time Updates** - WebSocket-powered live room status and booking notifications.
+- ✅ **Secure Payments** - Integrated Stripe payment gateway with proof-of-payment verification.
+- ✅ **Analytics Dashboard** - Visualize occupancy rates, revenue, and booking trends.
+- ✅ **Guest Reviews** - 5-star rating system with comments for every room.
+- ✅ **Email Notifications** - Automated booking confirmations and status updates.
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 Hotel Boking/
 ├── backend/
-│   ├── controllers/
-│   │   ├── bookingController.js
-│   │   ├── currencyController.js
-│   │   ├── offerController.js
-│   │   ├── roomController.js
-│   │   ├── paymentController.js
-│   │   ├── analyticsController.js
-│   │   └── reviewController.js
-│   ├── middleware/
-│   │   ├── auth.js
-│   │   └── mailer.js
-│   ├── models/
-│   │   ├── Booking.js
-│   │   ├── ExchangeRate.js
-│   │   ├── Offer.js
-│   │   ├── Room.js
-│   │   ├── RoomType.js
-│   │   ├── User.js
-│   │   └── Review.js
-│   ├── routes/
-│   │   ├── auth.js
-│   │   ├── bookings.js
-│   │   ├── currency.js
-│   │   ├── offers.js
-│   │   ├── rooms.js
-│   │   ├── payments.js
-│   │   ├── analytics.js
-│   │   └── reviews.js
-│   ├── config/
-│   │   └── database.js
-│   ├── socket.js
-│   ├── server.js
-│   ├── package.json
-│   └── .env
+│   ├── controllers/         # Logic for bookings, rooms, analytics, etc.
+│   ├── middleware/          # Auth, file uploads (Multer), and mailer (Nodemailer)
+│   ├── models/              # Sequelize models (Room, Booking, User, etc.)
+│   ├── routes/              # API endpoints
+│   ├── socket.js            # WebSocket configuration
+│   └── server.js            # App entry point & database sync
 └── frontend/
     ├── src/
     │   ├── components/
-    │   │   ├── AdminPanel.js
-    │   │   ├── BookingForm.js
-    │   │   ├── Dashboard.js
-    │   │   ├── Login.js
-    │   │   ├── Register.js
-    │   │   ├── PaymentForm.js
-    │   │   ├── ReviewForm.js
-    │   │   └── AnalyticsDashboard.js
-    │   ├── App.js
-    │   ├── App.css
-    │   ├── index.js
-    │   └── index.css
-    ├── public/
-    │   └── index.html
-    └── package.json
+    │   │   ├── AdminPanel.js         # Comprehensive staff dashboard
+    │   │   ├── AvailabilitySearch.js  # Vertical search component
+    │   │   ├── BookingForm.js        # Multi-step booking process
+    │   │   ├── Rooms.js              # Public room gallery
+    │   │   ├── AnalyticsDashboard.js # Data visualizations
+    │   │   └── ...                   # Auth, Reviews, FAQ
+    │   ├── App.js           # Main routing and layout
+    │   └── App.css           # Modern design system
 ```
 
-## Tech Stack
+## 🛠 Tech Stack
 
-### Backend
-- **Framework**: Express.js (Node.js)
-- **Database**: PostgreSQL (with Sequelize ORM)
-- **Authentication**: JWT + bcryptjs
-- **Real-Time**: Socket.io (WebSocket)
-- **Email**: Nodemailer
+- **Frontend**: React 18, React Router v6, Axios, Socket.io-client
+- **Backend**: Node.js, Express.js, Sequelize ORM
+- **Database**: PostgreSQL
+- **Real-Time**: Socket.io
+- **Styling**: Modern CSS3 (Glassmorphism, Flexbox/Grid)
+- **Email**: Nodemailer (SMTP)
 - **Payments**: Stripe API
-- **Validation**: Built-in Express middleware
 
-### Frontend
-- **Framework**: React 18
-- **Routing**: React Router v6
-- **HTTP Client**: Axios
-- **Real-Time**: Socket.io Client
-- **Payments**: Stripe React Components
-- **Styling**: CSS3 with responsive design
+## ⚙️ Installation & Setup
 
-## Installation
-
-### Prerequisites
+### 1. Prerequisites
 - Node.js (v16+)
-- PostgreSQL (running locally)
-- npm or yarn
+- PostgreSQL (Running)
 
-### Backend Setup
+### 2. Backend Setup
+1. `cd backend`
+2. `npm install`
+3. Create a `.env` file (see `.env.example` or use current configs)
+4. `npm start` (The server will auto-migrate the database)
 
-1. Navigate to backend directory:
-```bash
-cd backend
-```
+### 3. Frontend Setup
+1. `cd frontend`
+2. `npm install`
+3. `npm start`
+4. Visit `http://localhost:3000`
 
-2. Install dependencies:
-```bash
-npm install
-```
-
-3. Configure environment variables in `.env`:
-```
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=hotel_booking
-DB_USER=your_username
-DB_PASS=your_password
-JWT_SECRET=your_jwt_secret
-PORT=5000
-EXCHANGE_API_KEY=your_api_key
-EMAIL_SERVICE=gmail
-EMAIL_USER=your_email@gmail.com
-EMAIL_PASS=your_app_password
-STRIPE_SECRET_KEY=sk_test_xxxxxxxxxxxxx
-STRIPE_PUBLISHABLE_KEY=pk_test_xxxxxxxxxxxxx
-STRIPE_WEBHOOK_SECRET=whsec_xxxxxxxxxxxxx
-FRONTEND_URL=http://localhost:3000
-```
-
-4. Start the backend server:
-```bash
-npm start
-```
-
-The backend will run on `http://localhost:5000`
-
-### Frontend Setup
-
-1. Navigate to frontend directory:
-```bash
-cd frontend
-```
-
-2. Install dependencies:
-```bash
-npm install
-```
-
-3. Start the frontend development server:
-```bash
-npm start
-```
-
-The frontend will run on `http://localhost:3000`
-
-## API Endpoints
-
-### Authentication
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - Login user
-
-### Rooms
-- `GET /api/rooms/types` - Get all room types
-- `GET /api/rooms/available` - Get available rooms for date range
-- `GET /api/rooms` - Get all rooms (admin)
-- `POST /api/rooms/types` - Create room type (admin)
-- `POST /api/rooms` - Create room (admin)
-- `PUT /api/rooms/:roomId/status` - Update room status
-
-### Bookings
-- `POST /api/bookings` - Create new booking
-- `GET /api/bookings/my-bookings` - Get user's bookings
-- `GET /api/bookings` - Get all bookings (admin)
-- `PUT /api/bookings/:bookingId/status` - Update booking status
-- `PUT /api/bookings/:bookingId/cancel` - Cancel booking
-
-### Offers
-- `GET /api/offers/active` - Get active offers
-- `POST /api/offers/calculate-discount` - Calculate discount for offer
-- `GET /api/offers` - Get all offers (admin)
-- `POST /api/offers` - Create offer (admin)
-- `PUT /api/offers/:offerId/status` - Update offer status (admin)
-
-### Currency
-- `GET /api/currency/rates` - Get exchange rates
-- `POST /api/currency/convert` - Convert price between currencies
-- `POST /api/currency/rates/update` - Update exchange rates (admin)
-
-### Payments
-- `POST /api/payments/create-checkout-session` - Create Stripe checkout session
-
-### Analytics (Admin/Manager only)
-- `GET /api/analytics` - Get dashboard metrics (occupancy, revenue, bookings)
-
-### Reviews
-- `GET /api/reviews?roomId=:id` - Get reviews for a room
-- `POST /api/reviews` - Submit a review (authenticated)
-- `GET /api/reviews/all` - Get all reviews (admin/manager)
-
-## Database Schema
-
-### Users Table
-- id, name, email, password, role (admin|manager|receptionist|customer), createdAt, updatedAt
-
-### RoomTypes Table
-- id, name, description, basePrice, amenities (JSON), createdAt, updatedAt
+## 📊 Database Schema Highlights
 
 ### Rooms Table
-- id, roomNumber, roomTypeId (FK), status (available|occupied|maintenance), floor, createdAt, updatedAt
+- `roomNumber`: Unique identifier
+- `roomTypeId`: Link to category
+- `maxGuests`: Capacity
+- `roomSize`: e.g., "42 sqm"
+- `bedType`: e.g., "King Bed"
+- `description`: Detailed room bio
+- `amenities`: JSON list of features
+- `image`: Primary room photo
 
 ### Bookings Table
-- id, userId (FK), roomId (FK), checkInDate, checkOutDate, totalPrice, status (pending|confirmed|checked_in|checked_out|cancelled), bookingType (online|manual), createdAt, updatedAt
+- `status`: pending | confirmed | checked_in | checked_out | cancelled
+- `paymentStatus`: unpaid | proof_submitted | verified
+- `totalPrice`: Calculated in ETB
 
-### Offers Table
-- id, name, description, promoCode, discountType (percentage|fixed), discountValue, minNights, startDate, endDate, status (active|inactive), createdBy (FK), createdAt, updatedAt
+## 🔑 Role-Based Access
 
-### ExchangeRates Table
-- id, baseCurrency, targetCurrency, rate, lastUpdated
+- **Admin/Manager**: Full access to rooms, users, analytics, and offers.
+- **Receptionist**: Create manual bookings and update guest statuses.
+- **Customer**: Browse, check availability, and book online.
 
-### Reviews Table
-- id, userId (FK), roomId (FK), rating (1-5), comment (TEXT), createdAt, updatedAt
+## 📝 Future Enhancements
 
-## Role-Based Access Control
+- [ ] Multi-language support (i18n)
+- [ ] Calendar view for admin booking management
+- [ ] SMS gateway integration
+- [ ] Loyalty program and rewards
+- [ ] Mobile App (React Native)
 
-### Customer
-- Register & login
-- Browse available rooms
-- Make online bookings
-- View own bookings
-- Cancel own bookings
+## 📄 License
 
-### Receptionist
-- View all bookings
-- Create manual bookings
-- Update booking status
-- View available rooms
-
-### Manager
-- All receptionist permissions
-- Create & manage room types
-- Create & manage offers
-- View booking statistics
-
-### Admin
-- All permissions
-- User management
-- System settings
-- Exchange rate management
-
-## Multi-Currency Support
-
-Supported currencies:
-- ETB (Ethiopian Birr) - Base currency
-- USD (US Dollar)
-- GBP (British Pound)
-- EUR (Euro)
-
-Exchange rates are stored in the database and can be updated via API.
-
-## Hotel Offers Module
-
-Supports multiple offer types:
-- **Seasonal Discounts** - Percentage or fixed amount off
-- **Early Bird Deals** - Discount for advance bookings
-- **Stay More, Pay Less** - Discounts based on length of stay
-- **Last-Minute Deals** - Reduced rates for soon arrivals
-- **Promo Codes** - Custom promotional codes
-
-## Running the Application
-
-### Start Backend
-```bash
-cd backend
-npm start
-```
-
-### Start Frontend (in another terminal)
-```bash
-cd frontend
-npm start
-```
-
-### Test the System
-1. Register a new account at `http://localhost:3000/register`
-2. Login with your credentials
-3. Browse available rooms and make a booking
-4. View booking history in dashboard
-5. Access admin panel (if admin/manager role)
-
-## Future Enhancements
-
-- [ ] Payment gateway integration (Stripe, PayPal)
-- [ ] Email notifications for bookings
-- [ ] SMS notifications
-- [ ] Hotel location map display
-- [ ] Real-time room availability
-- [ ] Guest reviews and ratings
-- [ ] Loyalty program points
-- [ ] Mobile app (React Native)
-- [ ] Advanced analytics dashboard
-- [ ] Calendar view for bookings
-
-## License
-
-MIT License
-
-## Support
-
-For support, please contact support@hotelbooking.com
+MIT License - Copyright (c) 2026 2RN Solomon

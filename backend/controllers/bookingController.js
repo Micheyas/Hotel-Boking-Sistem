@@ -1,25 +1,33 @@
 const Booking = require('../models/Booking');
 const Room = require('../models/Room');
 const User = require('../models/User');
+const { Op } = require('sequelize');
 const { sendEmail } = require('../middleware/mailer');
 const socketService = require('../socket');
 
 // Create booking
 exports.createBooking = async (req, res) => {
   try {
-    const { roomTypeId, checkInDate, checkOutDate, totalPrice, bookingType } = req.body;
+    const { roomId, checkInDate, checkOutDate, totalPrice, bookingType } = req.body;
     const userId = req.user.id;
 
-    // Find an available room of the selected type
-    const availableRoom = await Room.findOne({
+    // Verify room is available for the dates
+    const overlapping = await Booking.findAll({
       where: {
-        roomTypeId: roomTypeId,
-        status: 'available'
+        roomId,
+        status: { [Op.notIn]: ['cancelled', 'checked_out'] },
+        checkInDate:  { [Op.lt]: new Date(checkOutDate) },
+        checkOutDate: { [Op.gt]: new Date(checkInDate) },
       }
     });
 
-    if (!availableRoom) {
-      return res.status(400).json({ error: 'No rooms available for this type' });
+    if (overlapping.length > 0) {
+      return res.status(400).json({ error: 'Room is already booked for these dates' });
+    }
+
+    const availableRoom = await Room.findByPk(roomId);
+    if (!availableRoom || availableRoom.status !== 'available') {
+      return res.status(400).json({ error: 'Room is not available' });
     }
 
     const booking = await Booking.create({
@@ -54,18 +62,25 @@ exports.createBooking = async (req, res) => {
 // Create guest booking (no login required)
 exports.createGuestBooking = async (req, res) => {
   try {
-    const { roomTypeId, checkInDate, checkOutDate, totalPrice, guestName, guestEmail, guestPhone } = req.body;
+    const { roomId, checkInDate, checkOutDate, totalPrice, guestName, guestEmail, guestPhone } = req.body;
 
-    // Find an available room of the selected type
-    const availableRoom = await Room.findOne({
+    // Verify room is available for the dates
+    const overlapping = await Booking.findAll({
       where: {
-        roomTypeId: roomTypeId,
-        status: 'available'
+        roomId,
+        status: { [Op.notIn]: ['cancelled', 'checked_out'] },
+        checkInDate:  { [Op.lt]: new Date(checkOutDate) },
+        checkOutDate: { [Op.gt]: new Date(checkInDate) },
       }
     });
 
-    if (!availableRoom) {
-      return res.status(400).json({ error: 'No rooms available for this type' });
+    if (overlapping.length > 0) {
+      return res.status(400).json({ error: 'Room is already booked for these dates' });
+    }
+
+    const availableRoom = await Room.findByPk(roomId);
+    if (!availableRoom || availableRoom.status !== 'available') {
+      return res.status(400).json({ error: 'Room is not available' });
     }
 
     const booking = await Booking.create({
@@ -141,6 +156,60 @@ exports.updateBookingStatus = async (req, res) => {
 
     await booking.update({ status });
     res.json(booking);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+// Create manual booking (receptionist only — walk-in / phone booking by room ID)
+exports.createManualBooking = async (req, res) => {
+  try {
+    const { roomId, checkInDate, checkOutDate, guestName, guestEmail, guestPhone, notes } = req.body;
+
+    if (!roomId || !checkInDate || !checkOutDate || !guestName || !guestEmail) {
+      return res.status(400).json({ error: 'roomId, checkInDate, checkOutDate, guestName, and guestEmail are required.' });
+    }
+
+    const room = await Room.findByPk(roomId, { include: ['roomType'] });
+    if (!room) return res.status(404).json({ error: 'Room not found' });
+    if (room.status !== 'available') {
+      return res.status(400).json({ error: `Room ${room.roomNumber} is not available (current status: ${room.status})` });
+    }
+
+    // Calculate total price from room type base price × nights
+    const nights = Math.max(
+      1,
+      Math.ceil((new Date(checkOutDate) - new Date(checkInDate)) / (1000 * 60 * 60 * 24))
+    );
+    const totalPrice = (room.roomType?.basePrice || 0) * nights;
+
+    const booking = await Booking.create({
+      roomId: room.id,
+      checkInDate,
+      checkOutDate,
+      totalPrice,
+      status: 'confirmed',         // receptionist confirms immediately
+      bookingType: 'manual',
+      guestName,
+      guestEmail,
+      guestPhone: guestPhone || '',
+      notes: notes || '',
+    });
+
+    await room.update({ status: 'occupied' });
+
+    const io = socketService.getIO();
+    io.emit('roomStatusChanged', { roomId: room.id, status: 'occupied' });
+
+    // Send confirmation email to the guest
+    await sendEmail({
+      to: guestEmail,
+      subject: 'Booking Confirmed — The William Vale Hotel',
+      text: `Dear ${guestName},\n\nYour manual booking for Room ${room.roomNumber} from ${checkInDate} to ${checkOutDate} (${nights} night${nights > 1 ? 's' : ''}) has been confirmed by our reception team.\n\nTotal: ${totalPrice} ETB\n\nThank you for choosing The William Vale Hotel!`,
+      html: `<p>Dear <strong>${guestName}</strong>,</p><p>Your booking for room <strong>${room.roomNumber}</strong> from <strong>${checkInDate}</strong> to <strong>${checkOutDate}</strong> (${nights} night${nights > 1 ? 's' : ''}) has been <span style="color:green;font-weight:700">confirmed</span> by our reception team.</p><p>Total: <strong>${totalPrice} ETB</strong></p><p>Thank you for choosing <strong>The William Vale Hotel</strong>!</p>`,
+    });
+
+    res.status(201).json({ message: 'Manual booking created and confirmed', booking });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
