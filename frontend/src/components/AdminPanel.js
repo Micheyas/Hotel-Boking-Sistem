@@ -144,9 +144,16 @@ const AdminPanel = () => {
 
   const handleImagesChange = (files) => {
     const fileArr = Array.from(files);
-    setNewRoom(prev => ({ ...prev, images: [...prev.images, ...fileArr] }));
-    const previews = fileArr.map(f => URL.createObjectURL(f));
-    setImagePreviews(prev => [...prev, ...previews]);
+    const combined = [...newRoom.images, ...fileArr].slice(0, 3); // max 3
+    setNewRoom(prev => ({ ...prev, images: combined }));
+    const previews = combined.map(f => typeof f === 'string' ? f : URL.createObjectURL(f));
+    setImagePreviews(previews);
+  };
+
+  const handleRemoveImage = (index) => {
+    const updated = newRoom.images.filter((_, i) => i !== index);
+    setNewRoom(prev => ({ ...prev, images: updated }));
+    setImagePreviews(updated.map(f => typeof f === 'string' ? f : URL.createObjectURL(f)));
   };
 
   const handleAmenityToggle = (name) => {
@@ -169,7 +176,11 @@ const AdminPanel = () => {
       fd.append('roomSize', newRoom.roomSize);
       fd.append('bedType', newRoom.bedType);
       fd.append('description', newRoom.description);
-      if (newRoom.images.length > 0) fd.append('image', newRoom.images[0]);
+      // Send up to 3 images (only File objects, not existing URL strings)
+      newRoom.images
+        .filter(img => img instanceof File)
+        .slice(0, 3)
+        .forEach(img => fd.append('images', img));
 
       if (editingRoom) {
         await api.put(`/rooms/${editingRoom.id}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
@@ -192,7 +203,11 @@ const AdminPanel = () => {
       try { amenitiesArr = JSON.parse(room.amenities); } catch { amenitiesArr = room.amenities.split(', ').filter(Boolean); }
     }
     setNewRoom({ roomName: room.roomNumber, roomNumber: room.roomNumber, roomTypeId: room.roomTypeId, pricePerNight: room.roomType?.basePrice || '', floor: room.floor, maxGuests: room.maxGuests || 2, roomSize: room.roomSize || '', bedType: room.bedType || '', description: room.description || '', status: room.status, images: [], amenities: amenitiesArr });
-    setImagePreviews(room.image ? [`http://localhost:5000${room.image}`] : []);
+    // Load existing image URLs as strings for preview
+    let existingImgs = [];
+    try { existingImgs = JSON.parse(room.images || '[]'); } catch { existingImgs = []; }
+    if (existingImgs.length === 0 && room.image) existingImgs = [room.image];
+    setImagePreviews(existingImgs.map(p => p.startsWith('http') ? p : `http://localhost:5000${p}`));
     setShowRoomModal(true);
   };
 
@@ -531,22 +546,29 @@ const AdminPanel = () => {
                     </div>
 
                     <div className="rm-field" style={{marginTop:'20px'}}>
-                      <label>Current Images</label>
+                      <label>Room Images <span style={{color:'#9ca3af',fontWeight:400}}>(up to 3)</span></label>
                       {imagePreviews.length === 0 && (
                         <p className="no-images-text">No images uploaded yet</p>
                       )}
                       <div className="image-previews-row">
-                        {imagePreviews.map((src, i) => <img key={i} src={src} alt="preview" className="img-preview-thumb" />)}
+                        {imagePreviews.map((src, i) => (
+                          <div key={i} className="img-preview-wrap">
+                            <img src={src} alt="preview" className="img-preview-thumb" />
+                            <button type="button" className="img-remove-btn" onClick={() => handleRemoveImage(i)}>✕</button>
+                          </div>
+                        ))}
                       </div>
-                      <label className="image-drop-zone">
-                        <input type="file" accept="image/*" multiple style={{display:'none'}}
-                          onChange={e => handleImagesChange(e.target.files)} />
-                        <div className="drop-zone-inner">
-                          <span className="drop-icon">⬆</span>
-                          <p>Drop images here or click to upload</p>
-                          <small>Supports JPG, PNG, WebP up to 5MB</small>
-                        </div>
-                      </label>
+                      {imagePreviews.length < 3 && (
+                        <label className="image-drop-zone">
+                          <input type="file" accept="image/*" multiple style={{display:'none'}}
+                            onChange={e => handleImagesChange(e.target.files)} />
+                          <div className="drop-zone-inner">
+                            <span className="drop-icon">⬆</span>
+                            <p>Drop images here or click to upload</p>
+                            <small>{3 - imagePreviews.length} slot{3 - imagePreviews.length !== 1 ? 's' : ''} remaining · JPG, PNG, WebP up to 5MB</small>
+                          </div>
+                        </label>
+                      )}
                     </div>
                   </div>
 

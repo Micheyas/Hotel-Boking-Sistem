@@ -30,6 +30,10 @@ const Room = sequelize.define('Room', {
   image: {
     type: DataTypes.STRING,
   },
+  images: {
+    type: DataTypes.TEXT, // JSON array of up to 3 image paths
+    defaultValue: '[]',
+  },
   amenities: {
     type: DataTypes.TEXT,
   },

@@ -10,68 +10,64 @@ import Rooms from './components/Rooms';
 import Amenities from './components/Amenities';
 import FAQ from './components/FAQ';
 import AvailabilitySearch from './components/AvailabilitySearch';
-
-const CURRENCIES = [
-  { code: 'ETB', label: 'ETB - Ethiopian Birr', flag: '🇪🇹' },
-  { code: 'USD', label: 'USD - US Dollar',       flag: '🇺🇸' },
-  { code: 'GBP', label: 'GBP - British Pound',   flag: '🇬🇧' },
-  { code: 'EUR', label: 'EUR - Euro',             flag: '🇪🇺' },
-];
+import RoomSlideshow from './components/RoomSlideshow';
+import { FAQAndLocation, FooterBar } from './components/Footer';
+import { CurrencyProvider, useCurrency, CURRENCIES, convertPrice } from './CurrencyContext';
 
 function App() {
-  const [currency, setCurrency] = useState(localStorage.getItem('currency') || 'ETB');
+  return (
+    <CurrencyProvider>
+      <Router>
+        <AppInner />
+      </Router>
+    </CurrencyProvider>
+  );
+}
 
-  const handleCurrencyChange = (e) => {
-    setCurrency(e.target.value);
-    localStorage.setItem('currency', e.target.value);
-  };
-
+function AppInner() {
+  const { currency, setCurrency } = useCurrency();
   const activeCurrency = CURRENCIES.find(c => c.code === currency) || CURRENCIES[0];
 
   return (
-    <Router>
-      <div className="App">
+    <div className="App">
+      {/* ── Slim Navbar ── */}
+      <header className="navbar">
+        <Link to="/" className="navbar-logo">2RN Solomon</Link>
+        <nav className="navbar-links">
+          <Link to="/">Home</Link>
+          <Link to="/rooms">Rooms</Link>
+          <Link to="/amenities">Amenities</Link>
+          <Link to="/admin" className="navbar-staff">🔑 Staff</Link>
+          <div className="navbar-currency">
+            <span>{activeCurrency.flag}</span>
+            <select
+              value={activeCurrency.code}
+              onChange={e => setCurrency(e.target.value)}
+              className="navbar-currency-select"
+            >
+              {CURRENCIES.map(c => (
+                <option key={c.code} value={c.code}>{c.label}</option>
+              ))}
+            </select>
+            <span>🌐</span>
+          </div>
+          <Link to="/booking" className="navbar-book-btn">Book Now</Link>
+        </nav>
+      </header>
 
-        {/* ── Slim Navbar ── */}
-        <header className="navbar">
-          <Link to="/" className="navbar-logo">2RN Solomon</Link>
-          <nav className="navbar-links">
-            <Link to="/">Home</Link>
-            <Link to="/rooms">Rooms</Link>
-            <Link to="/amenities">Amenities</Link>
-
-            <Link to="/admin" className="navbar-staff">🔑 Staff</Link>
-            {/* Currency selector in navbar */}
-            <div className="navbar-currency">
-              <span>{activeCurrency.flag}</span>
-              <select value={activeCurrency.code} onChange={handleCurrencyChange} className="navbar-currency-select">
-                {CURRENCIES.map(c => (
-                  <option key={c.code} value={c.code}>{c.label}</option>
-                ))}
-              </select>
-              <span>🌐</span>
-            </div>
-            <Link to="/booking" className="navbar-book-btn">Book Now</Link>
-          </nav>
-        </header>
-
-        <main>
-          <Routes>
-            <Route path="/" element={<Home currency={currency} activeCurrency={activeCurrency} onCurrencyChange={handleCurrencyChange} />} />
-            <Route path="/booking" element={<BookingForm />} />
-            <Route path="/rooms" element={<Rooms />} />
-            <Route path="/amenities" element={<Amenities />} />
-            <Route path="/admin" element={<AdminPanel />} />
-            <Route path="/analytics" element={<AnalyticsDashboard />} />
-            <Route path="/payment" element={<PaymentForm />} />
-            <Route path="/reviews/:roomId" element={<ReviewForm roomId={new URLSearchParams(window.location.search).get('roomId')} />} />
-          </Routes>
-        </main>
-
-
-
-      </div>
-    </Router>
+      <main>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/booking" element={<BookingForm />} />
+          <Route path="/rooms" element={<Rooms />} />
+          <Route path="/amenities" element={<Amenities />} />
+          <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/analytics" element={<AnalyticsDashboard />} />
+          <Route path="/payment" element={<PaymentForm />} />
+          <Route path="/reviews/:roomId" element={<ReviewForm roomId={new URLSearchParams(window.location.search).get('roomId')} />} />
+        </Routes>
+      </main>
+    </div>
   );
 }
 
@@ -79,11 +75,29 @@ function App() {
 
 function FeaturedRooms() {
   const [rooms, setRooms] = React.useState([]);
+  const { currency, rates } = useCurrency();
 
   React.useEffect(() => {
     fetch('http://localhost:5000/api/rooms/public')
       .then(r => r.json())
-      .then(data => setRooms(Array.isArray(data) ? data.slice(0, 6) : []))
+      .then(data => {
+        if (!Array.isArray(data)) return;
+        // Group by room type — keep one representative room per type
+        const seen = new Map();
+        for (const room of data) {
+          const typeId = room.roomTypeId;
+          if (!seen.has(typeId)) {
+            seen.set(typeId, room);
+          } else {
+            // Prefer rooms that have images uploaded
+            const existing = seen.get(typeId);
+            const existingHasImg = existing.image || (existing.images && existing.images !== '[]');
+            const newHasImg = room.image || (room.images && room.images !== '[]');
+            if (!existingHasImg && newHasImg) seen.set(typeId, room);
+          }
+        }
+        setRooms([...seen.values()]);
+      })
       .catch(() => {});
   }, []);
 
@@ -104,25 +118,31 @@ function FeaturedRooms() {
       </div>
       <div className="featured-rooms-grid">
         {rooms.map(room => {
-          const image = room.image
-            ? `http://localhost:5000${room.image}`
-            : 'https://images.unsplash.com/photo-1631049307038-da0ec9d70304?w=600&q=80';
+          let imageList = [];
+          try { imageList = JSON.parse(room.images || '[]'); } catch { imageList = []; }
+          if (imageList.length === 0 && room.image) imageList = [room.image];
           const amenities = parseAmenities(room.amenities);
           const isAvailable = room.status === 'available';
           return (
             <div key={room.id} className="featured-room-card">
               <div className="featured-room-img">
-                <img src={image} alt={`Room ${room.roomNumber}`} />
+                <RoomSlideshow
+                  images={imageList}
+                  image={room.image}
+                  roomIndex={room.id}
+                  alt={`Room ${room.roomNumber}`}
+                  interval={5000}
+                />
                 <span className={`fr-status ${room.status}`}>
                   {isAvailable ? 'Available' : room.status}
                 </span>
               </div>
               <div className="featured-room-info">
                 <div className="fr-title-row">
-                  <h3>Room {room.roomNumber}</h3>
-                  <span className="fr-type">{room.roomType?.name}</span>
+                  <h3>{room.roomType?.name || 'Room'}</h3>
+                  <span className="fr-type">Room {room.roomNumber}</span>
                 </div>
-                <p className="fr-floor">Floor {room.floor}</p>
+                <p className="fr-desc">{room.roomType?.description || ''}</p>
                 {amenities.length > 0 && (
                   <div className="fr-amenities">
                     {amenities.slice(0, 3).map((a, i) => <span key={i} className="amenity-tag">{a}</span>)}
@@ -130,7 +150,7 @@ function FeaturedRooms() {
                 )}
                 <div className="fr-footer">
                   <span className="fr-price">
-                    ETB {Number(room.roomType?.basePrice || 0).toLocaleString()}
+                    {convertPrice(room.roomType?.basePrice || 0, currency, rates)}
                     <span>/night</span>
                   </span>
                   {isAvailable
@@ -230,7 +250,7 @@ function Home({ activeCurrency, onCurrencyChange }) {
         </div>
       </div>
 
-      {/* Amenities Section */}
+      {/* Amenities Section — includes FAQ, Location, and Footer */}
       <Amenities />
     </div>
   );

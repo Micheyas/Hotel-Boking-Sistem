@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import api from '../api';
+import RoomSlideshow from './RoomSlideshow';
+import { useCurrency, convertPrice as ctxConvert, SYMBOLS } from '../CurrencyContext';
+
+function convertPrice(etb, currency, rates) {
+  return ctxConvert(etb, currency, rates);
+}
 
 // Fallback images by room type keyword — real hotel photos from Unsplash
 const FALLBACK_IMAGES = {
@@ -41,12 +47,6 @@ function getDefaultAmenities(name = '') {
   }
   return DEFAULT_AMENITIES.default;
 }
-const SYMBOLS = { USD: '$', GBP: '£', EUR: '€', ETB: 'ETB ' };
-
-function convertPrice(etb, currency) {
-  const val = (etb * RATES[currency]).toFixed(0);
-  return `${SYMBOLS[currency]}${Number(val).toLocaleString()}`;
-}
 
 const BookingForm = () => {
   const location  = useLocation();
@@ -65,8 +65,8 @@ const BookingForm = () => {
   const [searchErr, setSearchErr] = useState('');
 
   // Step 3 — booking
-  const [selected,  setSelected]  = useState(null);   // chosen room type object
-  const [currency,  setCurrency]  = useState('ETB');
+  const [selected,  setSelected]  = useState(null);
+  const { currency, rates } = useCurrency();
   const [guestInfo, setGuestInfo] = useState({ name: '', email: '', phone: '' });
   const [booking,   setBooking]   = useState(false);
   const [bookErr,   setBookErr]   = useState('');
@@ -156,14 +156,7 @@ const BookingForm = () => {
           </div>
           <div className="summary-price">
             <span>Total: </span>
-            <strong>{convertPrice(selected.totalPrice, currency)}</strong>
-            <select
-              value={currency}
-              onChange={(e) => setCurrency(e.target.value)}
-              className="currency-inline"
-            >
-              {['ETB','USD','GBP','EUR'].map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
+            <strong>{convertPrice(selected.totalPrice, currency, rates)}</strong>
           </div>
         </div>
 
@@ -287,9 +280,14 @@ const BookingForm = () => {
               return (
                 <div key={rt.id} className="result-card">
                   <div className="result-image">
-                    <img src={imageUrl} alt={rt.name} />
+                    <RoomSlideshow
+                      images={rt.images || []}
+                      image={rt.image}
+                      roomIndex={rt.id}
+                      alt={rt.name}
+                    />
                     <div className="result-price-badge">
-                      ETB {rt.basePrice.toLocaleString()}<span>/night</span>
+                      {convertPrice(rt.basePrice, currency, rates)}<span>/night</span>
                     </div>
                   </div>
                   <div className="result-info">
@@ -309,7 +307,7 @@ const BookingForm = () => {
                   </div>
                   <div className="result-footer">
                     <div className="result-total">
-                      Total: <strong>ETB {rt.totalPrice.toLocaleString()}</strong>
+                      Total: <strong>{convertPrice(rt.totalPrice, currency, rates)}</strong>
                       <span className="result-nights"> · {rt.nights} night{rt.nights > 1 ? 's' : ''}</span>
                     </div>
                     <button className="result-select-btn" onClick={() => setSelected(rt)}>

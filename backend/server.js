@@ -84,6 +84,7 @@ sequelize.sync({ alter: false }).then(async () => {
   await addColumnIfMissing('Rooms', 'roomSize',    { type: DataTypes.STRING,  allowNull: true });
   await addColumnIfMissing('Rooms', 'bedType',     { type: DataTypes.STRING,  allowNull: true });
   await addColumnIfMissing('Rooms', 'description', { type: DataTypes.TEXT,    allowNull: true });
+  await addColumnIfMissing('Rooms', 'images',      { type: DataTypes.TEXT,    allowNull: true, defaultValue: '[]' });
 
   // Clean up orphaned bookings that reference deleted rooms
   try {
@@ -153,6 +154,14 @@ sequelize.sync({ alter: false }).then(async () => {
   };
 
   startPendingCleanup();
+
+  // Pre-warm currency rates cache on startup
+  try {
+    const currencyController = require('./controllers/currencyController');
+    await currencyController.warmCache();
+  } catch (e) {
+    console.warn('[Currency] Startup warm failed:', e.message);
+  }
   
   const PORT = process.env.PORT || 5000;
   const server = http.createServer(app);

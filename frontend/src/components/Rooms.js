@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import api from '../api';
 import { Link } from 'react-router-dom';
 import AvailabilitySearch from './AvailabilitySearch';
+import RoomSlideshow from './RoomSlideshow';
+import { FAQSection, LocationSection, FooterBar, FAQAndLocation } from './Footer';
+import { useCurrency, convertPrice } from '../CurrencyContext';
 
 const STATUS_LABEL = {
   available:   { text: 'Available',   color: '#2e7d32', bg: '#e8f5e9' },
@@ -13,7 +16,8 @@ const Rooms = () => {
   const [rooms, setRooms]     = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState('');
-  const [filter, setFilter]   = useState('all'); // all | available | occupied | maintenance
+  const [filter, setFilter]   = useState('all');
+  const { currency, rates } = useCurrency();
 
   useEffect(() => {
     fetchRooms();
@@ -98,14 +102,17 @@ const Rooms = () => {
           return (
             <div key={room.id} className="room-card">
               <div className="room-image">
-                <img src={image} alt={`Room ${room.roomNumber}`} />
-                {/* Price badge — top right */}
+                <RoomSlideshow
+                  images={(() => { try { return JSON.parse(room.images || '[]'); } catch { return []; } })()}
+                  image={room.image}
+                  roomIndex={room.id}
+                  alt={`Room ${room.roomNumber}`}
+                />
                 {price && (
                   <div className="room-price-badge">
-                    {formatPrice(price)} ETB/night
+                    {convertPrice(price, currency, rates)}/night
                   </div>
                 )}
-                {/* Status badge — top left, only if not available */}
                 {room.status !== 'available' && (
                   <span
                     className="room-status-badge"
@@ -154,6 +161,9 @@ const Rooms = () => {
           <p>No {filter !== 'all' ? filter : ''} rooms found.</p>
         </div>
       )}
+
+      <FAQAndLocation />
+      <FooterBar />
     </div>
   );
 };

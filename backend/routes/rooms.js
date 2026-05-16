@@ -12,9 +12,9 @@ router.get('/available', roomController.getAvailableRooms);
 
 // Protected routes (admin/manager only)
 router.post('/types', authenticateToken, authorizeRole(['admin', 'manager']), roomController.createRoomType);
-router.post('/', authenticateToken, authorizeRole(['admin', 'manager']), upload.single('image'), roomController.createRoom);
+router.post('/', authenticateToken, authorizeRole(['admin', 'manager']), upload.array('images', 3), roomController.createRoom);
 router.put('/:roomId/status', authenticateToken, authorizeRole(['admin', 'manager']), roomController.updateRoomStatus);
-router.put('/:roomId', authenticateToken, authorizeRole(['admin', 'manager']), upload.single('image'), roomController.updateRoom);
+router.put('/:roomId', authenticateToken, authorizeRole(['admin', 'manager']), upload.array('images', 3), roomController.updateRoom);
 router.delete('/:roomId', authenticateToken, authorizeRole(['admin', 'manager']), roomController.deleteRoom);
 router.get('/', authenticateToken, authorizeRole(['admin', 'manager', 'receptionist']), roomController.getAllRooms);
 

@@ -60,6 +60,9 @@ exports.checkAvailability = async (req, res) => {
     const nights = Math.max(1, Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24)));
     const result = availableRooms.map(room => {
       const rt = room.roomType;
+      let imageList = [];
+      try { imageList = JSON.parse(room.images || '[]'); } catch { imageList = []; }
+      if (imageList.length === 0 && room.image) imageList = [room.image];
       return {
         id: room.id,
         roomNumber: room.roomNumber,
@@ -70,6 +73,7 @@ exports.checkAvailability = async (req, res) => {
         amenities: room.amenities || (rt ? rt.amenities : []),
         totalPrice: (rt ? rt.basePrice : 0) * nights,
         image: room.image,
+        images: imageList,
         nights
       };
     });
@@ -139,31 +143,31 @@ exports.createRoomType = async (req, res) => {
 exports.createRoom = async (req, res) => {
   try {
     const { roomNumber, roomTypeId, floor, status, amenities, maxGuests, roomSize, bedType, description } = req.body;
-    console.log('Creating room with data:', { roomNumber, roomTypeId, floor, status, amenities });
-    console.log('Uploaded file:', req.file);
-    
-    // Check if room number already exists
+
     const existingRoom = await Room.findOne({ where: { roomNumber } });
     if (existingRoom) {
       return res.status(400).json({ error: `Room ${roomNumber} already exists` });
     }
-    
-    // Get image path if file uploaded
-    const image = req.file ? `/uploads/rooms/${req.file.filename}` : null;
-    
-    const room = await Room.create({ 
-      roomNumber, 
-      roomTypeId, 
-      floor, 
+
+    // Handle up to 3 uploaded images
+    const uploadedPaths = (req.files || []).map(f => `/uploads/rooms/${f.filename}`);
+    const image  = uploadedPaths[0] || null;                  // primary image (backward compat)
+    const images = JSON.stringify(uploadedPaths);             // all images as JSON array
+
+    const room = await Room.create({
+      roomNumber,
+      roomTypeId,
+      floor,
       status: status || 'available',
       image,
+      images,
       amenities,
       maxGuests: maxGuests || 2,
       roomSize: roomSize || '',
       bedType: bedType || '',
       description: description || '',
     });
-    
+
     res.status(201).json(room);
   } catch (error) {
     console.error('Error creating room:', error);
@@ -194,38 +198,45 @@ exports.updateRoom = async (req, res) => {
   try {
     const { roomId } = req.params;
     const { roomNumber, roomTypeId, floor, status, amenities, maxGuests, roomSize, bedType, description } = req.body;
-    
+
     const room = await Room.findByPk(roomId);
     if (!room) return res.status(404).json({ error: 'Room not found' });
-    
-    // Check if new room number already exists (and it's not the current room)
+
     if (roomNumber && roomNumber !== room.roomNumber) {
       const existingRoom = await Room.findOne({ where: { roomNumber } });
       if (existingRoom) {
         return res.status(400).json({ error: `Room ${roomNumber} already exists` });
       }
     }
-    
-    // Get image path if file uploaded
-    const image = req.file ? `/uploads/rooms/${req.file.filename}` : undefined;
-    
+
+    // Handle newly uploaded images (up to 3)
+    const newPaths = (req.files || []).map(f => `/uploads/rooms/${f.filename}`);
+
+    // Merge with existing images if no new ones uploaded
+    let existingImages = [];
+    try { existingImages = JSON.parse(room.images || '[]'); } catch { existingImages = room.image ? [room.image] : []; }
+
+    const mergedImages = newPaths.length > 0 ? newPaths : existingImages;
+    const finalImages  = mergedImages.slice(0, 3); // max 3
+
     const updateData = {};
-    if (roomNumber) updateData.roomNumber = roomNumber;
-    if (roomTypeId) updateData.roomTypeId = roomTypeId;
-    if (floor !== undefined) updateData.floor = floor;
-    if (status) updateData.status = status;
-    if (image) updateData.image = image;
-    if (amenities !== undefined) updateData.amenities = amenities;
-    if (maxGuests !== undefined) updateData.maxGuests = maxGuests;
-    if (roomSize !== undefined) updateData.roomSize = roomSize;
-    if (bedType !== undefined) updateData.bedType = bedType;
-    if (description !== undefined) updateData.description = description;
-    
+    if (roomNumber)           updateData.roomNumber  = roomNumber;
+    if (roomTypeId)           updateData.roomTypeId  = roomTypeId;
+    if (floor !== undefined)  updateData.floor       = floor;
+    if (status)               updateData.status      = status;
+    if (finalImages.length)   updateData.image       = finalImages[0];
+    updateData.images          = JSON.stringify(finalImages);
+    if (amenities !== undefined)    updateData.amenities  = amenities;
+    if (maxGuests !== undefined)    updateData.maxGuests  = maxGuests;
+    if (roomSize !== undefined)     updateData.roomSize   = roomSize;
+    if (bedType !== undefined)      updateData.bedType    = bedType;
+    if (description !== undefined)  updateData.description = description;
+
     await room.update(updateData);
-    
+
     const io = socketService.getIO();
     io.emit('roomStatusChanged', { roomId: room.id, status: room.status });
-    
+
     res.json(room);
   } catch (error) {
     console.error('Error updating room:', error);
