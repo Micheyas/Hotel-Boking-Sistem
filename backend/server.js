@@ -100,6 +100,59 @@ sequelize.sync({ alter: false }).then(async () => {
   }
 
   await seedData();
+
+  // ── Auto-delete pending bookings older than 5 minutes ──
+  // Runs every 60 seconds. Any booking still 'pending' after 5 min
+  // gets deleted and its room is freed back to 'available'.
+  const startPendingCleanup = () => {
+    const { Booking, Room } = require('./models');
+    const { Op } = require('sequelize');
+
+    const cleanup = async () => {
+      try {
+        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+
+        // Only delete pending bookings that have NO payment proof uploaded.
+        // If a screenshot was submitted, keep the booking alive for receptionist review.
+        const expired = await Booking.findAll({
+          where: {
+            status: 'pending',
+            paymentProof: null,          // no screenshot uploaded yet
+            paymentStatus: 'unpaid',     // payment not started
+            createdAt: { [Op.lt]: fiveMinutesAgo },
+          },
+        });
+
+        if (expired.length === 0) return;
+
+        // Free each room back to available
+        for (const booking of expired) {
+          await Room.update(
+            { status: 'available' },
+            { where: { id: booking.roomId } }
+          );
+        }
+
+        // Delete the expired bookings
+        const ids = expired.map(b => b.id);
+        await Booking.destroy({ where: { id: { [Op.in]: ids } } });
+
+        console.log(`[Cleanup] Deleted ${expired.length} expired pending booking(s): IDs ${ids.join(', ')}`);
+
+        // Notify connected clients so the room grid updates live
+        io.emit('roomsUpdated');
+      } catch (err) {
+        console.warn('[Cleanup] Error during pending booking cleanup:', err.message);
+      }
+    };
+
+    // Run immediately on startup, then every 60 seconds
+    cleanup();
+    setInterval(cleanup, 60 * 1000);
+    console.log('✅ Pending booking auto-cleanup started (5 min expiry, checks every 60s)');
+  };
+
+  startPendingCleanup();
   
   const PORT = process.env.PORT || 5000;
   const server = http.createServer(app);

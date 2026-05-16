@@ -7,10 +7,9 @@ const uploadPayment = require('../middleware/uploadPayment');
 // Stripe checkout (existing)
 router.post('/create-checkout-session', paymentController.createCheckoutSession);
 
-// Upload payment proof screenshot (logged-in customer)
+// Upload payment proof screenshot (guests don't need to be logged in)
 router.post(
   '/:bookingId/upload-proof',
-  authenticateToken,
   uploadPayment.single('paymentProof'),
   paymentController.uploadPaymentProof
 );

@@ -10,7 +10,7 @@ async function seedDatabase() {
     const salt = await bcrypt.genSalt(10);
     const adminPassword = await bcrypt.hash('admin123', salt);
     const managerPassword = await bcrypt.hash('manager123', salt);
-    const receptionPassword = await bcrypt.hash('reception123', salt);
+    const receptionPassword = await bcrypt.hash('receptionist123', salt);
 
     // Create staff users
     const users = await Promise.all([
@@ -28,7 +28,7 @@ async function seedDatabase() {
       }),
       User.create({
         name: 'Receptionist User',
-        email: 'reception@hotel.com',
+        email: 'receptionist@hotel.com',
         password: receptionPassword,
         role: 'receptionist',
       }),
@@ -94,7 +94,7 @@ async function seedDatabase() {
     console.log('\nStaff login credentials:');
     console.log('  admin@hotel.com / admin123');
     console.log('  manager@hotel.com / manager123');
-    console.log('  reception@hotel.com / reception123');
+    console.log('  receptionist@hotel.com / receptionist123');
 
     process.exit(0);
   } catch (error) {

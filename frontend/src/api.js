@@ -6,14 +6,32 @@ const api = axios.create({
   baseURL: API_URL,
 });
 
-// Add auth token to requests
+// Add auth token to requests — always prefer staffToken (freshest login)
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+  const token = sessionStorage.getItem('staffToken') || localStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
+
+// On 401/403 clear stale tokens so user is forced to re-login
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      const msg = error.response?.data?.error || '';
+      // Only clear if it's a token issue, not a permissions issue
+      if (msg.includes('Invalid token') || msg.includes('Access token required')) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        sessionStorage.removeItem('staffToken');
+        sessionStorage.removeItem('staffUser');
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default api;
 export { API_URL };

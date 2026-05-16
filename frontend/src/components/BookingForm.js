@@ -2,7 +2,45 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import api from '../api';
 
-const RATES   = { USD: 0.0088, GBP: 0.0070, EUR: 0.0082, ETB: 1 };
+// Fallback images by room type keyword — real hotel photos from Unsplash
+const FALLBACK_IMAGES = {
+  standard:  'https://images.unsplash.com/photo-1631049307038-da0ec9d70304?w=700&q=80',
+  deluxe:    'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=700&q=80',
+  suite:     'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=700&q=80',
+  executive: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=700&q=80',
+  penthouse: 'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=700&q=80',
+  twin:      'https://images.unsplash.com/photo-1595576508898-0ad5c879a061?w=700&q=80',
+  family:    'https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=700&q=80',
+  default:   'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=700&q=80',
+};
+
+// Default amenities by room type keyword
+const DEFAULT_AMENITIES = {
+  standard:  ['Free WiFi', 'Air Conditioning', 'Flat-screen TV', 'Work Desk'],
+  deluxe:    ['Free WiFi', 'Air Conditioning', 'Smart TV', 'Mini-bar', 'City View'],
+  suite:     ['Free WiFi', 'Air Conditioning', 'Smart TV', 'Mini-bar', 'Jacuzzi', 'Private Balcony'],
+  executive: ['Free WiFi', 'Air Conditioning', 'Smart TV', 'Mini-bar', 'Lounge Access', 'Butler Service'],
+  penthouse: ['Free WiFi', 'Air Conditioning', 'Smart TV', 'Premium Mini-bar', 'Jacuzzi', 'Private Balcony', 'Butler Service'],
+  twin:      ['Free WiFi', 'Air Conditioning', 'Flat-screen TV', 'Work Desk', 'Safe Box'],
+  family:    ['Free WiFi', 'Air Conditioning', 'Flat-screen TV', 'Room Service', 'Safe Box'],
+  default:   ['Free WiFi', 'Air Conditioning', 'Flat-screen TV'],
+};
+
+function getFallbackImage(name = '') {
+  const n = name.toLowerCase();
+  for (const key of Object.keys(FALLBACK_IMAGES)) {
+    if (key !== 'default' && n.includes(key)) return FALLBACK_IMAGES[key];
+  }
+  return FALLBACK_IMAGES.default;
+}
+
+function getDefaultAmenities(name = '') {
+  const n = name.toLowerCase();
+  for (const key of Object.keys(DEFAULT_AMENITIES)) {
+    if (key !== 'default' && n.includes(key)) return DEFAULT_AMENITIES[key];
+  }
+  return DEFAULT_AMENITIES.default;
+}
 const SYMBOLS = { USD: '$', GBP: '£', EUR: '€', ETB: 'ETB ' };
 
 function convertPrice(etb, currency) {
@@ -32,7 +70,6 @@ const BookingForm = () => {
   const [guestInfo, setGuestInfo] = useState({ name: '', email: '', phone: '' });
   const [booking,   setBooking]   = useState(false);
   const [bookErr,   setBookErr]   = useState('');
-  const [success,   setSuccess]   = useState('');
 
   const today    = new Date().toISOString().split('T')[0];
   const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
@@ -81,8 +118,8 @@ const BookingForm = () => {
     setBooking(true);
     setBookErr('');
     try {
-      await api.post('/bookings/guest', {
-        roomId:  selected.id,
+      const res = await api.post('/bookings/guest', {
+        roomId:      selected.id,
         checkInDate: checkIn,
         checkOutDate: checkOut,
         totalPrice:  selected.totalPrice,
@@ -90,27 +127,15 @@ const BookingForm = () => {
         guestEmail:  guestInfo.email,
         guestPhone:  guestInfo.phone,
       });
-      setSuccess('Booking confirmed! Check your email for details.');
+      // Redirect to payment page with bookingId and amount
+      const bookingId = res.data?.booking?.id || res.data?.id;
+      navigate(`/payment?bookingId=${bookingId}&amount=${selected.totalPrice}`);
     } catch (err) {
       setBookErr(err.response?.data?.error || 'Booking failed. Please try again.');
     } finally {
       setBooking(false);
     }
   };
-
-  // ── Success screen ──
-  if (success) {
-    return (
-      <div className="booking-form">
-        <div className="booking-success">
-          <span className="success-icon">🎉</span>
-          <h2>Booking Received!</h2>
-          <p>{success}</p>
-          <button className="btn btn-primary" onClick={() => navigate('/')}>Back to Home</button>
-        </div>
-      </div>
-    );
-  }
 
   // ── Step 3: Guest details ──
   if (selected) {
@@ -176,7 +201,7 @@ const BookingForm = () => {
             />
           </div>
           <button type="submit" disabled={booking} className="btn btn-primary book-confirm-btn">
-            {booking ? 'Confirming...' : '✅ Confirm Booking'}
+            {booking ? 'Processing...' : '💳 Proceed to Payment'}
           </button>
         </form>
       </div>
@@ -242,35 +267,58 @@ const BookingForm = () => {
           </p>
 
           <div className="results-grid">
-            {results.available.map((rt) => (
-              <div key={rt.id} className="result-card">
-                {rt.image && (
+            {results.available.map((rt) => {
+              const imageUrl = rt.image
+                ? `http://localhost:5000${rt.image}`
+                : getFallbackImage(rt.name);
+
+              let amenityList = [];
+              if (rt.amenities) {
+                try {
+                  const parsed = typeof rt.amenities === 'string' ? JSON.parse(rt.amenities) : rt.amenities;
+                  amenityList = Array.isArray(parsed) ? parsed : [];
+                } catch { amenityList = []; }
+              }
+              // If no amenities on the room, use smart defaults based on room type name
+              if (amenityList.length === 0) {
+                amenityList = getDefaultAmenities(rt.name);
+              }
+
+              return (
+                <div key={rt.id} className="result-card">
                   <div className="result-image">
-                    <img src={`http://localhost:5000${rt.image}`} alt={rt.name} />
+                    <img src={imageUrl} alt={rt.name} />
+                    <div className="result-price-badge">
+                      ETB {rt.basePrice.toLocaleString()}<span>/night</span>
+                    </div>
                   </div>
-                )}
-                <div className="result-info">
-                  <h4>{rt.name}</h4>
-                  <p>{rt.description}</p>
-                  <p className="result-count">📍 Floor {rt.floor}</p>
-                  <div className="result-amenities">
-                    {rt.amenities && (() => {
-                      const list = typeof rt.amenities === 'string' ? JSON.parse(rt.amenities) : rt.amenities;
-                      return Array.isArray(list)
-                        ? list.slice(0, 4).map((a, i) => <span key={i} className="amenity-tag">{a}</span>)
-                        : null;
-                    })()}
+                  <div className="result-info">
+                    <h4>{rt.name}</h4>
+                    <p className="result-desc">{rt.description}</p>
+                    <p className="result-floor">📍 Floor {rt.floor}</p>
+                    {amenityList.length > 0 && (
+                      <div className="result-amenities">
+                        {amenityList.slice(0, 4).map((a, i) => (
+                          <span key={i} className="amenity-tag">{a}</span>
+                        ))}
+                        {amenityList.length > 4 && (
+                          <span className="amenity-tag">+{amenityList.length - 4} more</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <div className="result-footer">
+                    <div className="result-total">
+                      Total: <strong>ETB {rt.totalPrice.toLocaleString()}</strong>
+                      <span className="result-nights"> · {rt.nights} night{rt.nights > 1 ? 's' : ''}</span>
+                    </div>
+                    <button className="result-select-btn" onClick={() => setSelected(rt)}>
+                      Select Room
+                    </button>
                   </div>
                 </div>
-                <div className="result-price">
-                  <p className="price-per-night">ETB {rt.basePrice.toLocaleString()}<span>/night</span></p>
-                  <p className="price-total">Total: ETB {rt.totalPrice.toLocaleString()}</p>
-                  <button className="btn btn-primary" onClick={() => setSelected(rt)}>
-                    Select Room
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

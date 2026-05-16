@@ -9,8 +9,8 @@ router.get('/active', offerController.getActiveOffers);
 // Calculate discount
 router.post('/calculate-discount', offerController.calculateDiscount);
 
-// Get all offers (admin/manager)
-router.get('/', authenticateToken, authorizeRole(['admin', 'manager']), offerController.getAllOffers);
+// Get all offers (admin/manager/receptionist)
+router.get('/', authenticateToken, authorizeRole(['admin', 'manager', 'receptionist']), offerController.getAllOffers);
 
 // Create offer (admin only)
 router.post('/', authenticateToken, authorizeRole(['admin']), offerController.createOffer);

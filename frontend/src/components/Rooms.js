@@ -99,48 +99,50 @@ const Rooms = () => {
             <div key={room.id} className="room-card">
               <div className="room-image">
                 <img src={image} alt={`Room ${room.roomNumber}`} />
-                {/* Status badge */}
-                <span
-                  className="room-status-badge"
-                  style={{ background: statusInfo.bg, color: statusInfo.color }}
-                >
-                  {statusInfo.text}
-                </span>
-                {/* Price */}
+                {/* Price badge — top right */}
                 {price && (
-                  <div className="room-price">
-                    <span className="price">{formatPrice(price)}</span>
-                    <span className="per-night"> ETB/night</span>
+                  <div className="room-price-badge">
+                    {formatPrice(price)} ETB/night
                   </div>
+                )}
+                {/* Status badge — top left, only if not available */}
+                {room.status !== 'available' && (
+                  <span
+                    className="room-status-badge"
+                    style={{ background: statusInfo.bg, color: statusInfo.color }}
+                  >
+                    {statusInfo.text}
+                  </span>
                 )}
               </div>
 
               <div className="room-details">
-                <div className="room-title-row">
-                  <h3>Room {room.roomNumber}</h3>
-                  <span className="room-type-tag">{typeName}</span>
-                </div>
-                <p className="room-meta">Floor {room.floor}</p>
+                <h3 className="room-type-name">{typeName}</h3>
                 {room.roomType?.description && (
                   <p className="room-description">{room.roomType.description}</p>
                 )}
                 {amenities.length > 0 && (
                   <div className="room-amenities">
-                    {amenities.slice(0, 5).map((a, i) => (
+                    {amenities.slice(0, 3).map((a, i) => (
                       <span key={i} className="amenity-tag">{a}</span>
                     ))}
-                    {amenities.length > 5 && (
-                      <span className="amenity-tag">+{amenities.length - 5} more</span>
+                    {amenities.length > 3 && (
+                      <span className="amenity-tag">+{amenities.length - 3} more</span>
                     )}
                   </div>
                 )}
-                {room.status === 'available' ? (
-                  <Link to="/booking" className="book-room-btn">Book Now</Link>
-                ) : (
-                  <button className="book-room-btn disabled" disabled>
-                    {statusInfo.text}
-                  </button>
-                )}
+                <div className="room-footer">
+                  <span className="room-guests">
+                    Up to {room.roomType?.capacity || 2} guests
+                  </span>
+                  {room.status === 'available' ? (
+                    <Link to="/booking" className="book-room-btn">Book Now</Link>
+                  ) : (
+                    <button className="book-room-btn disabled" disabled>
+                      {statusInfo.text}
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           );

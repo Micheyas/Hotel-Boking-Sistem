@@ -78,10 +78,11 @@ const AdminPanel = () => {
       if (!['admin', 'manager', 'receptionist'].includes(user.role)) {
         setError('Access denied. Staff only.'); setLoginLoading(false); return;
       }
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
       sessionStorage.setItem('staffToken', token);
       sessionStorage.setItem('staffUser', JSON.stringify(user));
+      // Remove any stale localStorage token to avoid conflicts
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
       setIsLoggedIn(true); setUser(user);
     } catch (err) {
       setError(err.response?.data?.error || 'Login failed');
@@ -97,21 +98,26 @@ const AdminPanel = () => {
 
   const fetchAdminData = async () => {
     setLoading(true);
+    const token = sessionStorage.getItem('staffToken');
+    const authHeader = { headers: { Authorization: `Bearer ${token}` } };
     try {
       const [bookingsRes, offersRes] = await Promise.all([
-        api.get('/bookings'),
-        api.get('/offers'),
+        api.get('/bookings', authHeader),
+        api.get('/offers', authHeader),
       ]);
       setAllBookings(bookingsRes.data);
       setOffers(offersRes.data);
 
       const role = JSON.parse(sessionStorage.getItem('staffUser') || '{}').role;
       if (role !== 'receptionist') {
-        const [roomsRes, typesRes] = await Promise.all([api.get('/rooms'), api.get('/rooms/types')]);
+        const [roomsRes, typesRes] = await Promise.all([
+          api.get('/rooms', authHeader),
+          api.get('/rooms/types', authHeader),
+        ]);
         setRooms(roomsRes.data);
         setRoomTypes(typesRes.data);
       } else {
-        const roomsRes = await api.get('/rooms/available');
+        const roomsRes = await api.get('/rooms/available', authHeader);
         setRooms(roomsRes.data);
       }
     } catch (err) {
@@ -120,15 +126,20 @@ const AdminPanel = () => {
     } finally { setLoading(false); }
   };
 
-  const updateBookingStatus = async (bookingId, newStatus) => {
-    if (!newStatus) return;
-    try { await api.put(`/bookings/${bookingId}/status`, { status: newStatus }); fetchAdminData(); }
-    catch { setError('Failed to update booking status'); }
-  };
-
   const handleVerifyPayment = async (bookingId, action) => {
-    try { await api.put(`/payments/${bookingId}/verify-proof`, { action }); fetchAdminData(); }
-    catch { setError('Failed to verify payment'); }
+    try {
+      const token = sessionStorage.getItem('staffToken');
+      await api.put(
+        `/payments/${bookingId}/verify-proof`,
+        { action },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      fetchAdminData();
+    } catch (err) {
+      const msg = err.response?.data?.error || err.message || 'Failed to verify payment';
+      setError(`Payment verification failed: ${msg}`);
+      console.error('Verify payment error:', err.response?.status, err.response?.data);
+    }
   };
 
   const handleImagesChange = (files) => {
@@ -291,6 +302,12 @@ const AdminPanel = () => {
               🏨 Room Management
             </button>
           )}
+          <button className={`view-tab ${view === 'payments' ? 'active' : ''}`} onClick={() => setView('payments')}>
+            💳 Payment Verification
+            {allBookings.filter(b => b.paymentStatus === 'proof_submitted').length > 0 && (
+              <span className="tab-badge">{allBookings.filter(b => b.paymentStatus === 'proof_submitted').length}</span>
+            )}
+          </button>
           <button className={`view-tab ${view === 'offers' ? 'active' : ''}`} onClick={() => setView('offers')}>
             🎁 Offers
           </button>
@@ -331,12 +348,11 @@ const AdminPanel = () => {
                 <th>AMOUNT</th>
                 <th>STATUS</th>
                 <th>PAYMENT</th>
-                <th>ACTIONS</th>
               </tr>
             </thead>
             <tbody>
               {filteredBookings.length === 0 ? (
-                <tr><td colSpan="8" className="no-results">No bookings found matching your criteria.</td></tr>
+                <tr><td colSpan="7" className="no-results">No bookings found matching your criteria.</td></tr>
               ) : filteredBookings.map(b => (
                 <tr key={b.id}>
                   <td>#{b.id}</td>
@@ -366,23 +382,8 @@ const AdminPanel = () => {
                           {b.paymentStatus === 'verified' && '✅ Verified'}
                           {b.paymentStatus === 'unpaid' && '❌ Rejected'}
                         </span>
-                        {b.paymentStatus === 'proof_submitted' && (
-                          <div className="verify-btns">
-                            <button className="approve-btn" onClick={() => handleVerifyPayment(b.id, 'approve')}>✅</button>
-                            <button className="reject-btn"  onClick={() => handleVerifyPayment(b.id, 'reject')}>❌</button>
-                          </div>
-                        )}
                       </div>
                     ) : <span className="no-proof">—</span>}
-                  </td>
-                  <td>
-                    <select className="action-select" onChange={e => updateBookingStatus(b.id, e.target.value)} defaultValue="">
-                      <option value="" disabled>Change</option>
-                      <option value="confirmed">Confirm</option>
-                      <option value="checked_in">Check In</option>
-                      <option value="checked_out">Check Out</option>
-                      <option value="cancelled">Cancel</option>
-                    </select>
                   </td>
                 </tr>
               ))}
@@ -558,6 +559,87 @@ const AdminPanel = () => {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* ── Payment Verification ── */}
+      {view === 'payments' && (
+        <div className="admin-table-card">
+          <div className="payment-verify-header">
+            <h3>💳 Payment Verification</h3>
+            <p className="payment-verify-sub">Review and approve guest payment screenshots</p>
+          </div>
+
+          {/* Pending proofs first */}
+          {(() => {
+            const pending  = allBookings.filter(b => b.paymentStatus === 'proof_submitted');
+            const verified = allBookings.filter(b => b.paymentStatus === 'verified');
+            const rejected = allBookings.filter(b => b.paymentStatus === 'unpaid' && b.paymentProof === null && b.totalPrice > 0);
+            const noproof  = allBookings.filter(b => !b.paymentProof && b.paymentStatus !== 'verified');
+
+            return (
+              <>
+                {/* Pending */}
+                <div className="pv-section">
+                  <h4 className="pv-section-title pv-pending">
+                    ⏳ Awaiting Verification ({pending.length})
+                  </h4>
+                  {pending.length === 0 ? (
+                    <p className="pv-empty">No pending payment proofs.</p>
+                  ) : (
+                    <div className="pv-cards">
+                      {pending.map(b => (
+                        <div key={b.id} className="pv-card pv-card--pending">
+                          <div className="pv-card-top">
+                            <div className="pv-info">
+                              <span className="pv-booking-id">Booking #{b.id}</span>
+                              <span className="pv-guest">{b.User?.name || b.guestName || 'Guest'}</span>
+                              <span className="pv-email">{b.User?.email || b.guestEmail || ''}</span>
+                              <span className="pv-amount">ETB {Number(b.totalPrice).toLocaleString()}</span>
+                              <span className="pv-dates">
+                                {new Date(b.checkInDate).toLocaleDateString()} → {new Date(b.checkOutDate).toLocaleDateString()}
+                              </span>
+                            </div>
+                            <a href={`http://localhost:5000${b.paymentProof}`} target="_blank" rel="noopener noreferrer" className="pv-proof-link">
+                              <img src={`http://localhost:5000${b.paymentProof}`} alt="Payment proof" className="pv-proof-img" />
+                              <span className="pv-view-text">View full image</span>
+                            </a>
+                          </div>
+                          <div className="pv-actions">
+                            <button className="pv-approve-btn" onClick={() => handleVerifyPayment(b.id, 'approve')}>
+                              ✅ Approve Payment
+                            </button>
+                            <button className="pv-reject-btn" onClick={() => handleVerifyPayment(b.id, 'reject')}>
+                              ❌ Reject
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Verified */}
+                {verified.length > 0 && (
+                  <div className="pv-section">
+                    <h4 className="pv-section-title pv-verified">✅ Verified ({verified.length})</h4>
+                    <div className="pv-cards">
+                      {verified.map(b => (
+                        <div key={b.id} className="pv-card pv-card--verified">
+                          <div className="pv-info">
+                            <span className="pv-booking-id">Booking #{b.id}</span>
+                            <span className="pv-guest">{b.User?.name || b.guestName || 'Guest'}</span>
+                            <span className="pv-amount">ETB {Number(b.totalPrice).toLocaleString()}</span>
+                          </div>
+                          <span className="pv-badge pv-badge--verified">✅ Verified</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            );
+          })()}
         </div>
       )}
 

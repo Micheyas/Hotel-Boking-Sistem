@@ -51,6 +51,7 @@ exports.uploadPaymentProof = async (req, res) => {
     }
 
     // Only the booking owner (or guest by bookingId) can upload proof
+    // For guest bookings there is no userId, so we allow by bookingId alone
     if (booking.userId && req.user && booking.userId !== req.user.id) {
       return res.status(403).json({ error: 'Not authorized' });
     }

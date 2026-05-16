@@ -18,8 +18,8 @@ router.get('/my-bookings', authenticateToken, bookingController.getUserBookings)
 // Get all bookings (admin/manager/receptionist)
 router.get('/', authenticateToken, authorizeRole(['admin', 'manager', 'receptionist']), bookingController.getAllBookings);
 
-// Update booking status (confirm/check-in/check-out/cancel)
-router.put('/:bookingId/status', authenticateToken, authorizeRole(['admin', 'manager', 'receptionist']), bookingController.updateBookingStatus);
+// Update booking status — REMOVED (no longer exposed)
+// router.put('/:bookingId/status', ...)
 
 // Cancel booking
 router.put('/:bookingId/cancel', authenticateToken, bookingController.cancelBooking);
