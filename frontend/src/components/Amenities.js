@@ -1,5 +1,4 @@
 import React from "react";
-import { FooterBar, FAQAndLocation } from "./Footer";
 import { useI18n } from "../LanguageContext";
 
 const AMENITY_KEYS = [
@@ -106,9 +105,6 @@ const Amenities = () => {
           <p>{t("amenities.footerNote2")}</p>
         </div>
       </div>
-
-      <FAQAndLocation />
-      <FooterBar />
     </>
   );
 };

@@ -10,6 +10,7 @@ import Amenities from "./components/Amenities";
 import AvailabilitySearch from "./components/AvailabilitySearch";
 import RoomSlideshow from "./components/RoomSlideshow";
 import Services from "./components/Services";
+import { FAQAndLocation, FooterBar } from "./components/Footer";
 import {
   CurrencyProvider,
   useCurrency,
@@ -106,7 +107,6 @@ function AppInner() {
           <Route path="/services" element={<Services />} />
           <Route path="/amenities" element={<Amenities />} />
           <Route path="/admin" element={<AdminPanel />} />
-          <Route path="/analytics" element={<AnalyticsDashboard />} />
           <Route path="/payment" element={<PaymentForm />} />
           <Route
             path="/reviews/:roomId"
@@ -366,6 +366,9 @@ function Home() {
       </div>
 
       <Amenities />
+
+      <FAQAndLocation />
+      <FooterBar />
     </div>
   );
 }
