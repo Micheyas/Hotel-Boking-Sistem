@@ -19,6 +19,7 @@ export const CurrencyContext = createContext({
   setCurrency: () => {},
   rates: FALLBACK_RATES,
   ratesLoading: false,
+  isLiveRate: false,
 });
 
 export const CurrencyProvider = ({ children }) => {
@@ -27,6 +28,7 @@ export const CurrencyProvider = ({ children }) => {
   );
   const [rates, setRates]           = useState(FALLBACK_RATES);
   const [ratesLoading, setLoading]  = useState(true);
+  const [isLiveRate, setIsLiveRate] = useState(false);
 
   // Fetch live rates from backend on mount
   useEffect(() => {
@@ -35,6 +37,7 @@ export const CurrencyProvider = ({ children }) => {
       .then(data => {
         if (data?.rates) {
           setRates({ ETB: 1, ...data.rates });
+          if (data?.isLive === true) setIsLiveRate(true);
           console.log('[Currency] Live rates loaded:', data.rates);
         }
       })
@@ -50,7 +53,7 @@ export const CurrencyProvider = ({ children }) => {
   };
 
   return (
-    <CurrencyContext.Provider value={{ currency, setCurrency, rates, ratesLoading }}>
+    <CurrencyContext.Provider value={{ currency, setCurrency, rates, ratesLoading, isLiveRate }}>
       {children}
     </CurrencyContext.Provider>
   );

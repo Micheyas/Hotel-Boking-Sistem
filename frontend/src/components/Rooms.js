@@ -1,124 +1,157 @@
-import React, { useState, useEffect } from 'react';
-import api from '../api';
-import { Link } from 'react-router-dom';
-import AvailabilitySearch from './AvailabilitySearch';
-import RoomSlideshow from './RoomSlideshow';
-import { FAQSection, LocationSection, FooterBar, FAQAndLocation } from './Footer';
-import { useCurrency, convertPrice } from '../CurrencyContext';
-
-const STATUS_LABEL = {
-  available:   { text: 'Available',   color: '#2e7d32', bg: '#e8f5e9' },
-  occupied:    { text: 'Occupied',    color: '#b71c1c', bg: '#ffebee' },
-  maintenance: { text: 'Maintenance', color: '#e65100', bg: '#fff3e0' },
-};
+import React, { useState, useEffect, useCallback } from "react";
+import api from "../api";
+import { Link } from "react-router-dom";
+import AvailabilitySearch from "./AvailabilitySearch";
+import RoomSlideshow from "./RoomSlideshow";
+import { FAQAndLocation, FooterBar } from "./Footer";
+import { useCurrency, convertPrice } from "../CurrencyContext";
+import { useI18n } from "../LanguageContext";
 
 const Rooms = () => {
-  const [rooms, setRooms]     = useState([]);
+  const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState('');
-  const [filter, setFilter]   = useState('all');
+  const [error, setError] = useState("");
+  const [filter, setFilter] = useState("all");
   const { currency, rates } = useCurrency();
+  const { t } = useI18n();
 
-  useEffect(() => {
-    fetchRooms();
-  }, []);
-
-  const fetchRooms = async () => {
+  const fetchRooms = useCallback(async () => {
     try {
-      // Public endpoint — returns all rooms with their type info
-      const response = await api.get('/rooms/public');
+      const response = await api.get("/rooms/public");
       setRooms(response.data);
     } catch (err) {
-      setError('Failed to load rooms. Please try again.');
-      console.error('Error fetching rooms:', err);
+      setError(t("rooms.error"));
+      console.error("Error fetching rooms:", err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
 
-  const formatPrice = (price) =>
-    new Intl.NumberFormat('en-US').format(price);
+  useEffect(() => {
+    fetchRooms();
+  }, [fetchRooms]);
 
   const parseAmenities = (amenities) => {
     if (!amenities) return [];
     try {
-      const parsed = typeof amenities === 'string' ? JSON.parse(amenities) : amenities;
+      const parsed =
+        typeof amenities === "string" ? JSON.parse(amenities) : amenities;
       return Array.isArray(parsed) ? parsed : [];
     } catch {
-      return typeof amenities === 'string' ? amenities.split(',').map(a => a.trim()) : [];
+      return typeof amenities === "string"
+        ? amenities.split(",").map((a) => a.trim())
+        : [];
     }
   };
 
-  const filtered = filter === 'all' ? rooms : rooms.filter(r => r.status === filter);
+  const statusLabel = (status) => {
+    const key = `roomStatus.${status}`;
+    const translated = t(key);
+    return translated === key ? status : translated;
+  };
 
-  if (loading) return (
-    <div className="rooms-container">
-      <div className="loading">Loading rooms...</div>
-    </div>
-  );
+  const statusStyle = (status) => {
+    if (status === "available") return { color: "#2e7d32", bg: "#e8f5e9" };
+    if (status === "occupied") return { color: "#b71c1c", bg: "#ffebee" };
+    if (status === "maintenance") return { color: "#e65100", bg: "#fff3e0" };
+    return { color: "#2e7d32", bg: "#e8f5e9" };
+  };
 
-  if (error) return (
-    <div className="rooms-container">
-      <div className="error-message">{error}</div>
-    </div>
-  );
+  const FILTERS = [
+    { key: "all", label: () => `${t("rooms.filterAll")} (${rooms.length})` },
+    {
+      key: "available",
+      label: () =>
+        `${t("rooms.filterAvailable")} (${rooms.filter((r) => r.status === "available").length})`,
+    },
+    {
+      key: "occupied",
+      label: () =>
+        `${t("rooms.filterOccupied")} (${rooms.filter((r) => r.status === "occupied").length})`,
+    },
+    {
+      key: "maintenance",
+      label: () =>
+        `${t("rooms.filterMaintenance")} (${rooms.filter((r) => r.status === "maintenance").length})`,
+    },
+  ];
+
+  const filtered =
+    filter === "all" ? rooms : rooms.filter((r) => r.status === filter);
+
+  if (loading)
+    return (
+      <div className="rooms-container">
+        <div className="loading">{t("rooms.loading")}</div>
+      </div>
+    );
+
+  if (error)
+    return (
+      <div className="rooms-container">
+        <div className="error-message">{error}</div>
+      </div>
+    );
 
   return (
     <div className="rooms-container">
       <div className="rooms-header">
-        <h2>Our Rooms</h2>
-        <p>Browse all {rooms.length} rooms and check availability</p>
+        <h2>{t("rooms.title")}</h2>
+        <p>
+          {t("rooms.subtitle")} {rooms.length} {t("rooms.subtitleSuffix")}
+        </p>
       </div>
 
-      {/* Availability search */}
       <div className="rooms-search-bar">
         <AvailabilitySearch />
       </div>
 
-      {/* Filter tabs */}
       <div className="rooms-filter-tabs">
-        {['all', 'available', 'occupied', 'maintenance'].map(f => (
+        {FILTERS.map((f) => (
           <button
-            key={f}
-            className={`filter-tab ${filter === f ? 'active' : ''}`}
-            onClick={() => setFilter(f)}
+            key={f.key}
+            className={`filter-tab ${filter === f.key ? "active" : ""}`}
+            onClick={() => setFilter(f.key)}
           >
-            {f === 'all' ? `All (${rooms.length})` : `${f.charAt(0).toUpperCase() + f.slice(1)} (${rooms.filter(r => r.status === f).length})`}
+            {f.label()}
           </button>
         ))}
       </div>
 
-      {/* Rooms grid */}
       <div className="rooms-grid">
         {filtered.map((room) => {
-          const statusInfo = STATUS_LABEL[room.status] || STATUS_LABEL.available;
-          const amenities  = parseAmenities(room.amenities);
-          const price      = room.roomType?.basePrice;
-          const typeName   = room.roomType?.name || 'Room';
-          const image      = room.image
-            ? `http://localhost:5000${room.image}`
-            : 'https://images.unsplash.com/photo-1631049307038-da0ec9d70304?w=600&q=80';
+          const sInfo = statusStyle(room.status);
+          const amenities = parseAmenities(room.amenities);
+          const price = room.roomType?.basePrice;
+          const typeName = room.roomType?.name || t("featured.roomFallback");
 
           return (
             <div key={room.id} className="room-card">
               <div className="room-image">
                 <RoomSlideshow
-                  images={(() => { try { return JSON.parse(room.images || '[]'); } catch { return []; } })()}
+                  images={(() => {
+                    try {
+                      return JSON.parse(room.images || "[]");
+                    } catch {
+                      return [];
+                    }
+                  })()}
                   image={room.image}
                   roomIndex={room.id}
-                  alt={`Room ${room.roomNumber}`}
+                  alt={`${t("featured.roomLabel")} ${room.roomNumber}`}
                 />
                 {price && (
                   <div className="room-price-badge">
-                    {convertPrice(price, currency, rates)}/night
+                    {convertPrice(price, currency, rates)}
+                    {t("rooms.priceNight")}
                   </div>
                 )}
-                {room.status !== 'available' && (
+                {room.status !== "available" && (
                   <span
                     className="room-status-badge"
-                    style={{ background: statusInfo.bg, color: statusInfo.color }}
+                    style={{ background: sInfo.bg, color: sInfo.color }}
                   >
-                    {statusInfo.text}
+                    {statusLabel(room.status)}
                   </span>
                 )}
               </div>
@@ -126,27 +159,36 @@ const Rooms = () => {
               <div className="room-details">
                 <h3 className="room-type-name">{typeName}</h3>
                 {room.roomType?.description && (
-                  <p className="room-description">{room.roomType.description}</p>
+                  <p className="room-description">
+                    {room.roomType.description}
+                  </p>
                 )}
                 {amenities.length > 0 && (
                   <div className="room-amenities">
                     {amenities.slice(0, 3).map((a, i) => (
-                      <span key={i} className="amenity-tag">{a}</span>
+                      <span key={i} className="amenity-tag">
+                        {a}
+                      </span>
                     ))}
                     {amenities.length > 3 && (
-                      <span className="amenity-tag">+{amenities.length - 3} more</span>
+                      <span className="amenity-tag">
+                        +{amenities.length - 3} {t("common.more")}
+                      </span>
                     )}
                   </div>
                 )}
                 <div className="room-footer">
                   <span className="room-guests">
-                    Up to {room.roomType?.capacity || 2} guests
+                    {t("rooms.upToGuests")} {room.roomType?.capacity || 2}{" "}
+                    {t("rooms.guests")}
                   </span>
-                  {room.status === 'available' ? (
-                    <Link to="/booking" className="book-room-btn">Book Now</Link>
+                  {room.status === "available" ? (
+                    <Link to="/booking" className="book-room-btn">
+                      {t("nav.bookNow")}
+                    </Link>
                   ) : (
                     <button className="book-room-btn disabled" disabled>
-                      {statusInfo.text}
+                      {statusLabel(room.status)}
                     </button>
                   )}
                 </div>
@@ -158,7 +200,10 @@ const Rooms = () => {
 
       {filtered.length === 0 && (
         <div className="no-rooms">
-          <p>No {filter !== 'all' ? filter : ''} rooms found.</p>
+          <p>
+            {t("rooms.noRooms")} {filter !== "all" ? statusLabel(filter) : ""}{" "}
+            {t("rooms.noRoomsSuffix")}
+          </p>
         </div>
       )}
 

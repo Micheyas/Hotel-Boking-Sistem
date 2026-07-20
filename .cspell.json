@@ -1,0 +1,20 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "words": [
+    "topbar",
+    "mgmt",
+    "noproof",
+    "noopener",
+    "noreferrer",
+    "Micheyas",
+    "Sequelize",
+    "receptionist",
+    "receptionists",
+    "processedBy",
+    "processedAction",
+    "processedAt"
+  ],
+  "ignoreWords": [],
+  "import": []
+}

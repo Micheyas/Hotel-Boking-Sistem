@@ -5,6 +5,43 @@ const { Op } = require('sequelize');
 const { sendEmail } = require('../middleware/mailer');
 const socketService = require('../socket');
 
+const getLoyaltyTier = (count) => {
+  if (count >= 5) return { discountPercent: 15, discountLabel: 'VIP Guest' };
+  if (count >= 2) return { discountPercent: 10, discountLabel: 'Loyal Guest' };
+  if (count >= 1) return { discountPercent: 5, discountLabel: 'Welcome Back' };
+  return { discountPercent: 0, discountLabel: '' };
+};
+
+const findPreviousGuestBookings = async ({ email = '', name = '', phone = '' }) => {
+  const normalizedEmail = String(email || '').toLowerCase().trim();
+  const normalizedName = String(name || '').trim();
+  const normalizedPhone = String(phone || '').trim();
+
+  // Important rule:
+  // - If email is provided, use email ONLY.
+  // - If email is missing, fall back to name + phone.
+  // This avoids mixing identities when someone enters a different email
+  // with the same or similar name/phone.
+  if (normalizedEmail) {
+    return Booking.findAll({
+      where: {
+        guestEmail: normalizedEmail,
+        status: { [Op.notIn]: ['cancelled'] },
+      },
+    });
+  }
+
+  if (!(normalizedName && normalizedPhone)) return [];
+
+  return Booking.findAll({
+    where: {
+      guestPhone: normalizedPhone,
+      guestName: { [Op.iLike]: normalizedName },
+      status: { [Op.notIn]: ['cancelled'] },
+    },
+  });
+};
+
 // Create booking
 exports.createBooking = async (req, res) => {
   try {
@@ -62,7 +99,14 @@ exports.createBooking = async (req, res) => {
 // Create guest booking (no login required)
 exports.createGuestBooking = async (req, res) => {
   try {
-    const { roomId, checkInDate, checkOutDate, totalPrice, guestName, guestEmail, guestPhone } = req.body;
+    const { roomId, checkInDate, checkOutDate, totalPrice, guestName, guestEmail, guestPhone, loyaltyDiscountPercent } = req.body;
+    const normalizedEmail = String(guestEmail || '').toLowerCase().trim();
+    const normalizedName = String(guestName || '').trim();
+    const normalizedPhone = String(guestPhone || '').trim();
+
+    if (!normalizedName || !normalizedPhone) {
+      return res.status(400).json({ error: 'guestName and guestPhone are required' });
+    }
 
     // Verify room is available for the dates
     const overlapping = await Booking.findAll({
@@ -83,16 +127,34 @@ exports.createGuestBooking = async (req, res) => {
       return res.status(400).json({ error: 'Room is not available' });
     }
 
+    // --- Loyalty discount validation ---
+    // Repeat-customer lookup can use email when available, otherwise falls back to name + phone.
+    const basePrice = Number(totalPrice) || 0;
+    const previousBookings = await findPreviousGuestBookings({
+      email: normalizedEmail,
+      name: normalizedName,
+      phone: normalizedPhone,
+    });
+    const { discountPercent: serverDiscount } = getLoyaltyTier(previousBookings.length);
+
+    // Clamp client-supplied discount to the server-computed maximum
+    const clientDiscount = Math.max(0, Math.min(15, parseInt(loyaltyDiscountPercent, 10) || 0));
+    const validatedDiscount = Math.min(clientDiscount, serverDiscount);
+
+    const finalPrice = Math.round(basePrice * (1 - validatedDiscount / 100));
+    // --- End loyalty discount validation ---
+
     const booking = await Booking.create({
       roomId: availableRoom.id,
       checkInDate,
       checkOutDate,
-      totalPrice,
+      totalPrice: finalPrice,
       status: 'pending',
       bookingType: 'guest',
-      guestName,
-      guestEmail,
-      guestPhone,
+      guestName: normalizedName,
+      guestEmail: normalizedEmail,
+      guestPhone: normalizedPhone,
+      loyaltyDiscountPercent: validatedDiscount,
     });
 
     await availableRoom.update({ status: 'occupied' });
@@ -100,13 +162,22 @@ exports.createGuestBooking = async (req, res) => {
     const io = socketService.getIO();
     io.emit('roomStatusChanged', { roomId: availableRoom.id, status: availableRoom.status });
 
-    // Send confirmation email to guest
-    await sendEmail({
-      to: guestEmail,
-      subject: 'Booking Confirmation - The William Vale Hotel',
-      text: `Dear ${guestName},\n\nYour booking for room ${availableRoom.roomNumber} from ${checkInDate} to ${checkOutDate} has been received and is pending confirmation.\n\nTotal: ${totalPrice} ETB\n\nThank you for choosing The William Vale Hotel!`,
-      html: `<p>Dear <strong>${guestName}</strong>,</p><p>Your booking for room <strong>${availableRoom.roomNumber}</strong> from <strong>${checkInDate}</strong> to <strong>${checkOutDate}</strong> has been received and is pending confirmation.</p><p>Total: <strong>${totalPrice} ETB</strong></p><p>Thank you for choosing The William Vale Hotel!</p>`,
-    });
+    // Send confirmation email to guest (only if email was provided)
+    if (normalizedEmail) {
+      const discountNote = validatedDiscount > 0
+        ? `\n\nLoyalty Discount Applied: ${validatedDiscount}% — your price was reduced from ${basePrice} ETB to ${finalPrice} ETB.`
+        : '';
+      const discountNoteHtml = validatedDiscount > 0
+        ? `<p>🎉 <strong>Loyalty Discount Applied: ${validatedDiscount}%</strong> — your price was reduced from ${basePrice} ETB to <strong>${finalPrice} ETB</strong>.</p>`
+        : '';
+
+      await sendEmail({
+        to: normalizedEmail,
+        subject: 'Booking Confirmation - The William Vale Hotel',
+        text: `Dear ${guestName},\n\nYour booking for room ${availableRoom.roomNumber} from ${checkInDate} to ${checkOutDate} has been received and is pending confirmation.\n\nTotal: ${finalPrice} ETB${discountNote}\n\nThank you for choosing The William Vale Hotel!`,
+        html: `<p>Dear <strong>${guestName}</strong>,</p><p>Your booking for room <strong>${availableRoom.roomNumber}</strong> from <strong>${checkInDate}</strong> to <strong>${checkOutDate}</strong> has been received and is pending confirmation.</p>${discountNoteHtml}<p>Total: <strong>${finalPrice} ETB</strong></p><p>Thank you for choosing The William Vale Hotel!</p>`,
+      });
+    }
 
     res.status(201).json({ message: 'Booking created successfully', booking });
   } catch (error) {
@@ -137,10 +208,161 @@ exports.getAllBookings = async (req, res) => {
     const bookings = await Booking.findAll({
       include: [
         { model: Room, as: 'room' },
-        { model: User, as: 'user', required: false }
+        { model: User, as: 'user', required: false },
+        { model: User, as: 'processedByUser', foreignKey: 'processedBy', required: false }
       ],
     });
     res.json(bookings);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Get repeat customers (admin only) — customers with 2+ bookings
+exports.getRepeatCustomers = async (req, res) => {
+  try {
+    const { Op } = require('sequelize');
+
+    // Get all bookings and their guest info
+    const bookings = await Booking.findAll({
+      include: [
+        { model: User, as: 'user', required: false },
+        { model: Room, as: 'room' }
+      ],
+      order: [['checkInDate', 'DESC']]
+    });
+
+    // Group by guest email (or user ID if logged in)
+    const guestMap = {};
+    bookings.forEach(booking => {
+      const guestKey = booking.User?.email || booking.guestEmail;
+      if (!guestKey) return;
+
+      if (!guestMap[guestKey]) {
+        guestMap[guestKey] = {
+          guestEmail: booking.guestEmail || booking.User?.email,
+          guestName: booking.guestName || booking.User?.name,
+          guestPhone: booking.guestPhone,
+          userId: booking.userId,
+          totalBookings: 0,
+          bookingIds: [],
+          firstBookingDate: booking.createdAt,
+          lastBookingDate: booking.createdAt,
+          totalSpent: 0,
+        };
+      }
+
+      guestMap[guestKey].totalBookings += 1;
+      guestMap[guestKey].bookingIds.push(booking.id);
+      guestMap[guestKey].totalSpent += Number(booking.totalPrice || 0);
+      guestMap[guestKey].firstBookingDate = new Date(Math.min(
+        new Date(guestMap[guestKey].firstBookingDate),
+        new Date(booking.createdAt)
+      ));
+      guestMap[guestKey].lastBookingDate = new Date(Math.max(
+        new Date(guestMap[guestKey].lastBookingDate),
+        new Date(booking.createdAt)
+      ));
+    });
+
+    // Filter repeat customers (2+ bookings)
+    const repeatCustomers = Object.values(guestMap).filter(g => g.totalBookings >= 2);
+
+    res.json({
+      total: repeatCustomers.length,
+      repeatCustomers: repeatCustomers.sort((a, b) => b.totalBookings - a.totalBookings)
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// GET /bookings/history — paginated, filterable booking history for all staff roles
+exports.getBookingHistory = async (req, res) => {
+  try {
+    const {
+      search = '',
+      status = '',
+      bookingType = '',
+      paymentStatus = '',
+      dateFrom = '',
+      dateTo = '',
+      sortBy = 'createdAt',
+      sortDir = 'DESC',
+      page = '1',
+      limit = '25',
+    } = req.query;
+
+    const where = {};
+
+    // Status filter
+    if (status) where.status = status;
+
+    // Booking type filter
+    if (bookingType) where.bookingType = bookingType;
+
+    // Payment status filter
+    if (paymentStatus) where.paymentStatus = paymentStatus;
+
+    // Date range filter (based on check-in date)
+    if (dateFrom || dateTo) {
+      where.checkInDate = {};
+      if (dateFrom) where.checkInDate[Op.gte] = new Date(dateFrom);
+      if (dateTo)   where.checkInDate[Op.lte] = new Date(dateTo);
+    }
+
+    // Fetch all matching rows (search filter applied in-memory for simplicity across associations)
+    const allBookings = await Booking.findAll({
+      where,
+      include: [
+        { model: Room, as: 'room' },
+        { model: User, as: 'user', required: false },
+        { model: User, as: 'processedByUser', foreignKey: 'processedBy', required: false },
+      ],
+      order: [[sortBy, sortDir.toUpperCase() === 'ASC' ? 'ASC' : 'DESC']],
+    });
+
+    // In-memory search across guest name, email, booking ID, and room number
+    const q = search.trim().toLowerCase();
+    const filtered = q
+      ? allBookings.filter(b => {
+          const name  = (b.user?.name || b.guestName || '').toLowerCase();
+          const email = (b.user?.email || b.guestEmail || '').toLowerCase();
+          const id    = String(b.id);
+          const room  = (b.room?.roomNumber || '').toLowerCase();
+          const phone = (b.guestPhone || '').toLowerCase();
+          return name.includes(q) || email.includes(q) || id.includes(q) || room.includes(q) || phone.includes(q);
+        })
+      : allBookings;
+
+    // Pagination
+    const pageNum  = Math.max(1, parseInt(page, 10) || 1);
+    const pageSize = Math.min(100, Math.max(1, parseInt(limit, 10) || 25));
+    const total    = filtered.length;
+    const totalPages = Math.ceil(total / pageSize);
+    const paginated  = filtered.slice((pageNum - 1) * pageSize, pageNum * pageSize);
+
+    // Summary stats for current filtered set
+    const stats = {
+      total,
+      totalRevenue: filtered
+        .filter(b => b.status !== 'cancelled')
+        .reduce((s, b) => s + Number(b.totalPrice || 0), 0),
+      byStatus: {
+        pending:    filtered.filter(b => b.status === 'pending').length,
+        confirmed:  filtered.filter(b => b.status === 'confirmed').length,
+        checked_in: filtered.filter(b => b.status === 'checked_in').length,
+        checked_out:filtered.filter(b => b.status === 'checked_out').length,
+        cancelled:  filtered.filter(b => b.status === 'cancelled').length,
+      },
+      byType: {
+        online: filtered.filter(b => b.bookingType === 'online').length,
+        manual: filtered.filter(b => b.bookingType === 'manual').length,
+        guest:  filtered.filter(b => b.bookingType === 'guest').length,
+      },
+    };
+
+    res.json({ bookings: paginated, total, page: pageNum, totalPages, pageSize, stats });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -215,21 +437,127 @@ exports.createManualBooking = async (req, res) => {
   }
 };
 
-// Cancel booking
+// Cancel booking — marks as cancelled, NEVER deletes the record (preserves full history)
 exports.cancelBooking = async (req, res) => {
   try {
     const { bookingId } = req.params;
     const booking = await Booking.findByPk(bookingId);
     if (!booking) return res.status(404).json({ error: 'Booking not found' });
 
-    await booking.update({ status: 'cancelled' });
-    const room = await Room.findByPk(booking.roomId);
-    await room.update({ status: 'available' });
+    if (booking.status === 'cancelled') {
+      return res.status(400).json({ error: 'Booking is already cancelled' });
+    }
 
-    const io = socketService.getIO();
-    io.emit('roomStatusChanged', { roomId: room.id, status: room.status });
+    // Update status to cancelled — record is PRESERVED in history
+    await booking.update({
+      status: 'cancelled',
+      receptionNotes: (booking.receptionNotes ? booking.receptionNotes + ' | ' : '') +
+        `Cancelled by ${req.user ? `user #${req.user.id} (${req.user.role})` : 'guest'} on ${new Date().toISOString()}.`,
+    });
+
+    // Free the room back to available
+    const room = await Room.findByPk(booking.roomId);
+    if (room && room.status === 'occupied') {
+      await room.update({ status: 'available' });
+      const io = socketService.getIO();
+      io.emit('roomStatusChanged', { roomId: room.id, status: 'available' });
+    }
 
     res.json({ message: 'Booking cancelled', booking });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+// GET /api/bookings/check-repeat?name=xxx&phone=xxx&email=xxx  (public)
+// Returns loyalty discount tier for a returning guest based on previous bookings.
+// Email is optional; name + phone can also identify the guest.
+exports.checkRepeatCustomer = async (req, res) => {
+  try {
+    const { email = '', name = '', phone = '' } = req.query;
+    const normalizedEmail = String(email).toLowerCase().trim();
+    const normalizedName = String(name).trim();
+    const normalizedPhone = String(phone).trim();
+
+    if (!normalizedEmail && !(normalizedName && normalizedPhone)) {
+      return res.json({ isRepeat: false, bookingCount: 0, discountPercent: 0, discountLabel: '' });
+    }
+
+    const previousBookings = await findPreviousGuestBookings({
+      email: normalizedEmail,
+      name: normalizedName,
+      phone: normalizedPhone,
+    });
+
+    const count = previousBookings.length;
+    const { discountPercent, discountLabel } = getLoyaltyTier(count);
+
+    res.json({ isRepeat: count > 0, bookingCount: count, discountPercent, discountLabel });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Receptionist decision: approve or reject booking
+exports.bookingDecision = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const { action, notes } = req.body;
+    const receptionistId = req.user.id;
+
+    if (!action || !['approved', 'rejected'].includes(action)) {
+      return res.status(400).json({ error: 'action must be "approved" or "rejected"' });
+    }
+
+    const booking = await Booking.findByPk(bookingId, { include: ['room', 'user'] });
+    if (!booking) return res.status(404).json({ error: 'Booking not found' });
+
+    // Set new status based on action
+    const newStatus = action === 'approved' ? 'confirmed' : 'cancelled';
+
+    // If rejecting, mark room as available again if it was occupied
+    if (action === 'rejected' && booking.room?.status === 'occupied') {
+      await booking.room.update({ status: 'available' });
+      const io = socketService.getIO();
+      io.emit('roomStatusChanged', { roomId: booking.room.id, status: 'available' });
+    }
+
+    // Update booking with decision details
+    await booking.update({
+      status: newStatus,
+      processedBy: receptionistId,
+      processedAction: action,
+      processedAt: new Date(),
+      receptionNotes: notes || '',
+    });
+
+    // Send email to guest about the decision
+    if (booking.guestEmail) {
+      const subject = action === 'approved'
+        ? 'Booking Approved — The William Vale Hotel'
+        : 'Booking Rejected — The William Vale Hotel';
+
+      const text = action === 'approved'
+        ? `Dear ${booking.guestName},\n\nYour booking for room ${booking.room?.roomNumber} has been approved.\n\nThank you for choosing The William Vale Hotel!`
+        : `Dear ${booking.guestName},\n\nUnfortunately, your booking for room ${booking.room?.roomNumber} could not be confirmed at this time.\n\nPlease contact us for more information.\n\nThank you for considering The William Vale Hotel!`;
+
+      const html = action === 'approved'
+        ? `<p>Dear <strong>${booking.guestName}</strong>,</p><p>Your booking for room <strong>${booking.room?.roomNumber}</strong> has been <span style="color:green;font-weight:700">approved</span>.</p><p>Thank you for choosing <strong>The William Vale Hotel</strong>!</p>`
+        : `<p>Dear <strong>${booking.guestName}</strong>,</p><p>Unfortunately, your booking for room <strong>${booking.room?.roomNumber}</strong> could not be confirmed at this time.</p><p>Please contact us for more information.</p><p>Thank you for considering <strong>The William Vale Hotel</strong>!</p>`;
+
+      await sendEmail({ to: booking.guestEmail, subject, text, html });
+    }
+
+    // Emit socket event for live admin updates
+    const io = socketService.getIO();
+    io.emit('bookingProcessed', {
+      bookingId: booking.id,
+      action,
+      processedBy: receptionistId,
+      processedAt: booking.processedAt,
+    });
+
+    res.json({ message: `Booking ${action}`, booking });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

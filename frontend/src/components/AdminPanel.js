@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import api from '../api';
+import '../styles/AdminPanel.css';
+import { useCurrency, convertPrice } from '../CurrencyContext';
 
 const commonAmenities = [
   'Free WiFi', 'Air Conditioning', 'Flat-screen TV', 'Smart TV',
@@ -15,15 +17,53 @@ const AdminPanel = () => {
   const [offers, setOffers]           = useState([]);
   const [rooms, setRooms]             = useState([]);
   const [roomTypes, setRoomTypes]     = useState([]);
+  const [repeatCustomers, setRepeatCustomers] = useState([]);
   const [loading, setLoading]         = useState(false);
   const [error, setError]             = useState('');
 
-  // View: 'list' | 'room-management'
+  const { currency, rates } = useCurrency();
+
+  // View: 'list' | 'room-management' | 'repeat-customers' | 'booking-history'
   const [view, setView]               = useState('list');
 
   // Booking filters
   const [search, setSearch]           = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [receptionFilter, setReceptionFilter] = useState(''); // 'approved', 'rejected', 'pending'
+  const [repeatCustomerFilters, setRepeatCustomerFilters] = useState({ name: '', email: '', phone: '' });
+
+  // Booking history state
+  const [historyBookings, setHistoryBookings]   = useState([]);
+  const [historyStats, setHistoryStats]         = useState(null);
+  const [historyLoading, setHistoryLoading]     = useState(false);
+  const [historyPage, setHistoryPage]           = useState(1);
+  const [historyTotalPages, setHistoryTotalPages] = useState(1);
+  const [historyTotal, setHistoryTotal]         = useState(0);
+  const [historyFilters, setHistoryFilters]     = useState({
+    search: '', status: '', bookingType: '', paymentStatus: '',
+    dateFrom: '', dateTo: '', sortBy: 'createdAt', sortDir: 'DESC',
+  });
+  const [expandedHistoryRow, setExpandedHistoryRow] = useState(null);
+
+  // Services state
+  const [services, setServices]           = useState([]);
+  const [servicesLoading, setServicesLoading] = useState(false);
+  const [servicesCatFilter, setServicesCatFilter] = useState('All');
+  const [showServiceModal, setShowServiceModal]   = useState(false);
+  const [editingService, setEditingService]       = useState(null);
+  const BLANK_SERVICE = {
+    name: '', description: '', category: 'Food & Beverage', icon: '🍽️',
+    price: '', priceLabel: '', availableFrom: '', availableTo: '',
+    location: '', status: 'active', sortOrder: 0,
+  };
+  const [serviceForm, setServiceForm] = useState(BLANK_SERVICE);
+
+  // Decision modal
+  const [showDecisionModal, setShowDecisionModal] = useState(false);
+  const [selectedBookingForDecision, setSelectedBookingForDecision] = useState(null);
+  const [decisionAction, setDecisionAction] = useState(''); // 'approved' or 'rejected'
+  const [decisionNotes, setDecisionNotes] = useState('');
+  const [decidingLoading, setDecidingLoading] = useState(false);
 
   // Room form
   const [showRoomModal, setShowRoomModal] = useState(false);
@@ -109,6 +149,17 @@ const AdminPanel = () => {
       setOffers(offersRes.data);
 
       const role = JSON.parse(sessionStorage.getItem('staffUser') || '{}').role;
+
+      // Load repeat customers for admins and receptionists
+      if (role === 'admin' || role === 'receptionist') {
+        try {
+          const repeatRes = await api.get('/bookings/repeat-customers', authHeader);
+          setRepeatCustomers(repeatRes.data.repeatCustomers || []);
+        } catch (err) {
+          console.warn('Could not load repeat customers:', err.message);
+        }
+      }
+
       if (role !== 'receptionist') {
         const [roomsRes, typesRes] = await Promise.all([
           api.get('/rooms', authHeader),
@@ -142,6 +193,182 @@ const AdminPanel = () => {
     }
   };
 
+  const handleBookingDecision = async () => {
+    if (!decisionAction || !selectedBookingForDecision) return;
+    try {
+      setDecidingLoading(true);
+      const token = sessionStorage.getItem('staffToken');
+      await api.post(
+        `/bookings/${selectedBookingForDecision.id}/decision`,
+        { action: decisionAction, notes: decisionNotes },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setShowDecisionModal(false);
+      setDecisionAction('');
+      setDecisionNotes('');
+      setSelectedBookingForDecision(null);
+      setError('');
+      fetchAdminData();
+    } catch (err) {
+      const msg = err.response?.data?.error || err.message || 'Failed to submit decision';
+      setError(`Decision failed: ${msg}`);
+      console.error('Decision error:', err.response?.status, err.response?.data);
+    } finally {
+      setDecidingLoading(false);
+    }
+  };
+
+  // ── Booking History helpers ──
+  const fetchHistory = async (filters = historyFilters, page = historyPage) => {
+    setHistoryLoading(true);
+    const token = sessionStorage.getItem('staffToken');
+    try {
+      const params = new URLSearchParams({
+        ...filters,
+        page,
+        limit: 20,
+      });
+      const res = await api.get(`/bookings/history?${params}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setHistoryBookings(res.data.bookings || []);
+      setHistoryStats(res.data.stats || null);
+      setHistoryPage(res.data.page || 1);
+      setHistoryTotalPages(res.data.totalPages || 1);
+      setHistoryTotal(res.data.total || 0);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to load booking history');
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  const handleHistoryFilterChange = (key, value) => {
+    const updated = { ...historyFilters, [key]: value };
+    setHistoryFilters(updated);
+    setHistoryPage(1);
+    fetchHistory(updated, 1);
+  };
+
+  const handleHistorySort = (col) => {
+    const newDir = historyFilters.sortBy === col && historyFilters.sortDir === 'DESC' ? 'ASC' : 'DESC';
+    const updated = { ...historyFilters, sortBy: col, sortDir: newDir };
+    setHistoryFilters(updated);
+    setHistoryPage(1);
+    fetchHistory(updated, 1);
+  };
+
+  const handleHistoryPage = (p) => {
+    setHistoryPage(p);
+    fetchHistory(historyFilters, p);
+  };
+
+  const exportHistoryCSV = () => {
+    const headers = ['ID', 'Guest', 'Email', 'Phone', 'Room', 'Check-in', 'Check-out', 'Amount', 'Status', 'Payment', 'Type', 'Reception', 'Processed By', 'Processed At', 'Notes'];
+    const rows = historyBookings.map(b => [
+      b.id,
+      b.user?.name || b.guestName || 'Guest',
+      b.user?.email || b.guestEmail || '',
+      b.guestPhone || '',
+      b.room?.roomNumber || '',
+      new Date(b.checkInDate).toLocaleDateString(),
+      new Date(b.checkOutDate).toLocaleDateString(),
+      Number(b.totalPrice || 0).toFixed(2),
+      b.status,
+      b.paymentStatus,
+      b.bookingType,
+      b.processedAction || 'none',
+      b.processedByUser?.name || '',
+      b.processedAt ? new Date(b.processedAt).toLocaleString() : '',
+      (b.receptionNotes || '').replace(/,/g, ';'),
+    ]);
+    const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url;
+    a.download = `booking-history-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // ── Services helpers ──
+  const fetchServices = async () => {
+    setServicesLoading(true);
+    const token = sessionStorage.getItem('staffToken');
+    try {
+      const res = await api.get('/services/all', { headers: { Authorization: `Bearer ${token}` } });
+      setServices(res.data);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to load services');
+    } finally {
+      setServicesLoading(false);
+    }
+  };
+
+  const openCreateService = () => {
+    setEditingService(null);
+    setServiceForm(BLANK_SERVICE);
+    setShowServiceModal(true);
+  };
+
+  const openEditService = (svc) => {
+    setEditingService(svc);
+    setServiceForm({
+      name:          svc.name         || '',
+      description:   svc.description  || '',
+      category:      svc.category     || 'Other',
+      icon:          svc.icon         || '🏨',
+      price:         svc.price != null ? String(svc.price) : '',
+      priceLabel:    svc.priceLabel   || '',
+      availableFrom: svc.availableFrom || '',
+      availableTo:   svc.availableTo  || '',
+      location:      svc.location     || '',
+      status:        svc.status       || 'active',
+      sortOrder:     svc.sortOrder    != null ? String(svc.sortOrder) : '0',
+    });
+    setShowServiceModal(true);
+  };
+
+  const handleSaveService = async (e) => {
+    e.preventDefault();
+    const token = sessionStorage.getItem('staffToken');
+    const payload = { ...serviceForm, sortOrder: Number(serviceForm.sortOrder) || 0 };
+    try {
+      if (editingService) {
+        await api.put(`/services/${editingService.id}`, payload, { headers: { Authorization: `Bearer ${token}` } });
+      } else {
+        await api.post('/services', payload, { headers: { Authorization: `Bearer ${token}` } });
+      }
+      setShowServiceModal(false);
+      fetchServices();
+      setError('');
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to save service');
+    }
+  };
+
+  const handleDeleteService = async (id) => {
+    if (!window.confirm('Delete this service permanently?')) return;
+    const token = sessionStorage.getItem('staffToken');
+    try {
+      await api.delete(`/services/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      fetchServices();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to delete service');
+    }
+  };
+
+  const handleToggleServiceStatus = async (svc) => {
+    const token = sessionStorage.getItem('staffToken');
+    try {
+      await api.put(`/services/${svc.id}`, { status: svc.status === 'active' ? 'inactive' : 'active' }, { headers: { Authorization: `Bearer ${token}` } });
+      fetchServices();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to update service status');
+    }
+  };
+
   const handleImagesChange = (files) => {
     const fileArr = Array.from(files);
     const combined = [...newRoom.images, ...fileArr].slice(0, 3); // max 3
@@ -153,7 +380,8 @@ const AdminPanel = () => {
   const handleRemoveImage = (index) => {
     const updated = newRoom.images.filter((_, i) => i !== index);
     setNewRoom(prev => ({ ...prev, images: updated }));
-    setImagePreviews(updated.map(f => typeof f === 'string' ? f : URL.createObjectURL(f)));
+    const previews = updated.map(f => typeof f === 'string' ? f : URL.createObjectURL(f));
+    setImagePreviews(previews);
   };
 
   const handleAmenityToggle = (name) => {
@@ -176,11 +404,18 @@ const AdminPanel = () => {
       fd.append('roomSize', newRoom.roomSize);
       fd.append('bedType', newRoom.bedType);
       fd.append('description', newRoom.description);
-      // Send up to 3 images (only File objects, not existing URL strings)
-      newRoom.images
-        .filter(img => img instanceof File)
-        .slice(0, 3)
-        .forEach(img => fd.append('images', img));
+
+      // Send existing image paths (strings) and new images (File objects)
+      const existingImagePaths = newRoom.images.filter(img => typeof img === 'string');
+      const newImageFiles = newRoom.images.filter(img => img instanceof File).slice(0, 3 - existingImagePaths.length);
+
+      // Append existing image paths
+      if (existingImagePaths.length > 0) {
+        fd.append('existingImages', JSON.stringify(existingImagePaths));
+      }
+
+      // Append new image files
+      newImageFiles.forEach(img => fd.append('images', img));
 
       if (editingRoom) {
         await api.put(`/rooms/${editingRoom.id}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
@@ -202,11 +437,13 @@ const AdminPanel = () => {
     if (room.amenities) {
       try { amenitiesArr = JSON.parse(room.amenities); } catch { amenitiesArr = room.amenities.split(', ').filter(Boolean); }
     }
-    setNewRoom({ roomName: room.roomNumber, roomNumber: room.roomNumber, roomTypeId: room.roomTypeId, pricePerNight: room.roomType?.basePrice || '', floor: room.floor, maxGuests: room.maxGuests || 2, roomSize: room.roomSize || '', bedType: room.bedType || '', description: room.description || '', status: room.status, images: [], amenities: amenitiesArr });
-    // Load existing image URLs as strings for preview
+    // Load existing images
     let existingImgs = [];
     try { existingImgs = JSON.parse(room.images || '[]'); } catch { existingImgs = []; }
     if (existingImgs.length === 0 && room.image) existingImgs = [room.image];
+
+    setNewRoom({ roomName: room.roomNumber, roomNumber: room.roomNumber, roomTypeId: room.roomTypeId, pricePerNight: room.roomType?.basePrice || '', floor: room.floor, maxGuests: room.maxGuests || 2, roomSize: room.roomSize || '', bedType: room.bedType || '', description: room.description || '', status: room.status, images: existingImgs, amenities: amenitiesArr });
+    // Set image previews with full URLs
     setImagePreviews(existingImgs.map(p => p.startsWith('http') ? p : `http://localhost:5000${p}`));
     setShowRoomModal(true);
   };
@@ -230,7 +467,11 @@ const AdminPanel = () => {
       (b.guestEmail || b.User?.email || '').toLowerCase().includes(search.toLowerCase()) ||
       String(b.id).includes(search);
     const matchStatus = !statusFilter || b.status === statusFilter;
-    return matchSearch && matchStatus;
+    const matchReception = !receptionFilter ||
+      (receptionFilter === 'pending' && b.processedAction === 'none') ||
+      (receptionFilter === 'approved' && b.processedAction === 'approved') ||
+      (receptionFilter === 'rejected' && b.processedAction === 'rejected');
+    return matchSearch && matchStatus && matchReception;
   });
 
   const isAdminOrManager = user?.role === 'admin' || user?.role === 'manager';
@@ -300,7 +541,7 @@ const AdminPanel = () => {
           <span className="stat-icon">✅</span>
         </div>
         <div className="stat-card-new">
-          <div><p className="stat-label">Revenue</p><p className="stat-value revenue">ETB {revenue.toLocaleString()}</p></div>
+          <div><p className="stat-label">Revenue</p><p className="stat-value revenue">{convertPrice(revenue, currency, rates)}</p></div>
           <span className="stat-icon">💰</span>
         </div>
       </div>
@@ -317,6 +558,14 @@ const AdminPanel = () => {
               🏨 Room Management
             </button>
           )}
+          {(user?.role === 'admin' || user?.role === 'receptionist') && (
+            <button className={`view-tab ${view === 'repeat-customers' ? 'active' : ''}`} onClick={() => setView('repeat-customers')}>
+              🔄 Repeat Customers
+              {repeatCustomers.length > 0 && (
+                <span className="tab-badge">{repeatCustomers.length}</span>
+              )}
+            </button>
+          )}
           <button className={`view-tab ${view === 'payments' ? 'active' : ''}`} onClick={() => setView('payments')}>
             💳 Payment Verification
             {allBookings.filter(b => b.paymentStatus === 'proof_submitted').length > 0 && (
@@ -326,6 +575,23 @@ const AdminPanel = () => {
           <button className={`view-tab ${view === 'offers' ? 'active' : ''}`} onClick={() => setView('offers')}>
             🎁 Offers
           </button>
+          <button
+            className={`view-tab ${view === 'booking-history' ? 'active' : ''}`}
+            onClick={() => {
+              setView('booking-history');
+              fetchHistory(historyFilters, 1);
+            }}
+          >
+            📋 Booking History
+          </button>
+          {isAdminOrManager && (
+            <button
+              className={`view-tab ${view === 'services' ? 'active' : ''}`}
+              onClick={() => { setView('services'); fetchServices(); }}
+            >
+              🛎️ Services
+            </button>
+          )}
         </div>
         {view === 'list' && (
           <div className="admin-filters">
@@ -346,6 +612,14 @@ const AdminPanel = () => {
               <option value="checked_out">Checked Out</option>
               <option value="cancelled">Cancelled</option>
             </select>
+            {(isAdminOrManager || user?.role === 'receptionist') && (
+              <select value={receptionFilter} onChange={e => setReceptionFilter(e.target.value)} className="admin-status-filter">
+                <option value="">All Reception</option>
+                <option value="pending">Pending Decision</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            )}
           </div>
         )}
       </div>
@@ -363,11 +637,18 @@ const AdminPanel = () => {
                 <th>AMOUNT</th>
                 <th>STATUS</th>
                 <th>PAYMENT</th>
+                {(isAdminOrManager || user?.role === 'receptionist') && (
+                  <>
+                    <th>RECEPTION</th>
+                    {isAdminOrManager && <th>VERIFIED BY</th>}
+                    <th>ACTION</th>
+                  </>
+                )}
               </tr>
             </thead>
             <tbody>
               {filteredBookings.length === 0 ? (
-                <tr><td colSpan="7" className="no-results">No bookings found matching your criteria.</td></tr>
+                <tr><td colSpan={isAdminOrManager || user?.role === 'receptionist' ? "10" : "7"} className="no-results">No bookings found matching your criteria.</td></tr>
               ) : filteredBookings.map(b => (
                 <tr key={b.id}>
                   <td>#{b.id}</td>
@@ -384,7 +665,16 @@ const AdminPanel = () => {
                       {new Date(b.checkOutDate).toLocaleDateString()}
                     </span>
                   </td>
-                  <td>ETB {Number(b.totalPrice).toLocaleString()}</td>
+                  <td>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                      {convertPrice(Number(b.totalPrice), currency, rates)}
+                      {b.loyaltyDiscountPercent > 0 && (
+                        <span className="loyalty-discount-badge" title={`${b.loyaltyDiscountPercent}% loyalty discount was applied`}>
+                          🎁 -{b.loyaltyDiscountPercent}% loyalty
+                        </span>
+                      )}
+                    </div>
+                  </td>
                   <td><span className={`status-pill ${b.status}`}>{b.status}</span></td>
                   <td className="payment-proof-cell">
                     {b.paymentProof ? (
@@ -400,6 +690,66 @@ const AdminPanel = () => {
                       </div>
                     ) : <span className="no-proof">—</span>}
                   </td>
+                  {(isAdminOrManager || user?.role === 'receptionist') && (
+                    <>
+                      <td>
+                        <span className={`reception-badge ${b.processedAction || 'none'}`}>
+                          {b.processedAction === 'approved' && '✅ Approved'}
+                          {b.processedAction === 'rejected' && '❌ Rejected'}
+                          {b.processedAction === 'none' && '⏳ Pending'}
+                        </span>
+                      </td>
+                      {isAdminOrManager && (
+                        <td>
+                          {b.processedByUser ? (
+                            <div className="processed-by-cell">
+                              <span className="processed-by-name">{b.processedByUser.name}</span>
+                              <span className={`role-badge role-badge--${b.processedByUser.role}`}>
+                                {b.processedByUser.role}
+                              </span>
+                              {b.processedAt && (
+                                <div className="processed-at">
+                                  {new Date(b.processedAt).toLocaleDateString()}{' '}
+                                  {new Date(b.processedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                </div>
+                              )}
+                              {b.receptionNotes && (
+                                <div className="processed-notes" title={b.receptionNotes}>
+                                  📝 {b.receptionNotes.length > 28 ? b.receptionNotes.slice(0, 28) + '…' : b.receptionNotes}
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="processed-by-empty">—</span>
+                          )}
+                        </td>
+                      )}
+                      <td>
+                        {b.processedAction === 'none' && (
+                          <button
+                            className="decision-btn"
+                            onClick={() => {
+                              setSelectedBookingForDecision(b);
+                              setShowDecisionModal(true);
+                            }}
+                          >
+                            ⚖️ Decide
+                          </button>
+                        )}
+                        {b.processedAction !== 'none' && isAdminOrManager && (
+                          <button
+                            className="decision-btn decision-btn--override"
+                            onClick={() => {
+                              setSelectedBookingForDecision(b);
+                              setShowDecisionModal(true);
+                            }}
+                          >
+                            ✏️ Override
+                          </button>
+                        )}
+                      </td>
+                    </>
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -596,8 +946,6 @@ const AdminPanel = () => {
           {(() => {
             const pending  = allBookings.filter(b => b.paymentStatus === 'proof_submitted');
             const verified = allBookings.filter(b => b.paymentStatus === 'verified');
-            const rejected = allBookings.filter(b => b.paymentStatus === 'unpaid' && b.paymentProof === null && b.totalPrice > 0);
-            const noproof  = allBookings.filter(b => !b.paymentProof && b.paymentStatus !== 'verified');
 
             return (
               <>
@@ -617,7 +965,7 @@ const AdminPanel = () => {
                               <span className="pv-booking-id">Booking #{b.id}</span>
                               <span className="pv-guest">{b.User?.name || b.guestName || 'Guest'}</span>
                               <span className="pv-email">{b.User?.email || b.guestEmail || ''}</span>
-                              <span className="pv-amount">ETB {Number(b.totalPrice).toLocaleString()}</span>
+                              <span className="pv-amount">{convertPrice(Number(b.totalPrice), currency, rates)}</span>
                               <span className="pv-dates">
                                 {new Date(b.checkInDate).toLocaleDateString()} → {new Date(b.checkOutDate).toLocaleDateString()}
                               </span>
@@ -651,7 +999,7 @@ const AdminPanel = () => {
                           <div className="pv-info">
                             <span className="pv-booking-id">Booking #{b.id}</span>
                             <span className="pv-guest">{b.User?.name || b.guestName || 'Guest'}</span>
-                            <span className="pv-amount">ETB {Number(b.totalPrice).toLocaleString()}</span>
+                            <span className="pv-amount">{convertPrice(Number(b.totalPrice), currency, rates)}</span>
                           </div>
                           <span className="pv-badge pv-badge--verified">✅ Verified</span>
                         </div>
@@ -687,6 +1035,814 @@ const AdminPanel = () => {
           </table>
         </div>
       )}
+
+      {/* ── Repeat Customers (Admin & Receptionist) ── */}
+      {view === 'repeat-customers' && (user?.role === 'admin' || user?.role === 'receptionist') && (
+        <div className="admin-table-card">
+          <div style={{ marginBottom: '20px' }}>
+            <h3>🔄 Repeat Customers</h3>
+            <p style={{ color: '#666', fontSize: '14px' }}>Customers with 2 or more bookings</p>
+          </div>
+
+          {/* Filter Inputs */}
+          <div style={{ marginBottom: '20px', padding: '15px', background: '#f5f5f5', borderRadius: '8px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600', fontSize: '14px' }}>Filter by Name</label>
+              <input
+                type="text"
+                value={repeatCustomerFilters.name}
+                onChange={(e) => setRepeatCustomerFilters({...repeatCustomerFilters, name: e.target.value})}
+                placeholder="Enter customer name..."
+                style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', boxSizing: 'border-box' }}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600', fontSize: '14px' }}>Filter by Email</label>
+              <input
+                type="text"
+                value={repeatCustomerFilters.email}
+                onChange={(e) => setRepeatCustomerFilters({...repeatCustomerFilters, email: e.target.value})}
+                placeholder="Enter email address..."
+                style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', boxSizing: 'border-box' }}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600', fontSize: '14px' }}>Filter by Phone</label>
+              <input
+                type="text"
+                value={repeatCustomerFilters.phone}
+                onChange={(e) => setRepeatCustomerFilters({...repeatCustomerFilters, phone: e.target.value})}
+                placeholder="Enter phone number..."
+                style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', boxSizing: 'border-box' }}
+              />
+            </div>
+            <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+              <button
+                onClick={() => setRepeatCustomerFilters({ name: '', email: '', phone: '' })}
+                style={{ width: '100%', padding: '8px', background: '#ff6b6b', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: '600' }}
+              >
+                Clear Filters
+              </button>
+            </div>
+          </div>
+
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>CUSTOMER NAME</th>
+                <th>EMAIL</th>
+                <th>PHONE</th>
+                <th>TOTAL BOOKINGS</th>
+                <th>TOTAL SPENT</th>
+                <th>FIRST BOOKING</th>
+                <th>LAST BOOKING</th>
+              </tr>
+            </thead>
+            <tbody>
+              {repeatCustomers.filter(customer => {
+                const matchName = customer.guestName?.toLowerCase().includes(repeatCustomerFilters.name.toLowerCase());
+                const matchEmail = customer.guestEmail?.toLowerCase().includes(repeatCustomerFilters.email.toLowerCase());
+                const matchPhone = customer.guestPhone?.includes(repeatCustomerFilters.phone);
+                return matchName && matchEmail && matchPhone;
+              }).length === 0 ? (
+                <tr><td colSpan="7" className="no-results">No repeat customers found.</td></tr>
+              ) : repeatCustomers.filter(customer => {
+                const matchName = customer.guestName?.toLowerCase().includes(repeatCustomerFilters.name.toLowerCase());
+                const matchEmail = customer.guestEmail?.toLowerCase().includes(repeatCustomerFilters.email.toLowerCase());
+                const matchPhone = customer.guestPhone?.includes(repeatCustomerFilters.phone);
+                return matchName && matchEmail && matchPhone;
+              }).map((customer, idx) => (
+                <tr key={idx}>
+                  <td>
+                    <strong>{customer.guestName || 'Unknown'}</strong>
+                  </td>
+                  <td>{customer.guestEmail}</td>
+                  <td>{customer.guestPhone || 'N/A'}</td>
+                  <td>
+                    <span style={{ background: '#e8f5e9', padding: '6px 12px', borderRadius: '4px', fontWeight: '600', color: '#2e7d32' }}>
+                      {customer.totalBookings}
+                    </span>
+                  </td>
+                  <td><strong>{convertPrice(Number(customer.totalSpent), currency, rates)}</strong></td>
+                  <td>{new Date(customer.firstBookingDate).toLocaleDateString()}</td>
+                  <td>{new Date(customer.lastBookingDate).toLocaleDateString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Access Denied for non-admin/non-receptionist on Repeat Customers */}
+      {view === 'repeat-customers' && user?.role !== 'admin' && user?.role !== 'receptionist' && (
+        <div className="access-denied">
+          <span>🚫</span>
+          <h3>Access Denied</h3>
+          <p>Repeat Customers view is only available to <strong>Admin</strong> and <strong>Receptionist</strong>.</p>
+        </div>
+      )}
+
+      {/* Decision Modal */}
+      {showDecisionModal && selectedBookingForDecision && (
+        <div className="decision-modal-overlay" onClick={() => setShowDecisionModal(false)}>
+          <div className="decision-modal" onClick={e => e.stopPropagation()}>
+            <div className="decision-modal-header">
+              <h3>
+                {selectedBookingForDecision.processedAction !== 'none'
+                  ? `Override Decision — #${selectedBookingForDecision.id}`
+                  : `Booking Decision — #${selectedBookingForDecision.id}`}
+              </h3>
+              <button className="modal-close-btn" onClick={() => setShowDecisionModal(false)}>✕</button>
+            </div>
+            <div className="decision-modal-body">
+              <div className="booking-summary">
+                <p><strong>Guest:</strong> {selectedBookingForDecision.guestName || selectedBookingForDecision.User?.name}</p>
+                <p><strong>Room:</strong> {selectedBookingForDecision.room?.roomNumber}</p>
+                <p><strong>Dates:</strong> {new Date(selectedBookingForDecision.checkInDate).toLocaleDateString()} → {new Date(selectedBookingForDecision.checkOutDate).toLocaleDateString()}</p>
+                <p><strong>Amount:</strong> {convertPrice(Number(selectedBookingForDecision.totalPrice), currency, rates)}</p>
+              </div>
+              {selectedBookingForDecision.processedAction !== 'none' && selectedBookingForDecision.processedByUser && (
+                <div className="override-notice">
+                  <span className="override-icon">⚠️</span>
+                  <div>
+                    <strong>Previously {selectedBookingForDecision.processedAction} by </strong>
+                    <span className={`role-badge role-badge--${selectedBookingForDecision.processedByUser.role}`}>
+                      {selectedBookingForDecision.processedByUser.role}
+                    </span>
+                    {' '}<strong>{selectedBookingForDecision.processedByUser.name}</strong>
+                    {selectedBookingForDecision.processedAt && (
+                      <span> on {new Date(selectedBookingForDecision.processedAt).toLocaleDateString()}</span>
+                    )}
+                    {selectedBookingForDecision.receptionNotes && (
+                      <div className="override-prev-notes">Notes: "{selectedBookingForDecision.receptionNotes}"</div>
+                    )}
+                  </div>
+                </div>
+              )}
+              <div className="decision-actions">
+                <label>Decision:</label>
+                <div className="decision-buttons">
+                  <button
+                    className={`decision-btn-approved ${decisionAction === 'approved' ? 'active' : ''}`}
+                    onClick={() => setDecisionAction('approved')}
+                  >
+                    ✅ Approve
+                  </button>
+                  <button
+                    className={`decision-btn-rejected ${decisionAction === 'rejected' ? 'active' : ''}`}
+                    onClick={() => setDecisionAction('rejected')}
+                  >
+                    ❌ Reject
+                  </button>
+                </div>
+              </div>
+              <div className="decision-notes-field">
+                <label>Notes (Optional):</label>
+                <textarea
+                  value={decisionNotes}
+                  onChange={e => setDecisionNotes(e.target.value)}
+                  placeholder="Add any additional notes..."
+                  rows="3"
+                />
+              </div>
+            </div>
+            <div className="decision-modal-footer">
+              <button className="cancel-btn" onClick={() => setShowDecisionModal(false)}>Cancel</button>
+              <button
+                className="submit-btn"
+                onClick={handleBookingDecision}
+                disabled={!decisionAction || decidingLoading}
+              >
+                {decidingLoading ? 'Submitting...' : 'Submit Decision'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Booking History (all staff roles) ── */}
+      {view === 'booking-history' && (
+        <div className="bh-container">
+
+          {/* Header */}
+          <div className="bh-header">
+            <div>
+              <h3 className="bh-title">📋 Booking History</h3>
+              <p className="bh-subtitle">Complete record of all bookings — searchable, filterable, exportable</p>
+            </div>
+            <button className="bh-export-btn" onClick={exportHistoryCSV} disabled={historyBookings.length === 0}>
+              ⬇ Export CSV
+            </button>
+          </div>
+
+          {/* Stats strip */}
+          {historyStats && (
+            <div className="bh-stats-strip">
+              <div className="bh-stat">
+                <span className="bh-stat-num">{historyStats.total}</span>
+                <span className="bh-stat-label">Total</span>
+              </div>
+              <div className="bh-stat">
+                <span className="bh-stat-num bh-stat--pending">{historyStats.byStatus.pending}</span>
+                <span className="bh-stat-label">Pending</span>
+              </div>
+              <div className="bh-stat">
+                <span className="bh-stat-num bh-stat--confirmed">{historyStats.byStatus.confirmed}</span>
+                <span className="bh-stat-label">Confirmed</span>
+              </div>
+              <div className="bh-stat">
+                <span className="bh-stat-num bh-stat--checkedin">{historyStats.byStatus.checked_in}</span>
+                <span className="bh-stat-label">Checked In</span>
+              </div>
+              <div className="bh-stat">
+                <span className="bh-stat-num bh-stat--checkedout">{historyStats.byStatus.checked_out}</span>
+                <span className="bh-stat-label">Checked Out</span>
+              </div>
+              <div className="bh-stat">
+                <span className="bh-stat-num bh-stat--cancelled">{historyStats.byStatus.cancelled}</span>
+                <span className="bh-stat-label">Cancelled</span>
+              </div>
+              <div className="bh-stat bh-stat--revenue">
+                <span className="bh-stat-num">{convertPrice(historyStats.totalRevenue, currency, rates)}</span>
+                <span className="bh-stat-label">Revenue</span>
+              </div>
+              <div className="bh-stat">
+                <span className="bh-stat-num">{historyStats.byType.online}</span>
+                <span className="bh-stat-label">Online</span>
+              </div>
+              <div className="bh-stat">
+                <span className="bh-stat-num">{historyStats.byType.manual}</span>
+                <span className="bh-stat-label">Manual</span>
+              </div>
+              <div className="bh-stat">
+                <span className="bh-stat-num">{historyStats.byType.guest}</span>
+                <span className="bh-stat-label">Guest</span>
+              </div>
+            </div>
+          )}
+
+          {/* Filter bar */}
+          <div className="bh-filters">
+            <div className="bh-search-box">
+              <span>🔍</span>
+              <input
+                type="text"
+                placeholder="Search name, email, phone, room, ID..."
+                value={historyFilters.search}
+                onChange={e => handleHistoryFilterChange('search', e.target.value)}
+              />
+              {historyFilters.search && (
+                <button className="bh-clear-search" onClick={() => handleHistoryFilterChange('search', '')}>✕</button>
+              )}
+            </div>
+
+            <select
+              value={historyFilters.status}
+              onChange={e => handleHistoryFilterChange('status', e.target.value)}
+              className="bh-select"
+            >
+              <option value="">All Status</option>
+              <option value="pending">Pending</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="checked_in">Checked In</option>
+              <option value="checked_out">Checked Out</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+
+            <select
+              value={historyFilters.bookingType}
+              onChange={e => handleHistoryFilterChange('bookingType', e.target.value)}
+              className="bh-select"
+            >
+              <option value="">All Types</option>
+              <option value="online">Online</option>
+              <option value="manual">Manual</option>
+              <option value="guest">Guest</option>
+            </select>
+
+            <select
+              value={historyFilters.paymentStatus}
+              onChange={e => handleHistoryFilterChange('paymentStatus', e.target.value)}
+              className="bh-select"
+            >
+              <option value="">All Payments</option>
+              <option value="unpaid">Unpaid</option>
+              <option value="proof_submitted">Proof Submitted</option>
+              <option value="verified">Verified</option>
+            </select>
+
+            <div className="bh-date-range">
+              <label>From</label>
+              <input
+                type="date"
+                value={historyFilters.dateFrom}
+                onChange={e => handleHistoryFilterChange('dateFrom', e.target.value)}
+                className="bh-date-input"
+              />
+              <label>To</label>
+              <input
+                type="date"
+                value={historyFilters.dateTo}
+                onChange={e => handleHistoryFilterChange('dateTo', e.target.value)}
+                className="bh-date-input"
+              />
+            </div>
+
+            <button
+              className="bh-reset-btn"
+              onClick={() => {
+                const reset = { search: '', status: '', bookingType: '', paymentStatus: '', dateFrom: '', dateTo: '', sortBy: 'createdAt', sortDir: 'DESC' };
+                setHistoryFilters(reset);
+                setHistoryPage(1);
+                fetchHistory(reset, 1);
+              }}
+            >
+              ↺ Reset
+            </button>
+          </div>
+
+          {/* Results count */}
+          <div className="bh-results-meta">
+            {historyLoading ? (
+              <span className="bh-loading-text">Loading...</span>
+            ) : (
+              <span>
+                Showing <strong>{historyBookings.length}</strong> of <strong>{historyTotal}</strong> bookings
+                {' '}· Page <strong>{historyPage}</strong> of <strong>{historyTotalPages}</strong>
+              </span>
+            )}
+          </div>
+
+          {/* Table */}
+          <div className="admin-table-card bh-table-wrap">
+            {historyLoading ? (
+              <div className="bh-table-loading">
+                <div className="bh-spinner" />
+                <p>Loading booking history...</p>
+              </div>
+            ) : historyBookings.length === 0 ? (
+              <div className="bh-empty">
+                <span className="bh-empty-icon">📭</span>
+                <p>No bookings found for the selected filters.</p>
+              </div>
+            ) : (
+              <table className="admin-table bh-table">
+                <thead>
+                  <tr>
+                    <th
+                      className="bh-sortable"
+                      onClick={() => handleHistorySort('id')}
+                    >
+                      ID {historyFilters.sortBy === 'id' ? (historyFilters.sortDir === 'DESC' ? '▼' : '▲') : '↕'}
+                    </th>
+                    <th>GUEST</th>
+                    <th>ROOM</th>
+                    <th
+                      className="bh-sortable"
+                      onClick={() => handleHistorySort('checkInDate')}
+                    >
+                      CHECK-IN {historyFilters.sortBy === 'checkInDate' ? (historyFilters.sortDir === 'DESC' ? '▼' : '▲') : '↕'}
+                    </th>
+                    <th
+                      className="bh-sortable"
+                      onClick={() => handleHistorySort('checkOutDate')}
+                    >
+                      CHECK-OUT {historyFilters.sortBy === 'checkOutDate' ? (historyFilters.sortDir === 'DESC' ? '▼' : '▲') : '↕'}
+                    </th>
+                    <th
+                      className="bh-sortable"
+                      onClick={() => handleHistorySort('totalPrice')}
+                    >
+                      AMOUNT {historyFilters.sortBy === 'totalPrice' ? (historyFilters.sortDir === 'DESC' ? '▼' : '▲') : '↕'}
+                    </th>
+                    <th>STATUS</th>
+                    <th>PAYMENT</th>
+                    <th>TYPE</th>
+                    <th>RECEPTION</th>
+                    {isAdminOrManager && <th>PROCESSED BY</th>}
+                    <th
+                      className="bh-sortable"
+                      onClick={() => handleHistorySort('createdAt')}
+                    >
+                      BOOKED ON {historyFilters.sortBy === 'createdAt' ? (historyFilters.sortDir === 'DESC' ? '▼' : '▲') : '↕'}
+                    </th>
+                    <th>DETAILS</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {historyBookings.map(b => (
+                    <React.Fragment key={b.id}>
+                      <tr className={expandedHistoryRow === b.id ? 'bh-row-expanded' : ''}>
+                        <td className="bh-id-cell">#{b.id}</td>
+                        <td>
+                          <div className="guest-cell">
+                            <span className="guest-name">{b.user?.name || b.guestName || 'Guest'}</span>
+                            <span className="guest-email">{b.user?.email || b.guestEmail || ''}</span>
+                          </div>
+                        </td>
+                        <td>{b.room?.roomNumber ? `Room ${b.room.roomNumber}` : '—'}</td>
+                        <td>{new Date(b.checkInDate).toLocaleDateString()}</td>
+                        <td>{new Date(b.checkOutDate).toLocaleDateString()}</td>
+                        <td>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                            {convertPrice(Number(b.totalPrice), currency, rates)}
+                            {b.loyaltyDiscountPercent > 0 && (
+                              <span className="loyalty-discount-badge">🎁 -{b.loyaltyDiscountPercent}%</span>
+                            )}
+                          </div>
+                        </td>
+                        <td><span className={`status-pill ${b.status}`}>{b.status}</span></td>
+                        <td>
+                          <span className={`payment-badge ${b.paymentStatus}`}>
+                            {b.paymentStatus === 'proof_submitted' && '⏳ Pending'}
+                            {b.paymentStatus === 'verified'        && '✅ Verified'}
+                            {b.paymentStatus === 'unpaid'          && '❌ Unpaid'}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={`bh-type-badge bh-type--${b.bookingType}`}>
+                            {b.bookingType === 'online' && '🌐 Online'}
+                            {b.bookingType === 'manual' && '🖊 Manual'}
+                            {b.bookingType === 'guest'  && '🚶 Guest'}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={`reception-badge ${b.processedAction || 'none'}`}>
+                            {b.processedAction === 'approved' && '✅ Approved'}
+                            {b.processedAction === 'rejected' && '❌ Rejected'}
+                            {b.processedAction === 'none'     && '⏳ Pending'}
+                          </span>
+                        </td>
+                        {isAdminOrManager && (
+                          <td>
+                            {b.processedByUser ? (
+                              <div className="processed-by-cell">
+                                <span className="processed-by-name">{b.processedByUser.name}</span>
+                                <span className={`role-badge role-badge--${b.processedByUser.role}`}>
+                                  {b.processedByUser.role}
+                                </span>
+                              </div>
+                            ) : <span className="processed-by-empty">—</span>}
+                          </td>
+                        )}
+                        <td className="bh-created-cell">
+                          {new Date(b.createdAt).toLocaleDateString()}
+                        </td>
+                        <td>
+                          <button
+                            className="bh-expand-btn"
+                            onClick={() => setExpandedHistoryRow(expandedHistoryRow === b.id ? null : b.id)}
+                            title="Toggle details"
+                          >
+                            {expandedHistoryRow === b.id ? '▲' : '▼'}
+                          </button>
+                        </td>
+                      </tr>
+
+                      {/* Expanded detail row */}
+                      {expandedHistoryRow === b.id && (
+                        <tr className="bh-detail-row">
+                          <td colSpan={isAdminOrManager ? 13 : 12}>
+                            <div className="bh-detail-grid">
+                              <div className="bh-detail-block">
+                                <span className="bh-detail-label">Phone</span>
+                                <span>{b.guestPhone || '—'}</span>
+                              </div>
+                              <div className="bh-detail-block">
+                                <span className="bh-detail-label">Booking ID</span>
+                                <span>#{b.id}</span>
+                              </div>
+                              <div className="bh-detail-block">
+                                <span className="bh-detail-label">Nights</span>
+                                <span>
+                                  {Math.ceil((new Date(b.checkOutDate) - new Date(b.checkInDate)) / (1000 * 60 * 60 * 24))} night(s)
+                                </span>
+                              </div>
+                              <div className="bh-detail-block">
+                                <span className="bh-detail-label">Booked On</span>
+                                <span>{new Date(b.createdAt).toLocaleString()}</span>
+                              </div>
+                              {b.processedAt && (
+                                <div className="bh-detail-block">
+                                  <span className="bh-detail-label">Processed At</span>
+                                  <span>{new Date(b.processedAt).toLocaleString()}</span>
+                                </div>
+                              )}
+                              {b.receptionNotes && (
+                                <div className="bh-detail-block bh-detail-block--wide">
+                                  <span className="bh-detail-label">Reception Notes</span>
+                                  <span>{b.receptionNotes}</span>
+                                </div>
+                              )}
+                              {b.paymentProof && (
+                                <div className="bh-detail-block">
+                                  <span className="bh-detail-label">Payment Proof</span>
+                                  <a href={`http://localhost:5000${b.paymentProof}`} target="_blank" rel="noopener noreferrer">
+                                    <img src={`http://localhost:5000${b.paymentProof}`} alt="proof" className="proof-thumb" />
+                                  </a>
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+
+          {/* Pagination */}
+          {historyTotalPages > 1 && (
+            <div className="bh-pagination">
+              <button
+                className="bh-page-btn"
+                onClick={() => handleHistoryPage(1)}
+                disabled={historyPage === 1}
+              >«</button>
+              <button
+                className="bh-page-btn"
+                onClick={() => handleHistoryPage(historyPage - 1)}
+                disabled={historyPage === 1}
+              >‹</button>
+
+              {Array.from({ length: Math.min(7, historyTotalPages) }, (_, i) => {
+                // Show pages centered around current page
+                let start = Math.max(1, historyPage - 3);
+                const end   = Math.min(historyTotalPages, start + 6);
+                start = Math.max(1, end - 6);
+                return start + i;
+              }).filter(p => p <= historyTotalPages).map(p => (
+                <button
+                  key={p}
+                  className={`bh-page-btn ${p === historyPage ? 'bh-page-btn--active' : ''}`}
+                  onClick={() => handleHistoryPage(p)}
+                >
+                  {p}
+                </button>
+              ))}
+
+              <button
+                className="bh-page-btn"
+                onClick={() => handleHistoryPage(historyPage + 1)}
+                disabled={historyPage === historyTotalPages}
+              >›</button>
+              <button
+                className="bh-page-btn"
+                onClick={() => handleHistoryPage(historyTotalPages)}
+                disabled={historyPage === historyTotalPages}
+              >»</button>
+            </div>
+          )}
+
+        </div>
+      )}
+
+      {/* ── Services Management (Admin & Manager only) ── */}
+      {view === 'services' && isAdminOrManager && (() => {
+        const SERVICE_CATEGORIES = ['All', 'Food & Beverage', 'Wellness & Spa', 'Fitness', 'Transport', 'Facilities', 'Recreation', 'Other'];
+        const displayedServices = servicesCatFilter === 'All'
+          ? services
+          : services.filter(s => s.category === servicesCatFilter);
+
+        return (
+          <div className="sm-container">
+
+            {/* Header */}
+            <div className="sm-header">
+              <div>
+                <h3 className="sm-title">🛎️ Hotel Services Management</h3>
+                <p className="sm-subtitle">Manage the services menu shown to guests on the public Services page.</p>
+              </div>
+              <button className="sm-add-btn" onClick={openCreateService}>+ Add Service</button>
+            </div>
+
+            {/* Category filter */}
+            <div className="sm-cat-strip">
+              {SERVICE_CATEGORIES.map(cat => (
+                <button
+                  key={cat}
+                  className={`sm-cat-btn ${servicesCatFilter === cat ? 'sm-cat-btn--active' : ''}`}
+                  onClick={() => setServicesCatFilter(cat)}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+
+            {/* Table */}
+            <div className="admin-table-card sm-table-wrap">
+              {servicesLoading ? (
+                <div style={{ padding: '40px', textAlign: 'center', color: '#888' }}>Loading services...</div>
+              ) : displayedServices.length === 0 ? (
+                <div style={{ padding: '40px', textAlign: 'center', color: '#aaa' }}>
+                  No services found. Click "+ Add Service" to create one.
+                </div>
+              ) : (
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>ICON</th>
+                      <th>NAME</th>
+                      <th>CATEGORY</th>
+                      <th>PRICE</th>
+                      <th>HOURS</th>
+                      <th>LOCATION</th>
+                      <th>STATUS</th>
+                      <th>ACTIONS</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {displayedServices.map(svc => (
+                      <tr key={svc.id}>
+                        <td style={{ fontSize: '22px', textAlign: 'center' }}>{svc.icon || '🏨'}</td>
+                        <td>
+                          <div style={{ fontWeight: 600, color: '#1a1a2e' }}>{svc.name}</div>
+                          {svc.description && (
+                            <div style={{ fontSize: '11px', color: '#999', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {svc.description}
+                            </div>
+                          )}
+                        </td>
+                        <td>{svc.category}</td>
+                        <td>
+                          {svc.priceLabel
+                            ? svc.priceLabel
+                            : svc.price != null
+                              ? `${convertPrice(Number(svc.price), currency, rates)}`
+                              : <span style={{ color: '#2e7d32', fontWeight: 600 }}>Free</span>
+                          }
+                        </td>
+                        <td style={{ whiteSpace: 'nowrap', fontSize: '12px', color: '#666' }}>
+                          {svc.availableFrom && svc.availableTo
+                            ? (svc.availableFrom === '00:00' && svc.availableTo === '23:59'
+                                ? '24 hrs'
+                                : `${svc.availableFrom} – ${svc.availableTo}`)
+                            : '—'}
+                        </td>
+                        <td style={{ fontSize: '12px', color: '#888' }}>{svc.location || '—'}</td>
+                        <td>
+                          <span className={`status-pill ${svc.status}`}>{svc.status}</span>
+                        </td>
+                        <td style={{ whiteSpace: 'nowrap' }}>
+                          <button className="sm-toggle-btn" onClick={() => handleToggleServiceStatus(svc)}>
+                            {svc.status === 'active' ? '⏸ Hide' : '▶ Show'}
+                          </button>
+                          <button className="sm-edit-btn" onClick={() => openEditService(svc)}>✏️ Edit</button>
+                          {user?.role === 'admin' && (
+                            <button className="sm-del-btn" onClick={() => handleDeleteService(svc.id)}>🗑️</button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+
+            {/* Create / Edit Modal */}
+            {showServiceModal && (
+              <div className="sm-modal-overlay" onClick={() => setShowServiceModal(false)}>
+                <div className="sm-modal" onClick={e => e.stopPropagation()}>
+                  <div className="sm-modal-header">
+                    <h3>{editingService ? `Edit — ${editingService.name}` : 'Add New Service'}</h3>
+                    <button className="modal-close-btn" onClick={() => setShowServiceModal(false)}>✕</button>
+                  </div>
+
+                  <form onSubmit={handleSaveService} className="sm-modal-body">
+
+                    <div className="sm-row">
+                      <div className="sm-field">
+                        <label>Service Name *</label>
+                        <input
+                          type="text" required
+                          placeholder="e.g. Rooftop Bar"
+                          value={serviceForm.name}
+                          onChange={e => setServiceForm(p => ({ ...p, name: e.target.value }))}
+                        />
+                      </div>
+                      <div className="sm-field">
+                        <label>
+                          Icon (emoji)
+                          <span className="sm-icon-preview">{serviceForm.icon || '🏨'}</span>
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="🍽️"
+                          value={serviceForm.icon}
+                          onChange={e => setServiceForm(p => ({ ...p, icon: e.target.value }))}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="sm-field">
+                      <label>Description</label>
+                      <textarea
+                        placeholder="Brief description shown to guests..."
+                        value={serviceForm.description}
+                        onChange={e => setServiceForm(p => ({ ...p, description: e.target.value }))}
+                      />
+                    </div>
+
+                    <div className="sm-row">
+                      <div className="sm-field">
+                        <label>Category *</label>
+                        <select
+                          value={serviceForm.category}
+                          onChange={e => setServiceForm(p => ({ ...p, category: e.target.value }))}
+                        >
+                          {['Food & Beverage', 'Wellness & Spa', 'Fitness', 'Transport', 'Facilities', 'Recreation', 'Other'].map(c => (
+                            <option key={c} value={c}>{c}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="sm-field">
+                        <label>Status</label>
+                        <select
+                          value={serviceForm.status}
+                          onChange={e => setServiceForm(p => ({ ...p, status: e.target.value }))}
+                        >
+                          <option value="active">Active (visible to guests)</option>
+                          <option value="inactive">Inactive (hidden)</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="sm-row">
+                      <div className="sm-field">
+                        <label>Price (ETB) — leave blank if free</label>
+                        <input
+                          type="number" min="0"
+                          placeholder="e.g. 1200"
+                          value={serviceForm.price}
+                          onChange={e => setServiceForm(p => ({ ...p, price: e.target.value }))}
+                        />
+                      </div>
+                      <div className="sm-field">
+                        <label>Price Label (overrides price display)</label>
+                        <input
+                          type="text"
+                          placeholder='e.g. "from 500 ETB / person"'
+                          value={serviceForm.priceLabel}
+                          onChange={e => setServiceForm(p => ({ ...p, priceLabel: e.target.value }))}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="sm-row">
+                      <div className="sm-field">
+                        <label>Available From (HH:MM)</label>
+                        <input
+                          type="time"
+                          value={serviceForm.availableFrom}
+                          onChange={e => setServiceForm(p => ({ ...p, availableFrom: e.target.value }))}
+                        />
+                      </div>
+                      <div className="sm-field">
+                        <label>Available To (HH:MM)</label>
+                        <input
+                          type="time"
+                          value={serviceForm.availableTo}
+                          onChange={e => setServiceForm(p => ({ ...p, availableTo: e.target.value }))}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="sm-row">
+                      <div className="sm-field">
+                        <label>Location</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Floor 3 — Pool Deck"
+                          value={serviceForm.location}
+                          onChange={e => setServiceForm(p => ({ ...p, location: e.target.value }))}
+                        />
+                      </div>
+                      <div className="sm-field">
+                        <label>Sort Order</label>
+                        <input
+                          type="number" min="0"
+                          value={serviceForm.sortOrder}
+                          onChange={e => setServiceForm(p => ({ ...p, sortOrder: e.target.value }))}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="sm-modal-footer">
+                      <button type="button" className="cancel-btn" onClick={() => setShowServiceModal(false)}>Cancel</button>
+                      <button type="submit" className="submit-btn">
+                        {editingService ? '💾 Save Changes' : '➕ Create Service'}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+          </div>
+        );
+      })()}
 
     </div>
   );

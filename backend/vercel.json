@@ -19,6 +19,12 @@
     "DB_NAME": "@db_name",
     "DB_USER": "@db_user",
     "DB_PASS": "@db_pass",
-    "JWT_SECRET": "@jwt_secret"
+    "JWT_SECRET": "@jwt_secret",
+    "EXCHANGE_API_KEY": "@exchange_api_key",
+    "STRIPE_SECRET_KEY": "@stripe_secret_key",
+    "STRIPE_PUBLISHABLE_KEY": "@stripe_publishable_key",
+    "EMAIL_USER": "@email_user",
+    "EMAIL_PASS": "@email_pass",
+    "FRONTEND_URL": "@frontend_url"
   }
 }

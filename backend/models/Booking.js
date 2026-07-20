@@ -63,6 +63,31 @@ const Booking = sequelize.define('Booking', {
     type: DataTypes.ENUM('online', 'manual', 'guest'),
     defaultValue: 'online',
   },
+  processedBy: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: 'Users',
+      key: 'id',
+    },
+  },
+  processedAction: {
+    type: DataTypes.ENUM('approved', 'rejected', 'none'),
+    defaultValue: 'none',
+  },
+  processedAt: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
+  receptionNotes: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
+  loyaltyDiscountPercent: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    defaultValue: 0,
+  },
   createdAt: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,

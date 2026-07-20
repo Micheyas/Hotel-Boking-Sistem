@@ -1,32 +1,34 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useI18n } from "../LanguageContext";
 
-const today = new Date().toISOString().split('T')[0];
-const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+const today = new Date().toISOString().split("T")[0];
+const tomorrow = new Date(Date.now() + 86400000).toISOString().split("T")[0];
 
 const AvailabilitySearch = () => {
-  const [checkIn, setCheckIn]   = useState(today);
+  const [checkIn, setCheckIn] = useState(today);
   const [checkOut, setCheckOut] = useState(tomorrow);
-  const [adults, setAdults]     = useState(1);
+  const [adults, setAdults] = useState(1);
   const [children, setChildren] = useState(0);
-  const [error, setError]       = useState('');
+  const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { t } = useI18n();
 
   const handleSearch = (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     if (!checkIn || !checkOut) {
-      setError('Please select check-in and check-out dates.');
+      setError(t("availability.missingDates"));
       return;
     }
     if (new Date(checkOut) <= new Date(checkIn)) {
-      setError('Check-out must be after check-in.');
+      setError(t("availability.invalidDateRange"));
       return;
     }
 
     navigate(
-      `/booking?checkIn=${checkIn}&checkOut=${checkOut}&adults=${adults}&children=${children}`
+      `/booking?checkIn=${checkIn}&checkOut=${checkOut}&adults=${adults}&children=${children}`,
     );
   };
 
@@ -34,7 +36,7 @@ const AvailabilitySearch = () => {
     <form className="availability-search" onSubmit={handleSearch}>
       <div className="search-fields">
         <div className="search-field">
-          <label>📅 Check-in</label>
+          <label>📅 {t("common.checkIn")}</label>
           <input
             type="date"
             value={checkIn}
@@ -44,7 +46,7 @@ const AvailabilitySearch = () => {
           />
         </div>
         <div className="search-field">
-          <label>📅 Check-out</label>
+          <label>📅 {t("common.checkOut")}</label>
           <input
             type="date"
             value={checkOut}
@@ -54,27 +56,27 @@ const AvailabilitySearch = () => {
           />
         </div>
         <div className="search-field search-field-sm">
-          <label>👤 Adults</label>
+          <label>👤 {t("common.adults")}</label>
           <input
             type="number"
             min="1"
             max="6"
             value={adults}
-            onChange={(e) => setAdults(e.target.value)}
+            onChange={(e) => setAdults(Number(e.target.value))}
           />
         </div>
         <div className="search-field search-field-sm">
-          <label>🧒 Children</label>
+          <label>🧒 {t("common.children")}</label>
           <input
             type="number"
             min="0"
             max="4"
             value={children}
-            onChange={(e) => setChildren(e.target.value)}
+            onChange={(e) => setChildren(Number(e.target.value))}
           />
         </div>
         <button type="submit" className="search-btn">
-          🔍 Check Availability
+          {t("availability.button")}
         </button>
       </div>
       {error && <p className="search-error">{error}</p>}

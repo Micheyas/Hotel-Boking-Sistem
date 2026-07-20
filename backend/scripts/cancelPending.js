@@ -14,17 +14,23 @@ async function cancelAllPending() {
     process.exit(0);
   }
 
-  console.log(`Found ${pending.length} pending booking(s). Cancelling...`);
+  console.log(`Found ${pending.length} pending booking(s). Cancelling (records will be preserved in history)...`);
 
   for (const booking of pending) {
     // Free the room back to available
     await Room.update({ status: 'available' }, { where: { id: booking.roomId } });
-    // Delete the booking
-    await booking.destroy();
-    console.log(`  ❌ Deleted booking #${booking.id} (Room ${booking.roomId}) — room set to available`);
+
+    // Cancel the booking — do NOT destroy, record stays in history
+    await booking.update({
+      status: 'cancelled',
+      receptionNotes: (booking.receptionNotes ? booking.receptionNotes + ' | ' : '') +
+        `Manually cancelled via cancelPending script on ${new Date().toISOString()}.`,
+    });
+
+    console.log(`  ✅ Cancelled booking #${booking.id} (Room ${booking.roomId}) — record preserved.`);
   }
 
-  console.log(`\n✅ Done. ${pending.length} pending booking(s) removed.`);
+  console.log(`\n✅ Done. ${pending.length} pending booking(s) cancelled. All records preserved in history.`);
   process.exit(0);
 }
 

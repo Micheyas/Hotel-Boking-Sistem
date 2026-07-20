@@ -197,7 +197,7 @@ exports.updateRoomStatus = async (req, res) => {
 exports.updateRoom = async (req, res) => {
   try {
     const { roomId } = req.params;
-    const { roomNumber, roomTypeId, floor, status, amenities, maxGuests, roomSize, bedType, description } = req.body;
+    const { roomNumber, roomTypeId, floor, status, amenities, maxGuests, roomSize, bedType, description, existingImages } = req.body;
 
     const room = await Room.findByPk(roomId);
     if (!room) return res.status(404).json({ error: 'Room not found' });
@@ -212,12 +212,16 @@ exports.updateRoom = async (req, res) => {
     // Handle newly uploaded images (up to 3)
     const newPaths = (req.files || []).map(f => `/uploads/rooms/${f.filename}`);
 
-    // Merge with existing images if no new ones uploaded
-    let existingImages = [];
-    try { existingImages = JSON.parse(room.images || '[]'); } catch { existingImages = room.image ? [room.image] : []; }
+    // Get images to keep: either from existingImages field or from existing room
+    let imagesToKeep = [];
+    if (existingImages) {
+      try { imagesToKeep = JSON.parse(existingImages); } catch { imagesToKeep = []; }
+    } else {
+      try { imagesToKeep = JSON.parse(room.images || '[]'); } catch { imagesToKeep = room.image ? [room.image] : []; }
+    }
 
-    const mergedImages = newPaths.length > 0 ? newPaths : existingImages;
-    const finalImages  = mergedImages.slice(0, 3); // max 3
+    // Combine existing images with new uploads
+    const finalImages = [...imagesToKeep, ...newPaths].slice(0, 3); // max 3
 
     const updateData = {};
     if (roomNumber)           updateData.roomNumber  = roomNumber;

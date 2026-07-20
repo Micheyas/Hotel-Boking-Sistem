@@ -26,6 +26,7 @@ app.use('/api/currency', require('./routes/currency'));
 app.use('/api/payments', require('./routes/payments'));
 app.use('/api/analytics', require('./routes/analytics'));
 app.use('/api/reviews', require('./routes/reviews'));
+app.use('/api/services', require('./routes/services'));
 
 app.get('/', (req, res) => {
   res.json({ message: 'Hotel Booking API is running' });
@@ -84,27 +85,56 @@ sequelize.sync({ alter: false }).then(async () => {
   await addColumnIfMissing('Rooms', 'roomSize',    { type: DataTypes.STRING,  allowNull: true });
   await addColumnIfMissing('Rooms', 'bedType',     { type: DataTypes.STRING,  allowNull: true });
   await addColumnIfMissing('Rooms', 'description', { type: DataTypes.TEXT,    allowNull: true });
-  await addColumnIfMissing('Rooms', 'images',      { type: DataTypes.TEXT,    allowNull: true, defaultValue: '[]' });
+  await addColumnIfMissing('Rooms', 'images',                 { type: DataTypes.TEXT,    allowNull: true, defaultValue: '[]' });
+  await addColumnIfMissing('Bookings', 'loyaltyDiscountPercent', { type: DataTypes.INTEGER, allowNull: true, defaultValue: 0 });
+
+  // ── HotelServices table migration (safe add columns) ──
+  await addColumnIfMissing('HotelServices', 'sortOrder',     { type: DataTypes.INTEGER, allowNull: true, defaultValue: 0 });
+  await addColumnIfMissing('HotelServices', 'location',      { type: DataTypes.STRING,  allowNull: true });
+  await addColumnIfMissing('HotelServices', 'availableDays', { type: DataTypes.TEXT,    allowNull: true, defaultValue: '["Daily"]' });
+  await addColumnIfMissing('HotelServices', 'priceLabel',    { type: DataTypes.STRING,  allowNull: true });
+
+  // Seed default hotel services if table is empty
+  try {
+    const { seedDefaultServices } = require('./controllers/serviceController');
+    await seedDefaultServices();
+  } catch (e) {
+    console.warn('[Services] Seed failed:', e.message);
+  }
 
   // Clean up orphaned bookings that reference deleted rooms
+  // SAFE: marks them as cancelled instead of deleting — preserves history
   try {
     const { Booking, Room } = require('./models');
     const roomIds = (await Room.findAll({ attributes: ['id'] })).map(r => r.id);
     if (roomIds.length > 0) {
-      const deleted = await Booking.destroy({
-        where: { roomId: { [require('sequelize').Op.notIn]: roomIds } }
+      const orphaned = await Booking.findAll({
+        where: {
+          roomId: { [require('sequelize').Op.notIn]: roomIds },
+          status: { [require('sequelize').Op.notIn]: ['cancelled'] },
+        },
       });
-      if (deleted > 0) console.log(`Cleaned up ${deleted} orphaned booking(s)`);
+      if (orphaned.length > 0) {
+        for (const b of orphaned) {
+          await b.update({
+            status: 'cancelled',
+            receptionNotes: (b.receptionNotes ? b.receptionNotes + ' | ' : '') +
+              'Auto-cancelled: referenced room no longer exists.',
+          });
+        }
+        console.log(`Marked ${orphaned.length} orphaned booking(s) as cancelled — records preserved in history`);
+      }
     }
   } catch (e) {
-    console.warn('Could not clean orphaned bookings:', e.message);
+    console.warn('Could not process orphaned bookings:', e.message);
   }
 
   await seedData();
 
-  // ── Auto-delete pending bookings older than 5 minutes ──
+  // ── Auto-cancel pending bookings older than 5 minutes ──
   // Runs every 60 seconds. Any booking still 'pending' after 5 min
-  // gets deleted and its room is freed back to 'available'.
+  // gets CANCELLED (not deleted) and its room is freed back to 'available'.
+  // The booking record is preserved in history with status = 'cancelled'.
   const startPendingCleanup = () => {
     const { Booking, Room } = require('./models');
     const { Op } = require('sequelize');
@@ -113,7 +143,7 @@ sequelize.sync({ alter: false }).then(async () => {
       try {
         const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
 
-        // Only delete pending bookings that have NO payment proof uploaded.
+        // Only cancel pending bookings that have NO payment proof uploaded.
         // If a screenshot was submitted, keep the booking alive for receptionist review.
         const expired = await Booking.findAll({
           where: {
@@ -126,19 +156,22 @@ sequelize.sync({ alter: false }).then(async () => {
 
         if (expired.length === 0) return;
 
-        // Free each room back to available
+        // Free each room back to available and CANCEL the booking (preserve history)
         for (const booking of expired) {
           await Room.update(
             { status: 'available' },
             { where: { id: booking.roomId } }
           );
+          await booking.update({
+            status: 'cancelled',
+            receptionNotes: (booking.receptionNotes
+              ? booking.receptionNotes + ' | '
+              : '') + 'Auto-cancelled: payment not received within 5 minutes.',
+          });
         }
 
-        // Delete the expired bookings
         const ids = expired.map(b => b.id);
-        await Booking.destroy({ where: { id: { [Op.in]: ids } } });
-
-        console.log(`[Cleanup] Deleted ${expired.length} expired pending booking(s): IDs ${ids.join(', ')}`);
+        console.log(`[Cleanup] Cancelled ${expired.length} expired pending booking(s): IDs ${ids.join(', ')} — records preserved in history.`);
 
         // Notify connected clients so the room grid updates live
         io.emit('roomsUpdated');
@@ -162,7 +195,7 @@ sequelize.sync({ alter: false }).then(async () => {
   } catch (e) {
     console.warn('[Currency] Startup warm failed:', e.message);
   }
-  
+
   const PORT = process.env.PORT || 5000;
   const server = http.createServer(app);
   const io = socketService.init(server);

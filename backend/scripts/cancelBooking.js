@@ -16,13 +16,22 @@ async function cancel() {
 
   console.log(`Found booking #${booking.id} — status: ${booking.status}, roomId: ${booking.roomId}`);
 
-  // Free the room
+  if (booking.status === 'cancelled') {
+    console.log(`⚠️  Booking #${BOOKING_ID} is already cancelled.`);
+    process.exit(0);
+  }
+
+  // Free the room back to available
   await Room.update({ status: 'available' }, { where: { id: booking.roomId } });
 
-  // Delete the booking
-  await booking.destroy();
+  // Cancel the booking — record is PRESERVED in history (not deleted)
+  await booking.update({
+    status: 'cancelled',
+    receptionNotes: (booking.receptionNotes ? booking.receptionNotes + ' | ' : '') +
+      `Manually cancelled via script on ${new Date().toISOString()}.`,
+  });
 
-  console.log(`✅ Booking #${BOOKING_ID} deleted. Room ${booking.roomId} set to available.`);
+  console.log(`✅ Booking #${BOOKING_ID} cancelled. Room ${booking.roomId} set to available. Record preserved in history.`);
   process.exit(0);
 }
 
