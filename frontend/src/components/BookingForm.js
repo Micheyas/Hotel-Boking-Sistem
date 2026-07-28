@@ -37,6 +37,7 @@ const DEFAULT_AMENITIES = {
   default:   ["Free WiFi", "Air Conditioning", "Flat-screen TV"],
 };
 
+// eslint-disable-next-line no-unused-vars
 function getFallbackImage(name = "") {
   const n = name.toLowerCase();
   for (const key of Object.keys(FALLBACK_IMAGES)) {

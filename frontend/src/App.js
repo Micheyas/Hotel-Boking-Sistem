@@ -4,7 +4,6 @@ import "./App.css";
 import BookingForm from "./components/BookingForm";
 import AdminPanel from "./components/AdminPanel";
 import PaymentForm from "./components/PaymentForm";
-import ReviewForm from "./components/ReviewForm";
 import ReviewPage from "./components/ReviewPage";
 import VerifyEmailPage from "./components/VerifyEmailPage";
 import CustomerAuth from "./components/CustomerAuth";
@@ -173,7 +172,7 @@ function FeaturedRooms() {
   const { t } = useI18n();
 
   React.useEffect(() => {
-    fetch("http://localhost:5000/api/rooms/public")
+    fetch(`${process.env.REACT_APP_API_URL || "http://localhost:5000/api"}/rooms/public`)
       .then((r) => r.json())
       .then((data) => {
         if (!Array.isArray(data)) return;
@@ -300,7 +299,7 @@ function Home() {
   // Live review summary for hero
   const [heroRating, setHeroRating] = React.useState(null);
   React.useEffect(() => {
-    fetch("http://localhost:5000/api/reviews/summary")
+    fetch(`${process.env.REACT_APP_API_URL || "http://localhost:5000/api"}/reviews/summary`)
       .then((r) => r.json())
       .then((data) => {
         if (data?.overall?.count > 0) {
