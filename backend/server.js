@@ -32,6 +32,19 @@ app.get('/', (req, res) => {
   res.json({ message: 'Hotel Booking API is running' });
 });
 
+// Keep Render free tier awake — ping self every 14 minutes
+if (process.env.NODE_ENV === 'production') {
+  const SELF_URL = process.env.RENDER_EXTERNAL_URL || 'https://hotel-boking-sistem.onrender.com';
+  setInterval(async () => {
+    try {
+      await fetch(SELF_URL + '/');
+      console.log('[Keep-alive] pinged self');
+    } catch (e) {
+      console.warn('[Keep-alive] ping failed:', e.message);
+    }
+  }, 14 * 60 * 1000); // every 14 minutes
+}
+
 // Sync database and seed if needed
 const seedData = async () => {
   const { Room, RoomType } = require('./models');
