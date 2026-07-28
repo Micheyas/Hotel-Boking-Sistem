@@ -56,7 +56,8 @@ exports.uploadPaymentProof = async (req, res) => {
       return res.status(403).json({ error: 'Not authorized' });
     }
 
-    const imagePath = '/uploads/payments/' + req.file.filename;
+    // Save Cloudinary URL (works on any server, never gets deleted)
+    const imagePath = req.file.path; // Cloudinary returns full URL in req.file.path
     await booking.update({
       paymentProof: imagePath,
       paymentStatus: 'proof_submitted',
