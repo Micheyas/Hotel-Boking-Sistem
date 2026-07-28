@@ -5,23 +5,23 @@ import { useI18n } from "../LanguageContext";
 import { FAQAndLocation, FooterBar } from "./Footer";
 import "../styles/ReviewPage.css";
 
-const API = "http://localhost:5000/api";
+const API = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
 
 /* ─── helpers ────────────────────────────────────────────── */
 const StarRow = ({ value, onChange, readonly = false, size = "md" }) => {
   const [hovered, setHovered] = useState(0);
   const display = hovered || value;
   return (
-    <div className={`rp-stars rp-stars--${size} ${readonly ? "rp-stars--readonly" : ""}`}>
+    <div className={"rp-stars rp-stars--" + size + (readonly ? " rp-stars--readonly" : "")}>
       {[1, 2, 3, 4, 5].map((n) => (
         <span
           key={n}
-          className={`rp-star ${n <= display ? "rp-star--on" : ""}`}
+          className={"rp-star" + (n <= display ? " rp-star--on" : "")}
           onClick={() => !readonly && onChange && onChange(n)}
           onMouseEnter={() => !readonly && setHovered(n)}
           onMouseLeave={() => !readonly && setHovered(0)}
           role={readonly ? undefined : "button"}
-          aria-label={readonly ? undefined : `Rate ${n} stars`}
+          aria-label={readonly ? undefined : "Rate " + n + " stars"}
           tabIndex={readonly ? undefined : 0}
           onKeyDown={(e) => !readonly && e.key === "Enter" && onChange && onChange(n)}
         >
@@ -36,7 +36,7 @@ const RatingBar = ({ label, value }) => (
   <div className="rp-ratingbar">
     <span className="rp-ratingbar-label">{label}</span>
     <div className="rp-ratingbar-track">
-      <div className="rp-ratingbar-fill" style={{ width: `${(value / 5) * 100}%` }} />
+      <div className="rp-ratingbar-fill" style={{ width: (value / 5) * 100 + "%" }} />
     </div>
     <span className="rp-ratingbar-val">{value ? value.toFixed(1) : "—"}</span>
   </div>
@@ -51,7 +51,7 @@ const DistributionBar = ({ distribution, total }) => (
         <div key={star} className="rp-dist-row">
           <span className="rp-dist-star">{star} ★</span>
           <div className="rp-dist-track">
-            <div className="rp-dist-fill" style={{ width: `${pct}%` }} />
+            <div className="rp-dist-fill" style={{ width: pct + "%" }} />
           </div>
           <span className="rp-dist-count">{count}</span>
         </div>
@@ -59,8 +59,6 @@ const DistributionBar = ({ distribution, total }) => (
     })}
   </div>
 );
-
-/* ─── Sub-components ─────────────────────────────────────── */
 
 // ── Tab: Hotel Overall ────────────────────────────────────
 const HotelReviewTab = ({ token, onNewReview }) => {
@@ -71,8 +69,6 @@ const HotelReviewTab = ({ token, onNewReview }) => {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
-
-  // Form state
   const [rating, setRating] = useState(0);
   const [cleanlinessRating, setCleanlinessRating] = useState(0);
   const [staffRating, setStaffRating] = useState(0);
@@ -84,16 +80,13 @@ const HotelReviewTab = ({ token, onNewReview }) => {
     setLoading(true);
     try {
       const [sumRes, revRes] = await Promise.all([
-        axios.get(`${API}/reviews/summary`),
-        axios.get(`${API}/reviews?reviewType=hotel`),
+        axios.get(API + "/reviews/summary"),
+        axios.get(API + "/reviews?reviewType=hotel"),
       ]);
       setSummary(sumRes.data);
       setReviews(revRes.data);
-    } catch {
-      /* silent */
-    } finally {
-      setLoading(false);
-    }
+    } catch { /* silent */ }
+    finally { setLoading(false); }
   }, []);
 
   useEffect(() => { fetchData(); }, [fetchData]);
@@ -102,13 +95,12 @@ const HotelReviewTab = ({ token, onNewReview }) => {
     e.preventDefault();
     if (!token) { setError(t("review.errorLogin")); return; }
     if (!rating) { setError("Please select an overall rating."); return; }
-    setSubmitting(true);
-    setError("");
+    setSubmitting(true); setError("");
     try {
       await axios.post(
-        `${API}/reviews`,
+        API + "/reviews",
         { reviewType: "hotel", rating, cleanlinessRating, staffRating, locationRating, valueRating, comment },
-        { headers: { Authorization: `Bearer ${token}` } },
+        { headers: { Authorization: "Bearer " + token } },
       );
       setSuccess(t("review.success"));
       setRating(0); setCleanlinessRating(0); setStaffRating(0);
@@ -116,16 +108,13 @@ const HotelReviewTab = ({ token, onNewReview }) => {
       setTimeout(() => { setSuccess(""); fetchData(); onNewReview && onNewReview(); }, 1500);
     } catch (err) {
       setError(err.response?.data?.error || t("review.errorLogin"));
-    } finally {
-      setSubmitting(false);
-    }
+    } finally { setSubmitting(false); }
   };
 
   const hotelSummary = summary?.hotel;
 
   return (
     <div className="rp-tab-content">
-      {/* Summary Card */}
       {!loading && hotelSummary && (
         <div className="rp-summary-card">
           <div className="rp-summary-left">
@@ -148,8 +137,6 @@ const HotelReviewTab = ({ token, onNewReview }) => {
           )}
         </div>
       )}
-
-      {/* Write Review Form */}
       <div className="rp-form-card">
         <h3 className="rp-form-title">✍️ Share Your Hotel Experience</h3>
         <form onSubmit={handleSubmit} className="rp-form">
@@ -158,32 +145,14 @@ const HotelReviewTab = ({ token, onNewReview }) => {
             <StarRow value={rating} onChange={setRating} />
           </div>
           <div className="rp-subratings-grid">
-            <div className="rp-field">
-              <label className="rp-label">🧹 Cleanliness</label>
-              <StarRow value={cleanlinessRating} onChange={setCleanlinessRating} size="sm" />
-            </div>
-            <div className="rp-field">
-              <label className="rp-label">👋 Staff</label>
-              <StarRow value={staffRating} onChange={setStaffRating} size="sm" />
-            </div>
-            <div className="rp-field">
-              <label className="rp-label">📍 Location</label>
-              <StarRow value={locationRating} onChange={setLocationRating} size="sm" />
-            </div>
-            <div className="rp-field">
-              <label className="rp-label">💰 Value for Money</label>
-              <StarRow value={valueRating} onChange={setValueRating} size="sm" />
-            </div>
+            <div className="rp-field"><label className="rp-label">🧹 Cleanliness</label><StarRow value={cleanlinessRating} onChange={setCleanlinessRating} size="sm" /></div>
+            <div className="rp-field"><label className="rp-label">👋 Staff</label><StarRow value={staffRating} onChange={setStaffRating} size="sm" /></div>
+            <div className="rp-field"><label className="rp-label">📍 Location</label><StarRow value={locationRating} onChange={setLocationRating} size="sm" /></div>
+            <div className="rp-field"><label className="rp-label">💰 Value for Money</label><StarRow value={valueRating} onChange={setValueRating} size="sm" /></div>
           </div>
           <div className="rp-field">
             <label className="rp-label">Your Comment</label>
-            <textarea
-              className="rp-textarea"
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="Tell us about your stay — what stood out, what could be improved…"
-              rows={4}
-            />
+            <textarea className="rp-textarea" value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Tell us about your stay…" rows={4} />
           </div>
           {error   && <p className="rp-error">{error}</p>}
           {success && <p className="rp-success">{success}</p>}
@@ -192,8 +161,6 @@ const HotelReviewTab = ({ token, onNewReview }) => {
           </button>
         </form>
       </div>
-
-      {/* Reviews List */}
       <ReviewList reviews={reviews} loading={loading} />
     </div>
   );
@@ -213,7 +180,7 @@ const RoomReviewTab = ({ token, onNewReview }) => {
   const [comment, setComment] = useState("");
 
   useEffect(() => {
-    axios.get(`${API}/rooms/public`).then((res) => {
+    axios.get(API + "/rooms/public").then((res) => {
       if (Array.isArray(res.data)) setRooms(res.data);
     }).catch(() => {});
   }, []);
@@ -222,7 +189,7 @@ const RoomReviewTab = ({ token, onNewReview }) => {
     if (!roomId) return;
     setLoadingReviews(true);
     try {
-      const res = await axios.get(`${API}/reviews?reviewType=room&roomId=${roomId}`);
+      const res = await axios.get(API + "/reviews?reviewType=room&roomId=" + roomId);
       setReviews(res.data);
     } catch { /* silent */ }
     finally { setLoadingReviews(false); }
@@ -242,27 +209,22 @@ const RoomReviewTab = ({ token, onNewReview }) => {
     setSubmitting(true); setError("");
     try {
       await axios.post(
-        `${API}/reviews`,
+        API + "/reviews",
         { reviewType: "room", roomId: parseInt(selectedRoom), rating, comment },
-        { headers: { Authorization: `Bearer ${token}` } },
+        { headers: { Authorization: "Bearer " + token } },
       );
       setSuccess(t("review.success"));
       setRating(0); setComment("");
       setTimeout(() => { setSuccess(""); fetchRoomReviews(selectedRoom); onNewReview && onNewReview(); }, 1500);
     } catch (err) {
       setError(err.response?.data?.error || t("review.errorLogin"));
-    } finally {
-      setSubmitting(false);
-    }
+    } finally { setSubmitting(false); }
   };
 
-  const avg = reviews.length
-    ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1)
-    : null;
+  const avg = reviews.length ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1) : null;
 
   return (
     <div className="rp-tab-content">
-      {/* Room Selector + mini summary */}
       <div className="rp-form-card">
         <h3 className="rp-form-title">🛏 Rate a Room</h3>
         <div className="rp-field">
@@ -270,9 +232,7 @@ const RoomReviewTab = ({ token, onNewReview }) => {
           <select className="rp-select" value={selectedRoom} onChange={handleRoomChange}>
             <option value="">— Choose a room —</option>
             {rooms.map((r) => (
-              <option key={r.id} value={r.id}>
-                Room {r.roomNumber} — {r.roomType?.name || ""}
-              </option>
+              <option key={r.id} value={r.id}>Room {r.roomNumber} — {r.roomType?.name || ""}</option>
             ))}
           </select>
         </div>
@@ -290,13 +250,7 @@ const RoomReviewTab = ({ token, onNewReview }) => {
           </div>
           <div className="rp-field">
             <label className="rp-label">Your Comment</label>
-            <textarea
-              className="rp-textarea"
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="How was the comfort, cleanliness, and amenities of this room?"
-              rows={4}
-            />
+            <textarea className="rp-textarea" value={comment} onChange={(e) => setComment(e.target.value)} placeholder="How was the comfort, cleanliness, and amenities of this room?" rows={4} />
           </div>
           {error   && <p className="rp-error">{error}</p>}
           {success && <p className="rp-success">{success}</p>}
@@ -305,8 +259,6 @@ const RoomReviewTab = ({ token, onNewReview }) => {
           </button>
         </form>
       </div>
-
-      {/* Room Reviews List */}
       {selectedRoom && <ReviewList reviews={reviews} loading={loadingReviews} emptyMsg="No reviews for this room yet." />}
     </div>
   );
@@ -335,7 +287,7 @@ const ServiceReviewTab = ({ token, onNewReview }) => {
     if (!serviceId) return;
     setLoadingReviews(true);
     try {
-      const res = await axios.get(`${API}/reviews?reviewType=service&serviceId=${serviceId}`);
+      const res = await axios.get(API + "/reviews?reviewType=service&serviceId=" + serviceId);
       setReviews(res.data);
     } catch { /* silent */ }
     finally { setLoadingReviews(false); }
@@ -355,24 +307,19 @@ const ServiceReviewTab = ({ token, onNewReview }) => {
     setSubmitting(true); setError("");
     try {
       await axios.post(
-        `${API}/reviews`,
+        API + "/reviews",
         { reviewType: "service", serviceId: parseInt(selectedService), rating, comment },
-        { headers: { Authorization: `Bearer ${token}` } },
+        { headers: { Authorization: "Bearer " + token } },
       );
       setSuccess(t("review.success"));
       setRating(0); setComment("");
       setTimeout(() => { setSuccess(""); fetchServiceReviews(selectedService); onNewReview && onNewReview(); }, 1500);
     } catch (err) {
       setError(err.response?.data?.error || t("review.errorLogin"));
-    } finally {
-      setSubmitting(false);
-    }
+    } finally { setSubmitting(false); }
   };
 
-  const avg = reviews.length
-    ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1)
-    : null;
-
+  const avg = reviews.length ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1) : null;
   const selectedSvc = services.find((s) => String(s.id) === String(selectedService));
 
   return (
@@ -384,9 +331,7 @@ const ServiceReviewTab = ({ token, onNewReview }) => {
           <select className="rp-select" value={selectedService} onChange={handleServiceChange}>
             <option value="">— Choose a service —</option>
             {services.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.icon || ""} {s.name} ({s.category})
-              </option>
+              <option key={s.id} value={s.id}>{s.icon || ""} {s.name} ({s.category})</option>
             ))}
           </select>
         </div>
@@ -413,13 +358,7 @@ const ServiceReviewTab = ({ token, onNewReview }) => {
           </div>
           <div className="rp-field">
             <label className="rp-label">Your Comment</label>
-            <textarea
-              className="rp-textarea"
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="Share your experience with this service…"
-              rows={4}
-            />
+            <textarea className="rp-textarea" value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Share your experience with this service…" rows={4} />
           </div>
           {error   && <p className="rp-error">{error}</p>}
           {success && <p className="rp-success">{success}</p>}
@@ -428,7 +367,6 @@ const ServiceReviewTab = ({ token, onNewReview }) => {
           </button>
         </form>
       </div>
-
       {selectedService && <ReviewList reviews={reviews} loading={loadingReviews} emptyMsg="No reviews for this service yet." />}
     </div>
   );
@@ -438,23 +376,19 @@ const ServiceReviewTab = ({ token, onNewReview }) => {
 const ReviewList = ({ reviews, loading, emptyMsg = "No reviews yet." }) => {
   if (loading) return <div className="rp-reviews-loading">Loading reviews…</div>;
   if (!reviews.length) return <p className="rp-no-reviews">{emptyMsg}</p>;
-
   return (
     <div className="rp-reviews-list">
       <h4 className="rp-reviews-list-title">Recent Reviews</h4>
       {reviews.map((r) => (
         <div key={r.id} className="rp-review-item">
           <div className="rp-review-header">
-            <span className="rp-reviewer-name">
-              {r.user?.name || "Guest"}
-            </span>
+            <span className="rp-reviewer-name">{r.user?.name || "Guest"}</span>
             <StarRow value={r.rating} readonly size="sm" />
             <span className="rp-review-date">
               {new Date(r.createdAt).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
             </span>
           </div>
           {r.comment && <p className="rp-review-comment">{r.comment}</p>}
-          {/* Sub-ratings for hotel reviews */}
           {(r.cleanlinessRating || r.staffRating || r.locationRating || r.valueRating) && (
             <div className="rp-review-sub">
               {r.cleanlinessRating && <span>🧹 {r.cleanlinessRating}/5</span>}
@@ -469,106 +403,72 @@ const ReviewList = ({ reviews, loading, emptyMsg = "No reviews yet." }) => {
   );
 };
 
-// ── Overall Summary Banner (top of page) ─────────────────
+// ── Overall Summary Banner ────────────────────────────────
 const OverallBanner = () => {
   const [summary, setSummary] = useState(null);
-
   useEffect(() => {
-    axios.get(`${API}/reviews/summary`).then((r) => setSummary(r.data)).catch(() => {});
+    axios.get(API + "/reviews/summary").then((r) => setSummary(r.data)).catch(() => {});
   }, []);
-
   if (!summary || !summary.overall.count) return null;
-
   return (
     <div className="rp-banner">
       <div className="rp-banner-score">
         <span className="rp-banner-num">{summary.overall.averageRating}</span>
         <StarRow value={Math.round(summary.overall.averageRating || 0)} readonly size="md" />
-        <span className="rp-banner-label">
-          Based on {summary.overall.count} review{summary.overall.count !== 1 ? "s" : ""}
-        </span>
+        <span className="rp-banner-label">Based on {summary.overall.count} review{summary.overall.count !== 1 ? "s" : ""}</span>
       </div>
       <div className="rp-banner-breakdown">
-        <div className="rp-banner-type">
-          <span className="rp-banner-type-icon">🏨</span>
-          <span className="rp-banner-type-label">Hotel</span>
-          <span className="rp-banner-type-val">
-            {summary.hotel.averageRating ? `${summary.hotel.averageRating} ★` : "—"}
-          </span>
-        </div>
-        <div className="rp-banner-type">
-          <span className="rp-banner-type-icon">🛏</span>
-          <span className="rp-banner-type-label">Rooms</span>
-          <span className="rp-banner-type-val">
-            {summary.room.averageRating ? `${summary.room.averageRating} ★` : "—"}
-          </span>
-        </div>
-        <div className="rp-banner-type">
-          <span className="rp-banner-type-icon">🛎️</span>
-          <span className="rp-banner-type-label">Services</span>
-          <span className="rp-banner-type-val">
-            {summary.service.averageRating ? `${summary.service.averageRating} ★` : "—"}
-          </span>
-        </div>
+        <div className="rp-banner-type"><span className="rp-banner-type-icon">🏨</span><span className="rp-banner-type-label">Hotel</span><span className="rp-banner-type-val">{summary.hotel.averageRating ? summary.hotel.averageRating + " ★" : "—"}</span></div>
+        <div className="rp-banner-type"><span className="rp-banner-type-icon">🛏</span><span className="rp-banner-type-label">Rooms</span><span className="rp-banner-type-val">{summary.room.averageRating ? summary.room.averageRating + " ★" : "—"}</span></div>
+        <div className="rp-banner-type"><span className="rp-banner-type-icon">🛎️</span><span className="rp-banner-type-label">Services</span><span className="rp-banner-type-val">{summary.service.averageRating ? summary.service.averageRating + " ★" : "—"}</span></div>
       </div>
     </div>
   );
 };
 
-/* ─── Main Page ───────────────────────────────────────────── */
+// ── Main Page ─────────────────────────────────────────────
 const TABS = [
-  { id: "hotel",   label: "🏨 Hotel",    title: "Overall Hotel Experience" },
-  { id: "room",    label: "🛏 Rooms",    title: "Room Reviews" },
-  { id: "service", label: "🛎️ Services", title: "Service Reviews" },
+  { id: "hotel",   label: "🏨 Hotel" },
+  { id: "room",    label: "🛏 Rooms" },
+  { id: "service", label: "🛎️ Services" },
 ];
 
 const ReviewPage = () => {
   const [activeTab, setActiveTab] = useState("hotel");
-  const [summaryKey, setSummaryKey] = useState(0); // force banner refresh
-  const token = localStorage.getItem("token");
-
+  const [summaryKey, setSummaryKey] = useState(0);
+  const token = localStorage.getItem("customerToken");
   const handleNewReview = () => setSummaryKey((k) => k + 1);
 
   return (
     <div className="rp-page">
-      {/* Hero */}
       <div className="rp-hero">
         <div className="rp-hero-overlay">
           <h1 className="rp-hero-title">⭐ Guest Reviews</h1>
           <p className="rp-hero-sub">Share your experience and help future guests</p>
         </div>
       </div>
-
       <div className="rp-container">
-        {/* Overall Summary Banner */}
         <OverallBanner key={summaryKey} />
-
-        {/* Login notice */}
         {!token && (
           <div className="rp-login-notice">
-            💡 <a href="/admin">Log in</a> to submit your own review
+            💡 <a href="/login">Log in</a> to submit your own review
           </div>
         )}
-
-        {/* Tab Bar */}
         <div className="rp-tabs">
           {TABS.map((tab) => (
             <button
               key={tab.id}
-              className={`rp-tab ${activeTab === tab.id ? "rp-tab--active" : ""}`}
+              className={"rp-tab" + (activeTab === tab.id ? " rp-tab--active" : "")}
               onClick={() => setActiveTab(tab.id)}
             >
               {tab.label}
             </button>
           ))}
         </div>
-
-        {/* Tab Content */}
         {activeTab === "hotel"   && <HotelReviewTab   token={token} onNewReview={handleNewReview} />}
         {activeTab === "room"    && <RoomReviewTab     token={token} onNewReview={handleNewReview} />}
         {activeTab === "service" && <ServiceReviewTab  token={token} onNewReview={handleNewReview} />}
       </div>
-
       <FAQAndLocation />
       <FooterBar />
     </div>
