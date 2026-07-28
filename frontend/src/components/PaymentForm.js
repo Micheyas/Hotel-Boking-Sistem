@@ -103,9 +103,18 @@ const PaymentForm = ({ bookingId: propBookingId, amount: propAmount }) => {
           <p style={{ color: "#555", marginBottom: 24 }}>
             {t("payment.successMsg")}
           </p>
-          <button className="pf-confirm-btn" onClick={() => navigate("/")}>
-            {t("payment.backToHome")}
-          </button>
+          <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
+            <button className="pf-confirm-btn" onClick={() => navigate("/")}>
+              {t("payment.backToHome")}
+            </button>
+            <button
+              className="pf-confirm-btn"
+              onClick={() => navigate("/rooms")}
+              style={{ background: "linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)" }}
+            >
+              ⭐ {t("rooms.writeReview")}
+            </button>
+          </div>
         </div>
       </div>
     );

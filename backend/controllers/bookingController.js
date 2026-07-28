@@ -48,6 +48,17 @@ exports.createBooking = async (req, res) => {
     const { roomId, checkInDate, checkOutDate, totalPrice, bookingType } = req.body;
     const userId = req.user.id;
 
+    // ── Email verification guard ──────────────────────────
+    const bookingUser = await User.findByPk(userId);
+    if (!bookingUser) return res.status(404).json({ error: 'User not found' });
+    if (!bookingUser.emailVerified) {
+      return res.status(403).json({
+        error: 'Your email address is not verified. Please check your inbox and click the verification link before making a booking.',
+        code: 'EMAIL_NOT_VERIFIED',
+      });
+    }
+    // ─────────────────────────────────────────────────────
+
     // Verify room is available for the dates
     const overlapping = await Booking.findAll({
       where: {
@@ -107,6 +118,20 @@ exports.createGuestBooking = async (req, res) => {
     if (!normalizedName || !normalizedPhone) {
       return res.status(400).json({ error: 'guestName and guestPhone are required' });
     }
+
+    // ── Email verification guard ──────────────────────────
+    // If the guest provides an email that belongs to a registered account,
+    // that account must be verified before they can book.
+    if (normalizedEmail) {
+      const registeredUser = await User.findOne({ where: { email: normalizedEmail } });
+      if (registeredUser && !registeredUser.emailVerified) {
+        return res.status(403).json({
+          error: 'This email is registered but not yet verified. Please check your inbox and verify your email before booking.',
+          code: 'EMAIL_NOT_VERIFIED',
+        });
+      }
+    }
+    // ─────────────────────────────────────────────────────
 
     // Verify room is available for the dates
     const overlapping = await Booking.findAll({

@@ -11,9 +11,18 @@ const Review = sequelize.define('Review', {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
+  reviewType: {
+    type: DataTypes.ENUM('room', 'service', 'hotel'),
+    allowNull: false,
+    defaultValue: 'room',
+  },
   roomId: {
     type: DataTypes.INTEGER,
-    allowNull: false,
+    allowNull: true, // Now optional since hotel reviews don't need roomId
+  },
+  serviceId: {
+    type: DataTypes.INTEGER,
+    allowNull: true, // For service reviews
   },
   rating: {
     type: DataTypes.INTEGER,
@@ -22,6 +31,27 @@ const Review = sequelize.define('Review', {
   },
   comment: {
     type: DataTypes.TEXT,
+  },
+  // Additional ratings for hotel overall experience
+  cleanlinessRating: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    validate: { min: 1, max: 5 },
+  },
+  staffRating: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    validate: { min: 1, max: 5 },
+  },
+  locationRating: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    validate: { min: 1, max: 5 },
+  },
+  valueRating: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    validate: { min: 1, max: 5 },
   },
   createdAt: {
     type: DataTypes.DATE,

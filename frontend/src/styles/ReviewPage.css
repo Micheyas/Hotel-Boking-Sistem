@@ -1,0 +1,620 @@
+/* ═══════════════════════════════════════════════════════════
+   ReviewPage.css  —  Hotel Review System Styles
+   Prefix: rp-  (all classes scoped to avoid conflicts)
+   Theme: gold (#c9a84c / #e2c97e) on dark navy (#1a1a2e)
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Page wrapper ─────────────────────────────────────────── */
+.rp-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #e2c97e 0%, #d4a574 50%, #c9a84c 100%);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: #1a1a2e;
+}
+
+/* ── Hero banner ──────────────────────────────────────────── */
+.rp-hero {
+  position: relative;
+  height: 240px;
+  background:
+    linear-gradient(135deg, rgba(26,26,46,0.82) 0%, rgba(15,52,96,0.72) 100%),
+    url("https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=1400&q=60")
+    center / cover no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rp-hero-overlay {
+  text-align: center;
+  padding: 0 1rem;
+}
+
+.rp-hero-title {
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.45);
+}
+
+.rp-hero-sub {
+  margin: 0;
+  font-size: 1.05rem;
+  color: rgba(255,255,255,0.82);
+}
+
+/* ── Container ────────────────────────────────────────────── */
+.rp-container {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 2rem 1rem 3rem;
+}
+
+/* ── Overall banner ───────────────────────────────────────── */
+.rp-banner {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border-radius: 16px;
+  padding: 1.6rem 2rem;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.6rem;
+  box-shadow: 0 6px 30px rgba(26,26,46,0.22);
+}
+
+.rp-banner-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 110px;
+}
+
+.rp-banner-num {
+  font-size: 3rem;
+  font-weight: 800;
+  color: #e2c97e;
+  line-height: 1;
+}
+
+.rp-banner-label {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.65);
+  text-align: center;
+  margin-top: 2px;
+}
+
+.rp-banner-breakdown {
+  display: flex;
+  gap: 1.4rem;
+  flex-wrap: wrap;
+}
+
+.rp-banner-type {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 10px;
+  padding: 0.7rem 1.1rem;
+  min-width: 78px;
+}
+
+.rp-banner-type-icon { font-size: 1.4rem; }
+
+.rp-banner-type-label {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.65);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.rp-banner-type-val {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #e2c97e;
+}
+
+/* ── Login notice ─────────────────────────────────────────── */
+.rp-login-notice {
+  background: rgba(255,255,255,0.72);
+  border: 1px solid rgba(201,168,76,0.5);
+  border-radius: 10px;
+  padding: 0.75rem 1.2rem;
+  font-size: 0.9rem;
+  color: #1a1a2e;
+  margin-bottom: 1.4rem;
+  text-align: center;
+  backdrop-filter: blur(4px);
+}
+
+.rp-login-notice a {
+  color: #0f3460;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.rp-login-notice a:hover { color: #c9a84c; }
+
+/* ── Tab bar ──────────────────────────────────────────────── */
+.rp-tabs {
+  display: flex;
+  gap: 0.5rem;
+  background: rgba(255,255,255,0.35);
+  border-radius: 14px;
+  padding: 6px;
+  margin-bottom: 1.8rem;
+  backdrop-filter: blur(6px);
+  flex-wrap: wrap;
+}
+
+.rp-tab {
+  flex: 1;
+  min-width: 110px;
+  padding: 0.65rem 1.2rem;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, transform 0.15s;
+  white-space: nowrap;
+}
+
+.rp-tab:hover {
+  background: rgba(255,255,255,0.55);
+  transform: translateY(-1px);
+}
+
+.rp-tab--active {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  color: #e2c97e;
+  box-shadow: 0 4px 14px rgba(26,26,46,0.25);
+}
+
+/* ── Tab content wrapper ──────────────────────────────────── */
+.rp-tab-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+}
+
+/* ── Summary card (hotel tab) ─────────────────────────────── */
+.rp-summary-card {
+  background: rgba(255,255,255,0.88);
+  border-radius: 16px;
+  padding: 1.6rem;
+  display: flex;
+  gap: 1.8rem;
+  flex-wrap: wrap;
+  box-shadow: 0 4px 20px rgba(26,26,46,0.1);
+  border: 1px solid rgba(201,168,76,0.3);
+  align-items: flex-start;
+}
+
+.rp-summary-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 100px;
+}
+
+.rp-big-score {
+  font-size: 3.4rem;
+  font-weight: 900;
+  color: #1a1a2e;
+  line-height: 1;
+}
+
+.rp-big-count {
+  font-size: 0.8rem;
+  color: #666;
+  text-align: center;
+}
+
+.rp-summary-right {
+  flex: 1;
+  min-width: 180px;
+}
+
+.rp-summary-sub {
+  flex: 1;
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ── Rating bar (sub-categories) ──────────────────────────── */
+.rp-ratingbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rp-ratingbar-label {
+  font-size: 0.82rem;
+  color: #444;
+  min-width: 90px;
+  font-weight: 600;
+}
+
+.rp-ratingbar-track {
+  flex: 1;
+  height: 8px;
+  background: #e8e0d0;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.rp-ratingbar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #c9a84c, #e2c97e);
+  border-radius: 99px;
+  transition: width 0.6s ease;
+}
+
+.rp-ratingbar-val {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  min-width: 28px;
+  text-align: right;
+}
+
+/* ── Distribution bars ────────────────────────────────────── */
+.rp-dist { display: flex; flex-direction: column; gap: 6px; }
+
+.rp-dist-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rp-dist-star {
+  font-size: 0.78rem;
+  color: #888;
+  min-width: 30px;
+  text-align: right;
+}
+
+.rp-dist-track {
+  flex: 1;
+  height: 10px;
+  background: #e8e0d0;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.rp-dist-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #c9a84c, #e2c97e);
+  border-radius: 99px;
+  transition: width 0.5s ease;
+}
+
+.rp-dist-count {
+  font-size: 0.78rem;
+  color: #888;
+  min-width: 22px;
+  text-align: left;
+}
+
+/* ── Form card ────────────────────────────────────────────── */
+.rp-form-card {
+  background: rgba(255,255,255,0.9);
+  border-radius: 16px;
+  padding: 1.8rem;
+  box-shadow: 0 4px 20px rgba(26,26,46,0.1);
+  border: 1px solid rgba(201,168,76,0.3);
+}
+
+.rp-form-title {
+  margin: 0 0 1.4rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.rp-form { display: flex; flex-direction: column; gap: 1.1rem; }
+
+.rp-field { display: flex; flex-direction: column; gap: 6px; }
+
+.rp-label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.rp-required { color: #e53e3e; margin-left: 2px; }
+
+/* ── Sub-ratings grid ─────────────────────────────────────── */
+.rp-subratings-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem 1.4rem;
+}
+
+@media (max-width: 500px) {
+  .rp-subratings-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Inputs ───────────────────────────────────────────────── */
+.rp-select,
+.rp-textarea {
+  width: 100%;
+  padding: 0.65rem 0.9rem;
+  border: 1.5px solid #d4c4a0;
+  border-radius: 10px;
+  font-size: 0.92rem;
+  font-family: inherit;
+  color: #1a1a2e;
+  background: #fffdf5;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.rp-select:focus,
+.rp-textarea:focus {
+  outline: none;
+  border-color: #c9a84c;
+  box-shadow: 0 0 0 3px rgba(201,168,76,0.18);
+}
+
+.rp-textarea { min-height: 96px; }
+
+/* ── Submit button ────────────────────────────────────────── */
+.rp-submit-btn {
+  align-self: flex-start;
+  padding: 0.75rem 2rem;
+  background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
+  color: #e2c97e;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.4px;
+  transition: transform 0.15s, box-shadow 0.2s, opacity 0.2s;
+  box-shadow: 0 4px 14px rgba(26,26,46,0.2);
+}
+
+.rp-submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(26,26,46,0.3);
+}
+
+.rp-submit-btn:active:not(:disabled) { transform: translateY(0); }
+
+.rp-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Messages ─────────────────────────────────────────────── */
+.rp-error {
+  margin: 0;
+  padding: 0.55rem 1rem;
+  background: #fff5f5;
+  border: 1px solid #feb2b2;
+  border-radius: 8px;
+  color: #c53030;
+  font-size: 0.88rem;
+}
+
+.rp-success {
+  margin: 0;
+  padding: 0.55rem 1rem;
+  background: #f0fff4;
+  border: 1px solid #9ae6b4;
+  border-radius: 8px;
+  color: #276749;
+  font-size: 0.88rem;
+}
+
+/* ── Room / service info pills ────────────────────────────── */
+.rp-room-mini-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: -0.2rem 0 0.6rem;
+  flex-wrap: wrap;
+}
+
+.rp-room-avg {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.rp-room-count {
+  font-size: 0.82rem;
+  color: #888;
+}
+
+.rp-service-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 0.8rem 1rem;
+  background: rgba(201,168,76,0.1);
+  border-radius: 10px;
+  margin: -0.4rem 0 0.8rem;
+  border: 1px solid rgba(201,168,76,0.3);
+}
+
+.rp-service-icon { font-size: 1.6rem; flex-shrink: 0; }
+
+.rp-service-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #1a1a2e;
+}
+
+.rp-service-desc {
+  font-size: 0.82rem;
+  color: #555;
+  margin-top: 2px;
+}
+
+/* ── Stars ────────────────────────────────────────────────── */
+.rp-stars {
+  display: inline-flex;
+  gap: 3px;
+  user-select: none;
+}
+
+.rp-stars--sm  { gap: 2px; }
+.rp-stars--lg  { gap: 5px; }
+
+.rp-star {
+  color: #d4c4a0;
+  cursor: pointer;
+  transition: color 0.15s, transform 0.12s;
+  line-height: 1;
+}
+
+/* sizes */
+.rp-stars--sm  .rp-star { font-size: 1.1rem; }
+.rp-stars--md  .rp-star { font-size: 1.5rem; }
+.rp-stars--lg  .rp-star { font-size: 2rem; }
+
+.rp-star--on { color: #c9a84c; }
+
+.rp-stars:not(.rp-stars--readonly) .rp-star:hover { transform: scale(1.2); }
+
+.rp-stars--readonly .rp-star { cursor: default; }
+
+/* ── Reviews list ─────────────────────────────────────────── */
+.rp-reviews-list {
+  background: rgba(255,255,255,0.82);
+  border-radius: 16px;
+  padding: 1.4rem 1.6rem;
+  box-shadow: 0 4px 20px rgba(26,26,46,0.08);
+  border: 1px solid rgba(201,168,76,0.2);
+}
+
+.rp-reviews-list-title {
+  margin: 0 0 1.1rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  padding-bottom: 0.7rem;
+  border-bottom: 2px solid rgba(201,168,76,0.3);
+}
+
+.rp-review-item {
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(201,168,76,0.18);
+}
+
+.rp-review-item:last-child { border-bottom: none; padding-bottom: 0; }
+.rp-review-item:first-of-type { padding-top: 0; }
+
+.rp-review-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.rp-reviewer-name {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #1a1a2e;
+}
+
+.rp-review-date {
+  font-size: 0.78rem;
+  color: #999;
+  margin-left: auto;
+}
+
+.rp-review-comment {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #333;
+  line-height: 1.55;
+}
+
+.rp-review-sub {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.rp-review-sub span {
+  background: rgba(201,168,76,0.15);
+  border: 1px solid rgba(201,168,76,0.3);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 0.78rem;
+  color: #555;
+  font-weight: 600;
+}
+
+/* ── Empty / loading states ───────────────────────────────── */
+.rp-no-reviews {
+  text-align: center;
+  color: #888;
+  font-style: italic;
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+}
+
+.rp-reviews-loading {
+  text-align: center;
+  color: #999;
+  font-size: 0.9rem;
+  padding: 1rem 0;
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .rp-banner {
+    flex-direction: column;
+    align-items: center;
+    gap: 1.2rem;
+    padding: 1.2rem 1rem;
+  }
+
+  .rp-banner-breakdown {
+    justify-content: center;
+    gap: 0.8rem;
+  }
+
+  .rp-summary-card {
+    flex-direction: column;
+    align-items: center;
+    gap: 1.2rem;
+  }
+
+  .rp-summary-right,
+  .rp-summary-sub {
+    width: 100%;
+  }
+
+  .rp-tabs { gap: 0.3rem; }
+
+  .rp-tab {
+    min-width: 80px;
+    font-size: 0.82rem;
+    padding: 0.6rem 0.7rem;
+  }
+
+  .rp-form-card { padding: 1.2rem; }
+
+  .rp-submit-btn { width: 100%; align-self: stretch; text-align: center; }
+
+  .rp-review-date { margin-left: 0; width: 100%; }
+}

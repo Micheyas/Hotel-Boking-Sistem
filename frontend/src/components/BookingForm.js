@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import api from "../api";
 import RoomSlideshow from "./RoomSlideshow";
 import {
@@ -7,6 +7,12 @@ import {
   convertPrice as ctxConvert,
 } from "../CurrencyContext";
 import { useI18n } from "../LanguageContext";
+import {
+  getCustomerToken,
+  getCustomerUser,
+  isCustomerVerified,
+  logoutCustomer,
+} from "./CustomerAuth";
 
 function convertPrice(etb, currency, rates) {
   return ctxConvert(etb, currency, rates);
@@ -104,6 +110,48 @@ const BookingForm = () => {
   const navigate = useNavigate();
   const params = new URLSearchParams(location.search);
 
+  // ── Auth guard ───────────────────────────────────────────
+  const customerToken = getCustomerToken();
+  const customerUser  = getCustomerUser();
+  const verified      = isCustomerVerified();
+
+  // Not logged in → redirect to /login with return path
+  useEffect(() => {
+    if (!customerToken || !customerUser) {
+      navigate(`/login?from=${encodeURIComponent("/booking" + location.search)}`);
+    }
+  }, [customerToken, customerUser, navigate, location.search]);
+
+  // Logged in but not verified → show inline wall
+  if (customerToken && customerUser && !verified) {
+    return (
+      <div className="booking-form">
+        <div className="bfm-verify-wall">
+          <div className="bfm-verify-icon">📧</div>
+          <h2>Verify Your Email First</h2>
+          <p>
+            Your account (<strong>{customerUser.email}</strong>) is not verified yet.
+            Check your inbox for the verification link we sent when you registered.
+          </p>
+          <p>Didn't receive it?</p>
+          <Link to="/verify-email" className="bfm-verify-btn">
+            Resend Verification Email
+          </Link>
+          <button
+            className="bfm-logout-link"
+            onClick={() => { logoutCustomer(); navigate("/login"); }}
+          >
+            ← Log in with a different account
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Still loading auth redirect
+  if (!customerToken || !customerUser) return null;
+  // ─────────────────────────────────────────────────────────
+
   // Step 1 — search params
   const [checkIn, setCheckIn] = useState(params.get("checkIn") || "");
   const [checkOut, setCheckOut] = useState(params.get("checkOut") || "");
@@ -119,13 +167,15 @@ const BookingForm = () => {
   const [selected, setSelected] = useState(null);
   const { currency, rates } = useCurrency();
   const { t } = useI18n();
+  // Pre-fill guest info from the logged-in customer account
   const [guestInfo, setGuestInfo] = useState({
-    name: "",
-    email: "",
+    name:  customerUser?.name  || "",
+    email: customerUser?.email || "",
     phone: "",
   });
   const [booking, setBooking] = useState(false);
   const [bookErr, setBookErr] = useState("");
+  const [bookErrLink, setBookErrLink] = useState(false);
 
   const [loyaltyInfo, setLoyaltyInfo] = useState(null); // { isRepeat, bookingCount, discountPercent, discountLabel }
   const [loyaltyChecking, setLoyaltyChecking] = useState(false);
@@ -239,26 +289,34 @@ const BookingForm = () => {
     setBooking(true);
     setBookErr("");
     try {
-      const res = await api.post("/bookings/guest", {
-        roomId: selected.id,
-        checkInDate: checkIn,
-        checkOutDate: checkOut,
-        totalPrice: originalTotal,
-        loyaltyDiscountPercent: discountPercent,
-        guestName: guestInfo.name,
-        guestEmail: guestInfo.email.trim(),
-        guestPhone: guestInfo.phone,
-      });
-      // Redirect to payment page with backend-calculated final amount
-      const bookingId = res.data?.booking?.id || res.data?.id;
-      const bookingAmount = Number(
-        res.data?.booking?.totalPrice || originalTotal,
+      // Use the authenticated booking endpoint — verified customer token is sent
+      const res = await api.post(
+        "/bookings/guest",
+        {
+          roomId: selected.id,
+          checkInDate: checkIn,
+          checkOutDate: checkOut,
+          totalPrice: originalTotal,
+          loyaltyDiscountPercent: discountPercent,
+          guestName: guestInfo.name,
+          guestEmail: customerUser.email,  // always use the verified account email
+          guestPhone: guestInfo.phone,
+        },
+        { headers: { Authorization: `Bearer ${customerToken}` } }
       );
+      const bookingId = res.data?.booking?.id || res.data?.id;
+      const bookingAmount = Number(res.data?.booking?.totalPrice || originalTotal);
       navigate(`/payment?bookingId=${bookingId}&amount=${bookingAmount}`);
     } catch (err) {
-      setBookErr(
-        err.response?.data?.error || "Booking failed. Please try again.",
-      );
+      const code = err.response?.data?.code;
+      const message = err.response?.data?.error || "Booking failed. Please try again.";
+      if (code === "EMAIL_NOT_VERIFIED") {
+        setBookErr(`⚠️ ${message}`);
+        setBookErrLink(true);
+      } else {
+        setBookErr(message);
+        setBookErrLink(false);
+      }
     } finally {
       setBooking(false);
     }
@@ -356,36 +414,39 @@ const BookingForm = () => {
           </div>
         )}
 
-        {bookErr && <p className="error">{bookErr}</p>}
+        {bookErr && (
+          <div className="error" style={{lineHeight:1.6}}>
+            {bookErr}
+            {bookErrLink && (
+              <Link
+                to="/verify-email"
+                style={{color:'#0f3460',fontWeight:700,textDecoration:'underline',marginLeft:4}}
+              >
+                resend verification email
+              </Link>
+            )}
+          </div>
+        )}
 
         <form onSubmit={handleBook} className="guest-form">
-          <div className="form-group">
-            <label>{t("booking.fullName")}</label>
-            <input
-              type="text"
-              placeholder={t("booking.fullNamePlaceholder")}
-              value={guestInfo.name}
-              onChange={handleGuestInfoChange("name")}
-              required
-            />
+          {/* Logged-in verified customer banner */}
+          <div className="bfm-account-banner">
+            <span className="bfm-account-icon">✅</span>
+            <div>
+              <div className="bfm-account-name">{customerUser.name}</div>
+              <div className="bfm-account-email">{customerUser.email} · Verified</div>
+            </div>
+            <button
+              type="button"
+              className="bfm-account-logout"
+              onClick={() => { logoutCustomer(); navigate("/login"); }}
+            >
+              Switch account
+            </button>
           </div>
+
           <div className="form-group">
-            <label>
-              {t("booking.email")}
-              <span className="field-optional">
-                {" "}
-                {t("booking.emailOptional")}
-              </span>
-            </label>
-            <input
-              type="email"
-              placeholder="your@email.com"
-              value={guestInfo.email}
-              onChange={handleGuestInfoChange("email")}
-            />
-          </div>
-          <div className="form-group">
-            <label>{t("booking.phone")}</label>
+            <label>{t("booking.phone")} <span style={{color:'#e53e3e'}}>*</span></label>
             <input
               type="tel"
               placeholder={t("booking.phonePlaceholder")}

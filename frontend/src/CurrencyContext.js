@@ -66,6 +66,6 @@ export const useCurrency = () => useContext(CurrencyContext);
 export function convertPrice(etbPrice, currency, rates = FALLBACK_RATES) {
   const rate   = rates[currency] ?? FALLBACK_RATES[currency] ?? 1;
   const symbol = SYMBOLS[currency] ?? 'ETB ';
-  const converted = Math.round(etbPrice * rate);
-  return `${symbol}${converted.toLocaleString()}`;
+  const converted = etbPrice * rate;
+  return `${symbol}${converted.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
 }

@@ -88,6 +88,30 @@ sequelize.sync({ alter: false }).then(async () => {
   await addColumnIfMissing('Rooms', 'images',                 { type: DataTypes.TEXT,    allowNull: true, defaultValue: '[]' });
   await addColumnIfMissing('Bookings', 'loyaltyDiscountPercent', { type: DataTypes.INTEGER, allowNull: true, defaultValue: 0 });
 
+  // ── Email verification columns ──
+  await addColumnIfMissing('Users', 'emailVerified',       { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false });
+  await addColumnIfMissing('Users', 'verifyToken',         { type: DataTypes.STRING,  allowNull: true });
+  await addColumnIfMissing('Users', 'verifyTokenExpires',  { type: DataTypes.DATE,    allowNull: true });
+
+  // ── Auto-verify existing users when email is not configured ──
+  // Any user created before email verification existed (emailVerified = false)
+  // gets auto-verified so they aren't blocked from booking.
+  const emailConfigured = !!(
+    process.env.EMAIL_SERVICE &&
+    process.env.EMAIL_USER &&
+    process.env.EMAIL_PASS &&
+    process.env.EMAIL_USER !== 'your_email@gmail.com' &&
+    process.env.EMAIL_PASS !== 'your_app_password'
+  );
+  if (!emailConfigured) {
+    const { User } = require('./models');
+    const unverified = await User.count({ where: { emailVerified: false } });
+    if (unverified > 0) {
+      await User.update({ emailVerified: true }, { where: { emailVerified: false } });
+      console.log(`[Auth] Auto-verified ${unverified} existing user(s) — email not configured`);
+    }
+  }
+
   // ── HotelServices table migration (safe add columns) ──
   await addColumnIfMissing('HotelServices', 'sortOrder',     { type: DataTypes.INTEGER, allowNull: true, defaultValue: 0 });
   await addColumnIfMissing('HotelServices', 'location',      { type: DataTypes.STRING,  allowNull: true });

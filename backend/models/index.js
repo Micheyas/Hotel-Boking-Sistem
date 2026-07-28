@@ -28,6 +28,9 @@ Review.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 Room.hasMany(Review, { foreignKey: 'roomId', as: 'reviews' });
 Review.belongsTo(Room, { foreignKey: 'roomId', as: 'room' });
 
+HotelService.hasMany(Review, { foreignKey: 'serviceId', as: 'reviews' });
+Review.belongsTo(HotelService, { foreignKey: 'serviceId', as: 'service' });
+
 module.exports = {
   sequelize,
   Room,

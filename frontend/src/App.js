@@ -5,6 +5,10 @@ import BookingForm from "./components/BookingForm";
 import AdminPanel from "./components/AdminPanel";
 import PaymentForm from "./components/PaymentForm";
 import ReviewForm from "./components/ReviewForm";
+import ReviewPage from "./components/ReviewPage";
+import VerifyEmailPage from "./components/VerifyEmailPage";
+import CustomerAuth from "./components/CustomerAuth";
+import { getCustomerUser, logoutCustomer } from "./components/CustomerAuth";
 import Rooms from "./components/Rooms";
 import Amenities from "./components/Amenities";
 import AvailabilitySearch from "./components/AvailabilitySearch";
@@ -43,6 +47,20 @@ function AppInner() {
       ? t("language.switchToAmharic")
       : t("language.switchToEnglish");
 
+  // Customer auth state — re-evaluated on every render so nav stays in sync
+  const [customerUser, setCustomerUser] = React.useState(getCustomerUser());
+  React.useEffect(() => {
+    const sync = () => setCustomerUser(getCustomerUser());
+    window.addEventListener("storage", sync);
+    return () => window.removeEventListener("storage", sync);
+  }, []);
+
+  const handleCustomerLogout = () => {
+    logoutCustomer();
+    setCustomerUser(null);
+    window.location.href = "/";
+  };
+
   return (
     <div className="App">
       <header className="navbar">
@@ -52,8 +70,9 @@ function AppInner() {
         <nav className="navbar-links">
           <Link to="/">{t("nav.home")}</Link>
           <Link to="/rooms">{t("nav.rooms")}</Link>
-          <Link to="/services">🛎️ Services</Link>
+          <Link to="/services">🛎️ {t("nav.services")}</Link>
           <Link to="/amenities">{t("nav.amenities")}</Link>
+          <Link to="/reviews">⭐ {t("nav.reviews")}</Link>
           <Link to="/admin" className="navbar-staff">
             🔑 {t("nav.staff")}
           </Link>
@@ -93,9 +112,35 @@ function AppInner() {
           >
             {languageButtonLabel}
           </button>
-          <Link to="/booking" className="navbar-book-btn">
-            {t("nav.bookNow")}
-          </Link>
+          {customerUser ? (
+            <div className="navbar-customer-menu">
+              <span className="navbar-customer-name">
+                👤 {customerUser.name.split(" ")[0]}
+                {customerUser.emailVerified
+                  ? <span className="navbar-verified-badge" title="Email verified">✅</span>
+                  : <span className="navbar-unverified-badge" title="Email not verified">⚠️</span>}
+              </span>
+              <Link to="/booking" className="navbar-book-btn">
+                {t("nav.bookNow")}
+              </Link>
+              <button
+                className="navbar-logout-btn"
+                onClick={handleCustomerLogout}
+                title="Log out"
+              >
+                ↪ Logout
+              </button>
+            </div>
+          ) : (
+            <div className="navbar-customer-menu">
+              <Link to="/login" className="navbar-login-btn">
+                Login
+              </Link>
+              <Link to="/register" className="navbar-book-btn">
+                Register &amp; Book
+              </Link>
+            </div>
+          )}
         </nav>
       </header>
 
@@ -106,17 +151,15 @@ function AppInner() {
           <Route path="/rooms" element={<Rooms />} />
           <Route path="/services" element={<Services />} />
           <Route path="/amenities" element={<Amenities />} />
+          <Route path="/reviews" element={<ReviewPage />} />
+          <Route path="/verify-email" element={<VerifyEmailPage />} />
+          <Route path="/login" element={<CustomerAuth />} />
+          <Route path="/register" element={<CustomerAuth />} />
           <Route path="/admin" element={<AdminPanel />} />
           <Route path="/payment" element={<PaymentForm />} />
           <Route
             path="/reviews/:roomId"
-            element={
-              <ReviewForm
-                roomId={new URLSearchParams(window.location.search).get(
-                  "roomId",
-                )}
-              />
-            }
+            element={<ReviewPage />}
           />
         </Routes>
       </main>
@@ -253,6 +296,22 @@ function FeaturedRooms() {
 
 function Home() {
   const { t } = useI18n();
+
+  // Live review summary for hero
+  const [heroRating, setHeroRating] = React.useState(null);
+  React.useEffect(() => {
+    fetch("http://localhost:5000/api/reviews/summary")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.overall?.count > 0) {
+          setHeroRating({
+            avg: data.overall.averageRating,
+            count: data.overall.count,
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
   const galleryImages = [
     {
       url: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=1400&q=80",
@@ -288,7 +347,20 @@ function Home() {
         </div>
         <div className="hero-overlay">
           <div className="hero-text">
-            <div className="hero-stars">⭐⭐⭐⭐⭐</div>
+            {heroRating ? (
+              <a href="/reviews" className="hero-rating-badge" aria-label={`View ${heroRating.count} guest reviews`}>
+                <span className="hero-rating-stars">
+                  {"★".repeat(Math.round(heroRating.avg))}{"☆".repeat(5 - Math.round(heroRating.avg))}
+                </span>
+                <span className="hero-rating-score">{heroRating.avg}</span>
+                <span className="hero-rating-divider">·</span>
+                <span className="hero-rating-count">
+                  {heroRating.count} {heroRating.count === 1 ? "review" : "reviews"}
+                </span>
+              </a>
+            ) : (
+              <div className="hero-stars">⭐⭐⭐⭐⭐</div>
+            )}
             <h1 className="hero-title">{t("home.heroTitle")}</h1>
             <p className="hero-subtitle">{t("home.heroSubtitle")}</p>
           </div>

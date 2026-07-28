@@ -24,6 +24,20 @@ const User = sequelize.define('User', {
     type: DataTypes.ENUM('admin', 'manager', 'receptionist', 'customer'),
     defaultValue: 'customer',
   },
+  emailVerified: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+  },
+  verifyToken: {
+    // Short-lived UUID sent in the verification link
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  verifyTokenExpires: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
   createdAt: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,

@@ -1,0 +1,300 @@
+import React, { useState } from "react";
+import { useNavigate, useLocation, Link } from "react-router-dom";
+import axios from "axios";
+import "../styles/CustomerAuth.css";
+
+const API = "http://localhost:5000/api";
+
+// ── Shared helpers ────────────────────────────────────────
+export function getCustomerToken() {
+  return localStorage.getItem("customerToken");
+}
+export function getCustomerUser() {
+  try {
+    return JSON.parse(localStorage.getItem("customerUser"));
+  } catch {
+    return null;
+  }
+}
+export function isCustomerVerified() {
+  const u = getCustomerUser();
+  return !!(u && u.emailVerified);
+}
+export function logoutCustomer() {
+  localStorage.removeItem("customerToken");
+  localStorage.removeItem("customerUser");
+}
+
+// ── Register tab ──────────────────────────────────────────
+const RegisterForm = ({ onSwitch }) => {
+  const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "" });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [done, setDone] = useState(false);
+
+  const handleChange = (e) => setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    if (form.password !== form.confirm) {
+      setError("Passwords do not match."); return;
+    }
+    if (form.password.length < 6) {
+      setError("Password must be at least 6 characters."); return;
+    }
+    setLoading(true);
+    try {
+      await axios.post(`${API}/auth/register`, {
+        name: form.name.trim(),
+        email: form.email.trim().toLowerCase(),
+        password: form.password,
+      });
+      setDone(true);
+    } catch (err) {
+      setError(err.response?.data?.error || "Registration failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (done) {
+    return (
+      <div className="ca-success-box">
+        <div className="ca-success-icon">📧</div>
+        <h3>Check your inbox!</h3>
+        <p>
+          We sent a verification email to <strong>{form.email}</strong>.
+          Click the link in that email to activate your account, then come
+          back here to log in and make your booking.
+        </p>
+        <button className="ca-btn" onClick={onSwitch}>
+          Go to Login →
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <form className="ca-form" onSubmit={handleSubmit}>
+      <div className="ca-field">
+        <label>Full Name <span className="ca-req">*</span></label>
+        <input
+          name="name" type="text" required
+          placeholder="Your full name"
+          value={form.name} onChange={handleChange}
+        />
+      </div>
+      <div className="ca-field">
+        <label>Email Address <span className="ca-req">*</span></label>
+        <input
+          name="email" type="email" required
+          placeholder="your@email.com"
+          value={form.email} onChange={handleChange}
+        />
+        <span className="ca-hint">A verification link will be sent to this address.</span>
+      </div>
+      <div className="ca-field">
+        <label>Password <span className="ca-req">*</span></label>
+        <input
+          name="password" type="password" required
+          placeholder="Min. 6 characters"
+          value={form.password} onChange={handleChange}
+        />
+      </div>
+      <div className="ca-field">
+        <label>Confirm Password <span className="ca-req">*</span></label>
+        <input
+          name="confirm" type="password" required
+          placeholder="Repeat password"
+          value={form.confirm} onChange={handleChange}
+        />
+      </div>
+      {error && <p className="ca-error">{error}</p>}
+      <button className="ca-btn" type="submit" disabled={loading}>
+        {loading ? "Creating account…" : "Create Account & Send Verification Email"}
+      </button>
+    </form>
+  );
+};
+
+// ── Login tab ─────────────────────────────────────────────
+const LoginForm = ({ onSwitch, onLogin }) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [unverified, setUnverified] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendDone, setResendDone] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(""); setUnverified(false);
+    setLoading(true);
+    try {
+      const res = await axios.post(`${API}/auth/login`, {
+        email: email.trim().toLowerCase(),
+        password,
+      });
+      const { token, user } = res.data;
+
+      // Staff must use the Staff Portal (/admin)
+      if (["admin", "manager", "receptionist"].includes(user.role)) {
+        setError("Staff accounts must use the Staff Portal (🔑 Staff link in the nav).");
+        setLoading(false); return;
+      }
+
+      // Verified check
+      if (!user.emailVerified) {
+        setUnverified(true);
+        setLoading(false); return;
+      }
+
+      localStorage.setItem("customerToken", token);
+      localStorage.setItem("customerUser", JSON.stringify(user));
+      onLogin(user);
+    } catch (err) {
+      setError(err.response?.data?.error || "Login failed. Check your credentials.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    setResendLoading(true);
+    try {
+      await axios.post(`${API}/auth/resend-verification`, { email });
+      setResendDone(true);
+    } catch {
+      setResendDone(true); // still show success (anti-enumeration)
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
+  return (
+    <form className="ca-form" onSubmit={handleSubmit}>
+      <div className="ca-field">
+        <label>Email Address <span className="ca-req">*</span></label>
+        <input
+          type="email" required
+          placeholder="your@email.com"
+          value={email} onChange={(e) => setEmail(e.target.value)}
+        />
+      </div>
+      <div className="ca-field">
+        <label>Password <span className="ca-req">*</span></label>
+        <input
+          type="password" required
+          placeholder="Your password"
+          value={password} onChange={(e) => setPassword(e.target.value)}
+        />
+      </div>
+
+      {error && <p className="ca-error">{error}</p>}
+
+      {unverified && (
+        <div className="ca-unverified-box">
+          <span className="ca-unverified-icon">📧</span>
+          <div>
+            <strong>Email not verified yet.</strong>
+            <p>
+              Please check your inbox for the verification link. If you didn't
+              receive it, click below to get a new one.
+            </p>
+            {!resendDone ? (
+              <button
+                type="button"
+                className="ca-resend-btn"
+                onClick={handleResend}
+                disabled={resendLoading}
+              >
+                {resendLoading ? "Sending…" : "📨 Resend Verification Email"}
+              </button>
+            ) : (
+              <p className="ca-resend-done">
+                ✅ A new verification email has been sent to {email}.
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
+      <button className="ca-btn" type="submit" disabled={loading}>
+        {loading ? "Logging in…" : "Login"}
+      </button>
+
+      <p className="ca-switch-text">
+        Don't have an account?{" "}
+        <button type="button" className="ca-link-btn" onClick={onSwitch}>
+          Register here
+        </button>
+      </p>
+    </form>
+  );
+};
+
+// ── Main CustomerAuth page ────────────────────────────────
+const CustomerAuth = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const defaultTab = location.pathname === "/register" ? "register" : "login";
+  const [tab, setTab] = useState(defaultTab);
+
+  // Where to go after login (e.g. back to /booking)
+  const from = new URLSearchParams(location.search).get("from") || "/booking";
+
+  const handleLogin = (user) => {
+    navigate(from);
+  };
+
+  return (
+    <div className="ca-page">
+      <div className="ca-card">
+        <div className="ca-header">
+          <Link to="/" className="ca-logo">2RN Solomon Hotel</Link>
+          <h2 className="ca-title">
+            {tab === "login" ? "Welcome Back" : "Create Account"}
+          </h2>
+          <p className="ca-subtitle">
+            {tab === "login"
+              ? "Log in to book your stay"
+              : "Register to book rooms and leave reviews"}
+          </p>
+        </div>
+
+        {/* Tab switcher */}
+        <div className="ca-tabs">
+          <button
+            className={`ca-tab ${tab === "login" ? "ca-tab--active" : ""}`}
+            onClick={() => setTab("login")}
+          >
+            Login
+          </button>
+          <button
+            className={`ca-tab ${tab === "register" ? "ca-tab--active" : ""}`}
+            onClick={() => setTab("register")}
+          >
+            Register
+          </button>
+        </div>
+
+        {/* Forms */}
+        {tab === "login" ? (
+          <LoginForm onSwitch={() => setTab("register")} onLogin={handleLogin} />
+        ) : (
+          <RegisterForm onSwitch={() => setTab("login")} />
+        )}
+
+        {/* Verify email page link */}
+        <p className="ca-verify-link">
+          Already registered?{" "}
+          <Link to="/verify-email">Verify your email here</Link>
+        </p>
+      </div>
+    </div>
+  );
+};
+
+export default CustomerAuth;

@@ -182,15 +182,23 @@ const Rooms = () => {
                     {t("rooms.upToGuests")} {room.roomType?.capacity || 2}{" "}
                     {t("rooms.guests")}
                   </span>
-                  {room.status === "available" ? (
-                    <Link to="/booking" className="book-room-btn">
-                      {t("nav.bookNow")}
+                  <div className="room-footer-buttons">
+                    {room.status === "available" ? (
+                      <Link to="/booking" className="book-room-btn">
+                        {t("nav.bookNow")}
+                      </Link>
+                    ) : (
+                      <button className="book-room-btn disabled" disabled>
+                        {statusLabel(room.status)}
+                      </button>
+                    )}
+                    <Link
+                      to={`/reviews/${room.id}?roomId=${room.id}`}
+                      className="review-room-btn"
+                    >
+                      ⭐ {t("rooms.writeReview")}
                     </Link>
-                  ) : (
-                    <button className="book-room-btn disabled" disabled>
-                      {statusLabel(room.status)}
-                    </button>
-                  )}
+                  </div>
                 </div>
               </div>
             </div>

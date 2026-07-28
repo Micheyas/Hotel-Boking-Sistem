@@ -18,7 +18,9 @@ const translations = {
     nav: {
       home: "Home",
       rooms: "Rooms",
+      services: "Services",
       amenities: "Amenities",
+      reviews: "Reviews",
       staff: "Staff",
       bookNow: "Book Now",
     },
@@ -99,6 +101,7 @@ const translations = {
       noRooms: "No",
       noRoomsSuffix: "rooms found.",
       priceNight: "/night",
+      writeReview: "Write Review",
     },
     amenities: {
       title: "Hotel Amenities",
@@ -235,6 +238,15 @@ const translations = {
       skyBarText: "Craft cocktails with stunning views",
       diningTitle: "Fine Dining",
       diningText: "Award-winning culinary experiences",
+    },
+    services: {
+      title: "Hotel Services",
+      subtitle: "Everything you need for a perfect stay — dining, wellness, fitness, and more",
+      loading: "Loading hotel services...",
+      retry: "Retry",
+      noServices: "No services available at the moment. Please check back soon.",
+      complimentary: "Complimentary",
+      serviceCount: (count) => `service${count !== 1 ? 's' : ''}`,
     },
     gallery: {
       grandLobby: "Grand Lobby",
@@ -522,7 +534,9 @@ const translations = {
     nav: {
       home: "መነሻ",
       rooms: "ክፍሎች",
+      services: "አገልግሎቶች",
       amenities: "አገልግሎቶች",
+      reviews: "ግምገማዎች",
       staff: "ሰራተኞች",
       bookNow: "አሁን ያስይዙ",
     },
@@ -603,6 +617,7 @@ const translations = {
       noRooms: "ምንም",
       noRoomsSuffix: "ክፍሎች አልተገኙም።",
       priceNight: "/ሌሊት",
+      writeReview: "ግምገሽ ይጻፉ",
     },
     amenities: {
       title: "የሆቴሉ አገልግሎቶች",
@@ -730,6 +745,15 @@ const translations = {
       skyBarText: "አስደናቂ እይታዎች ጋር የተዘጋጀ ኮክቴል",
       diningTitle: "ከፍተኛ የምግብ አገልግሎት",
       diningText: "ሽልማት ያገኙ የምግብ ልምዶች",
+    },
+    services: {
+      title: "የሆቴሉ አገልግሎቶች",
+      subtitle: "ለፍጹም ቆይታ የሚያስፈልግ ሁሉም ነገር — ምግብ፣ ደህንነት፣ ስፖርት እና ሌሎችም",
+      loading: "የሆቴሉ አገልግሎቶች በመጫን ላይ...",
+      retry: "እንደገና ይሞክሩ",
+      noServices: "በአሁኑ ጊዜ ምንም አገልግሎት የለም። እባክዎ ቆይተው ይመለከቱ።",
+      complimentary: "ነጻ",
+      serviceCount: (count) => `አገልግሎት${count !== 1 ? 'ች' : ''}`,
     },
     gallery: {
       grandLobby: "ዋና መቀበያ አዳራሽ",

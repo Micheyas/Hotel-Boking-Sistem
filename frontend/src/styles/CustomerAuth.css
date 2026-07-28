@@ -1,0 +1,295 @@
+/* ═══════════════════════════════════════════════════════════
+   CustomerAuth.css  —  Register / Login page for customers
+   Prefix: ca-
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Page ─────────────────────────────────────────────────── */
+.ca-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* ── Card ─────────────────────────────────────────────────── */
+.ca-card {
+  background: #fffdf5;
+  border-radius: 20px;
+  padding: 2.4rem 2rem 2rem;
+  max-width: 460px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(226, 201, 126, 0.3);
+}
+
+/* ── Header ───────────────────────────────────────────────── */
+.ca-header {
+  text-align: center;
+  margin-bottom: 1.6rem;
+}
+
+.ca-logo {
+  display: inline-block;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #c9a84c;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-decoration: none;
+  margin-bottom: 0.8rem;
+}
+
+.ca-title {
+  margin: 0 0 0.3rem;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #1a1a2e;
+}
+
+.ca-subtitle {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #777;
+}
+
+/* ── Tab switcher ─────────────────────────────────────────── */
+.ca-tabs {
+  display: flex;
+  gap: 0;
+  background: #f0e8d5;
+  border-radius: 10px;
+  padding: 4px;
+  margin-bottom: 1.6rem;
+}
+
+.ca-tab {
+  flex: 1;
+  padding: 0.6rem;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #777;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.ca-tab--active {
+  background: linear-gradient(135deg, #1a1a2e, #0f3460);
+  color: #e2c97e;
+  box-shadow: 0 2px 8px rgba(26, 26, 46, 0.25);
+}
+
+/* ── Form ─────────────────────────────────────────────────── */
+.ca-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.ca-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.ca-field label {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.ca-req {
+  color: #e53e3e;
+  margin-left: 2px;
+}
+
+.ca-hint {
+  font-size: 0.76rem;
+  color: #999;
+  margin-top: 2px;
+}
+
+.ca-field input {
+  padding: 0.65rem 0.9rem;
+  border: 1.5px solid #d4c4a0;
+  border-radius: 9px;
+  font-size: 0.92rem;
+  font-family: inherit;
+  background: #fffef8;
+  color: #1a1a2e;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.ca-field input:focus {
+  outline: none;
+  border-color: #c9a84c;
+  box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.18);
+}
+
+/* ── Submit button ────────────────────────────────────────── */
+.ca-btn {
+  width: 100%;
+  padding: 0.8rem;
+  background: linear-gradient(135deg, #1a1a2e, #0f3460);
+  color: #e2c97e;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.3px;
+  transition: transform 0.15s, box-shadow 0.2s, opacity 0.2s;
+  box-shadow: 0 4px 14px rgba(26, 26, 46, 0.25);
+  margin-top: 0.3rem;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+}
+
+.ca-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(26, 26, 46, 0.35);
+}
+
+.ca-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ── Error ────────────────────────────────────────────────── */
+.ca-error {
+  margin: 0;
+  padding: 0.6rem 0.9rem;
+  background: #fff5f5;
+  border: 1px solid #feb2b2;
+  border-radius: 8px;
+  color: #c53030;
+  font-size: 0.87rem;
+}
+
+/* ── Unverified warning box ───────────────────────────────── */
+.ca-unverified-box {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 1rem 1.1rem;
+  background: #fffbea;
+  border: 1.5px solid #f6c90e;
+  border-radius: 10px;
+}
+
+.ca-unverified-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.ca-unverified-box strong {
+  display: block;
+  font-size: 0.9rem;
+  color: #1a1a2e;
+  margin-bottom: 4px;
+}
+
+.ca-unverified-box p {
+  margin: 0 0 10px;
+  font-size: 0.84rem;
+  color: #555;
+  line-height: 1.5;
+}
+
+.ca-resend-btn {
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #1a1a2e, #0f3460);
+  color: #e2c97e;
+  border: none;
+  border-radius: 7px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.ca-resend-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.ca-resend-done {
+  margin: 0;
+  font-size: 0.84rem;
+  color: #276749;
+  font-weight: 600;
+}
+
+/* ── Success box (after register) ────────────────────────── */
+.ca-success-box {
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.ca-success-icon {
+  font-size: 3rem;
+  margin-bottom: 0.6rem;
+}
+
+.ca-success-box h3 {
+  margin: 0 0 0.6rem;
+  font-size: 1.3rem;
+  color: #1a1a2e;
+}
+
+.ca-success-box p {
+  color: #555;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin-bottom: 1.4rem;
+}
+
+/* ── Switch / links ───────────────────────────────────────── */
+.ca-switch-text {
+  text-align: center;
+  font-size: 0.86rem;
+  color: #777;
+  margin: 0.3rem 0 0;
+}
+
+.ca-link-btn {
+  background: none;
+  border: none;
+  color: #0f3460;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.86rem;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.ca-verify-link {
+  text-align: center;
+  font-size: 0.8rem;
+  color: #aaa;
+  margin-top: 1.2rem;
+  border-top: 1px solid #e8dfc8;
+  padding-top: 1rem;
+}
+
+.ca-verify-link a {
+  color: #c9a84c;
+  text-decoration: underline;
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .ca-card {
+    padding: 1.6rem 1.2rem 1.4rem;
+    border-radius: 14px;
+  }
+
+  .ca-title { font-size: 1.3rem; }
+}
