@@ -1,5 +1,5 @@
 const multer = require('multer');
-const { v2: cloudinary } = require('cloudinary');
+const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
 // Configure Cloudinary
@@ -9,13 +9,12 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Use Cloudinary storage — files go directly to cloud
+// Use Cloudinary storage — files go directly to cloud, never deleted
 const storage = new CloudinaryStorage({
   cloudinary,
   params: {
     folder: 'hotel-payments',
     allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-    transformation: [{ quality: 'auto', fetch_format: 'auto' }],
     public_id: (req, file) => 'payment-' + Date.now() + '-' + Math.round(Math.random() * 1e9),
   },
 });
@@ -31,7 +30,7 @@ const fileFilter = (req, file, cb) => {
 const uploadPayment = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB max
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
 });
 
 module.exports = uploadPayment;
