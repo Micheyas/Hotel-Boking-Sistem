@@ -313,7 +313,14 @@ const ServiceReviewTab = ({ token, onNewReview }) => {
       );
       setSuccess(t("review.success"));
       setRating(0); setComment("");
-      setTimeout(() => { setSuccess(""); fetchServiceReviews(selectedService); onNewReview && onNewReview(); }, 1500);
+      setTimeout(() => { 
+        setSuccess(""); 
+        fetchServiceReviews(selectedService); 
+        onNewReview && onNewReview();
+        // Reset so customer can review another service
+        setSelectedService("");
+        setReviews([]);
+      }, 2000);
     } catch (err) {
       setError(err.response?.data?.error || t("review.errorLogin"));
     } finally { setSubmitting(false); }
@@ -378,7 +385,10 @@ const ReviewList = ({ reviews, loading, emptyMsg = "No reviews yet." }) => {
   if (!reviews.length) return <p className="rp-no-reviews">{emptyMsg}</p>;
   return (
     <div className="rp-reviews-list">
-      <h4 className="rp-reviews-list-title">Recent Reviews</h4>
+      <h4 className="rp-reviews-list-title">
+        Recent Reviews
+        <span className="rp-reviews-count-badge">{reviews.length} {reviews.length === 1 ? "review" : "reviews"}</span>
+      </h4>
       {reviews.map((r) => (
         <div key={r.id} className="rp-review-item">
           <div className="rp-review-header">
@@ -415,7 +425,9 @@ const OverallBanner = () => {
       <div className="rp-banner-score">
         <span className="rp-banner-num">{summary.overall.averageRating}</span>
         <StarRow value={Math.round(summary.overall.averageRating || 0)} readonly size="md" />
-        <span className="rp-banner-label">Based on {summary.overall.count} review{summary.overall.count !== 1 ? "s" : ""}</span>
+        <span className="rp-banner-label">
+          <strong>{summary.overall.count}</strong> {summary.overall.count === 1 ? "guest review" : "guest reviews"}
+        </span>
       </div>
       <div className="rp-banner-breakdown">
         <div className="rp-banner-type"><span className="rp-banner-type-icon">🏨</span><span className="rp-banner-type-label">Hotel</span><span className="rp-banner-type-val">{summary.hotel.averageRating ? summary.hotel.averageRating + " ★" : "—"}</span></div>

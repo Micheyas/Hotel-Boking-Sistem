@@ -618,3 +618,23 @@
 
   .rp-review-date { margin-left: 0; width: 100%; }
 }
+
+/* ── Review count badge ── */
+.rp-reviews-count-badge {
+  display: inline-block;
+  margin-left: 10px;
+  padding: 2px 10px;
+  background: rgba(201, 168, 76, 0.15);
+  border: 1px solid rgba(201, 168, 76, 0.4);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #c9a84c;
+  vertical-align: middle;
+}
+
+/* ── Banner label strong ── */
+.rp-banner-label strong {
+  font-size: 1.1rem;
+  color: #e2c97e;
+}
