@@ -199,4 +199,67 @@ router.get('/admin/users', authenticateToken, authorizeRole(['admin']), async (r
   }
 });
 
+// ── POST /api/auth/google ─────────────────────────────────────────────────────
+// Verify Google ID token from frontend, create/find user, return JWT
+router.post('/google', async (req, res) => {
+  try {
+    const { credential } = req.body;
+    if (!credential) return res.status(400).json({ error: 'Google credential is required' });
+
+    // Verify the Google ID token
+    const { OAuth2Client } = require('google-auth-library');
+    const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const { email, name, email_verified } = payload;
+
+    if (!email_verified) {
+      return res.status(400).json({ error: 'Google account email is not verified' });
+    }
+
+    // Find or create user
+    let user = await User.findOne({ where: { email: email.toLowerCase() } });
+
+    if (!user) {
+      // New user — create with emailVerified=true (Google already verified it)
+      user = await User.create({
+        name,
+        email: email.toLowerCase(),
+        password: await bcrypt.hash(Math.random().toString(36), 10), // random unusable password
+        role: 'customer',
+        emailVerified: true,
+      });
+      console.log(`[Google OAuth] New user created: ${email}`);
+    } else if (!user.emailVerified) {
+      // Existing unverified user — verify them now
+      await user.update({ emailVerified: true });
+    }
+
+    // Block staff from using Google login
+    if (['admin', 'manager', 'receptionist'].includes(user.role)) {
+      return res.status(403).json({ error: 'Staff accounts must use the Staff Portal.' });
+    }
+
+    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET);
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        emailVerified: true,
+      },
+    });
+  } catch (error) {
+    console.error('[Google OAuth] Error:', error.message);
+    res.status(400).json({ error: 'Google authentication failed. Please try again.' });
+  }
+});
+
 module.exports = router;

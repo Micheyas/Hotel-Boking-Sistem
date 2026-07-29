@@ -293,3 +293,62 @@
 
   .ca-title { font-size: 1.3rem; }
 }
+
+/* ── Google Sign-In Button ── */
+.ca-google-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ca-google-btn {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: #fff;
+  color: #3c4043;
+  border: 1.5px solid #dadce0;
+  border-radius: 10px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.ca-google-btn:hover:not(:disabled) {
+  background: #f8f9fa;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  transform: translateY(-1px);
+}
+
+.ca-google-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Or Divider ── */
+.ca-or-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0;
+}
+
+.ca-or-line {
+  flex: 1;
+  height: 1px;
+  background: #e8dfc8;
+}
+
+.ca-or-text {
+  font-size: 0.78rem;
+  color: #aaa;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
