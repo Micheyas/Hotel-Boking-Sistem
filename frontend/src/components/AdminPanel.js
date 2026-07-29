@@ -4,6 +4,17 @@ import api from '../api';
 import '../styles/AdminPanel.css';
 import { useCurrency, convertPrice } from '../CurrencyContext';
 
+const API_BASE = process.env.REACT_APP_API_URL
+  ? process.env.REACT_APP_API_URL.replace('/api', '')
+  : 'http://localhost:5000';
+
+// Returns the correct image URL — Cloudinary URLs are used as-is, local paths get the API base prepended
+function imgUrl(path) {
+  if (!path) return null;
+  if (path.startsWith('http')) return path; // already a full URL (Cloudinary)
+  return API_BASE + path;
+}
+
 const commonAmenities = [
   'Free WiFi', 'Air Conditioning', 'Flat-screen TV', 'Smart TV',
   'Mini-bar', 'Premium Mini-bar', 'Room Service', '24/7 Room Service',
@@ -444,7 +455,7 @@ const AdminPanel = () => {
 
     setNewRoom({ roomName: room.roomNumber, roomNumber: room.roomNumber, roomTypeId: room.roomTypeId, pricePerNight: room.roomType?.basePrice || '', floor: room.floor, maxGuests: room.maxGuests || 2, roomSize: room.roomSize || '', bedType: room.bedType || '', description: room.description || '', status: room.status, images: existingImgs, amenities: amenitiesArr });
     // Set image previews with full URLs
-    setImagePreviews(existingImgs.map(p => p.startsWith('http') ? p : `http://localhost:5000${p}`));
+    setImagePreviews(existingImgs.map(p => imgUrl(p)));
     setShowRoomModal(true);
   };
 
@@ -679,8 +690,8 @@ const AdminPanel = () => {
                   <td className="payment-proof-cell">
                     {b.paymentProof ? (
                       <div className="proof-actions">
-                        <a href={`http://localhost:5000${b.paymentProof}`} target="_blank" rel="noopener noreferrer">
-                          <img src={`http://localhost:5000${b.paymentProof}`} alt="proof" className="proof-thumb" />
+                        <a href={imgUrl(b.paymentProof)} target="_blank" rel="noopener noreferrer">
+                          <img src={imgUrl(b.paymentProof)} alt="proof" className="proof-thumb" />
                         </a>
                         <span className={`payment-badge ${b.paymentStatus}`}>
                           {b.paymentStatus === 'proof_submitted' && '⏳ Pending'}
@@ -786,7 +797,7 @@ const AdminPanel = () => {
               <tbody>
                 {rooms.map(room => (
                   <tr key={room.id}>
-                    <td>{room.image ? <img src={`http://localhost:5000${room.image}`} alt="" className="room-thumbnail" /> : <span className="no-image">—</span>}</td>
+                    <td>{room.image ? <img src={imgUrl(room.image)} alt="" className="room-thumbnail" /> : <span className="no-image">—</span>}</td>
                     <td>{room.roomNumber}</td>
                     <td>{room.roomType?.name || '—'}</td>
                     <td>{room.floor}</td>
@@ -970,8 +981,8 @@ const AdminPanel = () => {
                                 {new Date(b.checkInDate).toLocaleDateString()} → {new Date(b.checkOutDate).toLocaleDateString()}
                               </span>
                             </div>
-                            <a href={`http://localhost:5000${b.paymentProof}`} target="_blank" rel="noopener noreferrer" className="pv-proof-link">
-                              <img src={`http://localhost:5000${b.paymentProof}`} alt="Payment proof" className="pv-proof-img" />
+                            <a href={imgUrl(b.paymentProof)} target="_blank" rel="noopener noreferrer" className="pv-proof-link">
+                              <img src={imgUrl(b.paymentProof)} alt="Payment proof" className="pv-proof-img" />
                               <span className="pv-view-text">View full image</span>
                             </a>
                           </div>
@@ -1537,8 +1548,8 @@ const AdminPanel = () => {
                               {b.paymentProof && (
                                 <div className="bh-detail-block">
                                   <span className="bh-detail-label">Payment Proof</span>
-                                  <a href={`http://localhost:5000${b.paymentProof}`} target="_blank" rel="noopener noreferrer">
-                                    <img src={`http://localhost:5000${b.paymentProof}`} alt="proof" className="proof-thumb" />
+                                  <a href={imgUrl(b.paymentProof)} target="_blank" rel="noopener noreferrer">
+                                    <img src={imgUrl(b.paymentProof)} alt="proof" className="proof-thumb" />
                                   </a>
                                 </div>
                               )}
