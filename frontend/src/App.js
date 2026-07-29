@@ -346,15 +346,11 @@ function Home() {
         <div className="hero-overlay">
           <div className="hero-text">
             {heroRating ? (
-              <a href="/reviews" className="hero-rating-badge" aria-label={`View ${heroRating.count} guest reviews`}>
+              <a href="/reviews" className="hero-rating-badge" aria-label="View guest reviews">
                 <span className="hero-rating-stars">
                   {"★".repeat(Math.round(heroRating.avg))}{"☆".repeat(5 - Math.round(heroRating.avg))}
                 </span>
                 <span className="hero-rating-score">{heroRating.avg}</span>
-                <span className="hero-rating-divider">·</span>
-                <span className="hero-rating-count">
-                  {heroRating.count} {heroRating.count === 1 ? "review" : "reviews"}
-                </span>
               </a>
             ) : (
               <div className="hero-stars">⭐⭐⭐⭐⭐</div>
