@@ -122,7 +122,7 @@ const HotelReviewTab = ({ token, onNewReview }) => {
             <div className="rp-big-stars">
               <StarRow value={Math.round(hotelSummary.averageRating || 0)} readonly size="lg" />
             </div>
-            <div className="rp-big-count">{hotelSummary.count} review{hotelSummary.count !== 1 ? "s" : ""}</div>
+            <div className="rp-big-count">Guest reviews</div>
           </div>
           <div className="rp-summary-right">
             <DistributionBar distribution={hotelSummary.distribution} total={hotelSummary.count} />
@@ -240,7 +240,6 @@ const RoomReviewTab = ({ token, onNewReview }) => {
           <div className="rp-room-mini-summary">
             <StarRow value={Math.round(parseFloat(avg))} readonly size="sm" />
             <span className="rp-room-avg">{avg} / 5</span>
-            <span className="rp-room-count">({reviews.length} review{reviews.length !== 1 ? "s" : ""})</span>
           </div>
         )}
         <form onSubmit={handleSubmit} className="rp-form">
@@ -355,7 +354,6 @@ const ServiceReviewTab = ({ token, onNewReview }) => {
           <div className="rp-room-mini-summary">
             <StarRow value={Math.round(parseFloat(avg))} readonly size="sm" />
             <span className="rp-room-avg">{avg} / 5</span>
-            <span className="rp-room-count">({reviews.length} review{reviews.length !== 1 ? "s" : ""})</span>
           </div>
         )}
         <form onSubmit={handleSubmit} className="rp-form">
@@ -385,10 +383,7 @@ const ReviewList = ({ reviews, loading, emptyMsg = "No reviews yet." }) => {
   if (!reviews.length) return <p className="rp-no-reviews">{emptyMsg}</p>;
   return (
     <div className="rp-reviews-list">
-      <h4 className="rp-reviews-list-title">
-        Recent Reviews
-        <span className="rp-reviews-count-badge">{reviews.length} {reviews.length === 1 ? "review" : "reviews"}</span>
-      </h4>
+      <h4 className="rp-reviews-list-title">Recent Reviews</h4>
       {reviews.map((r) => (
         <div key={r.id} className="rp-review-item">
           <div className="rp-review-header">
@@ -425,9 +420,7 @@ const OverallBanner = () => {
       <div className="rp-banner-score">
         <span className="rp-banner-num">{summary.overall.averageRating}</span>
         <StarRow value={Math.round(summary.overall.averageRating || 0)} readonly size="md" />
-        <span className="rp-banner-label">
-          <strong>{summary.overall.count}</strong> {summary.overall.count === 1 ? "guest review" : "guest reviews"}
-        </span>
+        <span className="rp-banner-label">Based on our guests</span>
       </div>
       <div className="rp-banner-breakdown">
         <div className="rp-banner-type"><span className="rp-banner-type-icon">🏨</span><span className="rp-banner-type-label">Hotel</span><span className="rp-banner-type-val">{summary.hotel.averageRating ? summary.hotel.averageRating + " ★" : "—"}</span></div>
