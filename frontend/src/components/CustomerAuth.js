@@ -341,8 +341,8 @@ const CustomerAuth = () => {
   const defaultTab = location.pathname === "/register" ? "register" : "login";
   const [tab, setTab] = useState(defaultTab);
 
-  // Where to go after login (e.g. back to /booking)
-  const from = new URLSearchParams(location.search).get("from") || "/booking";
+  // Where to go after login — default to home, not booking
+  const from = new URLSearchParams(location.search).get("from") || "/";
 
   const handleLogin = (user) => {
     navigate(from);
