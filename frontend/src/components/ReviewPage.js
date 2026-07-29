@@ -372,38 +372,43 @@ const ServiceReviewTab = ({ token, onNewReview }) => {
           </button>
         </form>
       </div>
-      {selectedService && <ReviewList reviews={reviews} loading={loadingReviews} emptyMsg="No reviews for this service yet." />}
+      {selectedService && <ReviewList reviews={reviews} loading={loadingReviews} emptyMsg="No reviews for this service yet." showDirect={true} />}
     </div>
   );
 };
 
 // ── Shared: Reviews List ──────────────────────────────────
-const ReviewList = ({ reviews, loading, emptyMsg = "No reviews yet." }) => {
+const ReviewList = ({ reviews, loading, emptyMsg = "No reviews yet.", showDirect = false }) => {
   if (loading) return <div className="rp-reviews-loading">Loading reviews…</div>;
   if (!reviews.length) return <p className="rp-no-reviews">{emptyMsg}</p>;
   return (
-    <div className="rp-reviews-list">
+    <div className={`rp-reviews-list${showDirect ? " rp-reviews-list--direct" : ""}`}>
       <h4 className="rp-reviews-list-title">Recent Reviews</h4>
-      {reviews.map((r) => (
-        <div key={r.id} className="rp-review-item">
-          <div className="rp-review-header">
-            <span className="rp-reviewer-name">{r.user?.name || "Guest"}</span>
-            <StarRow value={r.rating} readonly size="sm" />
-            <span className="rp-review-date">
-              {new Date(r.createdAt).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
-            </span>
-          </div>
-          {r.comment && <p className="rp-review-comment">{r.comment}</p>}
-          {(r.cleanlinessRating || r.staffRating || r.locationRating || r.valueRating) && (
-            <div className="rp-review-sub">
-              {r.cleanlinessRating && <span>🧹 {r.cleanlinessRating}/5</span>}
-              {r.staffRating       && <span>👋 {r.staffRating}/5</span>}
-              {r.locationRating    && <span>📍 {r.locationRating}/5</span>}
-              {r.valueRating       && <span>💰 {r.valueRating}/5</span>}
+      <ul className="rp-review-ul">
+        {reviews.map((r) => (
+          <li key={r.id} className="rp-review-item rp-review-item--bullet">
+            <span className="rp-bullet">●</span>
+            <div className="rp-review-content">
+              <div className="rp-review-header">
+                <span className="rp-reviewer-name">{r.user?.name || "Guest"}</span>
+                <StarRow value={r.rating} readonly size="sm" />
+                <span className="rp-review-date">
+                  {new Date(r.createdAt).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
+                </span>
+              </div>
+              {r.comment && <p className="rp-review-comment">{r.comment}</p>}
+              {(r.cleanlinessRating || r.staffRating || r.locationRating || r.valueRating) && (
+                <div className="rp-review-sub">
+                  {r.cleanlinessRating && <span>🧹 {r.cleanlinessRating}/5</span>}
+                  {r.staffRating       && <span>👋 {r.staffRating}/5</span>}
+                  {r.locationRating    && <span>📍 {r.locationRating}/5</span>}
+                  {r.valueRating       && <span>💰 {r.valueRating}/5</span>}
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      ))}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
