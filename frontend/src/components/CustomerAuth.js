@@ -332,7 +332,12 @@ const CustomerAuth = () => {
   const from = new URLSearchParams(location.search).get("from") || "/";
 
   const handleLogin = (user) => {
-    navigate(from);
+    // If KYC not done yet, always go to profile setup first
+    if (user.kycStatus === 'pending' || user.kycStatus === 'rejected') {
+      navigate("/profile-setup");
+    } else {
+      navigate(from);
+    }
   };
 
   return (
