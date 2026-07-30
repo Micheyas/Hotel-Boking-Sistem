@@ -72,8 +72,9 @@ const VerifyEmailPage = () => {
             <div style={styles.icon}>✅</div>
             <h2 style={styles.title}>Email Verified!</h2>
             <p style={styles.sub}>{message}</p>
-            <Link to="/profile-setup" style={styles.btn}>
-              Complete Your Profile →
+            <p style={styles.sub}>Please log in to complete your identity verification.</p>
+            <Link to="/login?from=/profile-setup" style={styles.btn}>
+              Log In &amp; Complete Profile →
             </Link>
           </>
         )}

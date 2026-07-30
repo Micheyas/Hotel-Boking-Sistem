@@ -163,7 +163,14 @@ router.post('/login', async (req, res) => {
     const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET);
     res.json({
       token,
-      user: { id: user.id, name: user.name, email: user.email, role: user.role, emailVerified: user.emailVerified },
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        emailVerified: user.emailVerified,
+        kycStatus: user.kycStatus || 'pending',
+      },
     });
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -254,6 +261,7 @@ router.post('/google', async (req, res) => {
         email: user.email,
         role: user.role,
         emailVerified: true,
+        kycStatus: user.kycStatus || 'pending',
       },
     });
   } catch (error) {

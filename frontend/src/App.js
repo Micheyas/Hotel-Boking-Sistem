@@ -119,9 +119,17 @@ function AppInner() {
                   ? <span className="navbar-verified-badge" title="Email verified">✅</span>
                   : <span className="navbar-unverified-badge" title="Email not verified">⚠️</span>}
               </span>
-              <Link to="/booking" className="navbar-book-btn">
-                {t("nav.bookNow")}
-              </Link>
+              {customerUser.kycStatus === 'pending' || customerUser.kycStatus === 'rejected' ? (
+                <Link to="/profile-setup" className="navbar-book-btn" style={{background:'linear-gradient(135deg,#c53030,#9b2c2c)'}}>
+                  🪪 Verify Identity
+                </Link>
+              ) : customerUser.kycStatus === 'submitted' ? (
+                <span className="navbar-customer-name" style={{fontSize:'0.78rem',color:'#e2c97e'}}>⏳ KYC Under Review</span>
+              ) : (
+                <Link to="/booking" className="navbar-book-btn">
+                  {t("nav.bookNow")}
+                </Link>
+              )}
               <button
                 className="navbar-logout-btn"
                 onClick={handleCustomerLogout}
