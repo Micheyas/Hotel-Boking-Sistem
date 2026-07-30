@@ -301,6 +301,18 @@
   gap: 8px;
 }
 
+.ca-google-btn-container {
+  width: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* Override Google's iframe to fill width */
+.ca-google-btn-container > div,
+.ca-google-btn-container iframe {
+  width: 100% !important;
+}
+
 .ca-google-btn {
   width: 100%;
   padding: 0.75rem 1rem;
