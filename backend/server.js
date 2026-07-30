@@ -106,6 +106,16 @@ sequelize.sync({ alter: false }).then(async () => {
   await addColumnIfMissing('Users', 'verifyToken',         { type: DataTypes.STRING,  allowNull: true });
   await addColumnIfMissing('Users', 'verifyTokenExpires',  { type: DataTypes.DATE,    allowNull: true });
 
+  // ── KYC columns ──
+  await addColumnIfMissing('Users', 'phone',              { type: DataTypes.STRING,  allowNull: true });
+  await addColumnIfMissing('Users', 'dateOfBirth',        { type: DataTypes.DATEONLY,allowNull: true });
+  await addColumnIfMissing('Users', 'nationality',        { type: DataTypes.STRING,  allowNull: true });
+  await addColumnIfMissing('Users', 'idType',             { type: DataTypes.STRING,  allowNull: true });
+  await addColumnIfMissing('Users', 'idFront',            { type: DataTypes.STRING,  allowNull: true });
+  await addColumnIfMissing('Users', 'idBack',             { type: DataTypes.STRING,  allowNull: true });
+  await addColumnIfMissing('Users', 'kycStatus',          { type: DataTypes.STRING,  allowNull: false, defaultValue: 'pending' });
+  await addColumnIfMissing('Users', 'kycRejectedReason',  { type: DataTypes.TEXT,    allowNull: true });
+
   // ── Auto-verify existing users when email is not configured ──
   // Any user created before email verification existed (emailVerified = false)
   // gets auto-verified so they aren't blocked from booking.

@@ -26,6 +26,8 @@ const commonAmenities = [
 const AdminPanel = () => {
   const [allBookings, setAllBookings] = useState([]);
   const [offers, setOffers]           = useState([]);
+  const [kycUsers, setKycUsers]       = useState([]);
+  const [kycLoading, setKycLoading]   = useState(false);
   const [rooms, setRooms]             = useState([]);
   const [roomTypes, setRoomTypes]     = useState([]);
   const [repeatCustomers, setRepeatCustomers] = useState([]);
@@ -34,7 +36,7 @@ const AdminPanel = () => {
 
   const { currency, rates } = useCurrency();
 
-  // View: 'list' | 'room-management' | 'repeat-customers' | 'booking-history'
+  // View: 'list' | 'room-management' | 'repeat-customers' | 'booking-history' | 'kyc'
   const [view, setView]               = useState('list');
 
   // Booking filters
@@ -186,6 +188,28 @@ const AdminPanel = () => {
       setError(err.response?.data?.error || 'Failed to fetch data');
       if (err.response?.status === 401) handleLogout();
     } finally { setLoading(false); }
+  };
+
+  const fetchKycUsers = async () => {
+    setKycLoading(true);
+    const token = sessionStorage.getItem('staffToken');
+    try {
+      const res = await api.get('/auth/admin/kyc', { headers: { Authorization: `Bearer ${token}` } });
+      setKycUsers(res.data);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to load KYC users');
+    } finally { setKycLoading(false); }
+  };
+
+  const handleKycDecision = async (userId, action, reason = '') => {
+    const token = sessionStorage.getItem('staffToken');
+    try {
+      await api.post(`/auth/admin/kyc/${userId}`, { action, reason }, { headers: { Authorization: `Bearer ${token}` } });
+      fetchKycUsers();
+      setError('');
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to update KYC status');
+    }
   };
 
   const handleVerifyPayment = async (bookingId, action) => {
@@ -603,6 +627,15 @@ const AdminPanel = () => {
               🛎️ Services
             </button>
           )}
+          <button
+            className={`view-tab ${view === 'kyc' ? 'active' : ''}`}
+            onClick={() => { setView('kyc'); fetchKycUsers(); }}
+          >
+            🪪 KYC Verification
+            {kycUsers.filter(u => u.kycStatus === 'submitted').length > 0 && (
+              <span className="tab-badge">{kycUsers.filter(u => u.kycStatus === 'submitted').length}</span>
+            )}
+          </button>
         </div>
         {view === 'list' && (
           <div className="admin-filters">
@@ -1854,6 +1887,120 @@ const AdminPanel = () => {
           </div>
         );
       })()}
+
+      {/* ── KYC Verification ── */}
+      {view === 'kyc' && (
+        <div className="admin-table-card">
+          <div style={{ marginBottom: '20px' }}>
+            <h3>🪪 KYC Verification</h3>
+            <p style={{ color: '#666', fontSize: '14px' }}>Review and approve customer identity documents</p>
+          </div>
+
+          {kycLoading ? (
+            <p style={{ color: '#888', padding: '20px' }}>Loading...</p>
+          ) : kycUsers.length === 0 ? (
+            <p style={{ color: '#aaa', padding: '20px', textAlign: 'center' }}>No customer KYC submissions yet.</p>
+          ) : (
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>CUSTOMER</th>
+                  <th>PHONE</th>
+                  <th>NATIONALITY</th>
+                  <th>ID TYPE</th>
+                  <th>DOCUMENTS</th>
+                  <th>STATUS</th>
+                  <th>ACTION</th>
+                </tr>
+              </thead>
+              <tbody>
+                {kycUsers.map(u => (
+                  <tr key={u.id}>
+                    <td>
+                      <div className="guest-cell">
+                        <span className="guest-name">{u.name}</span>
+                        <span className="guest-email">{u.email}</span>
+                      </div>
+                    </td>
+                    <td>{u.phone || '—'}</td>
+                    <td>{u.nationality || '—'}</td>
+                    <td>
+                      {u.idType === 'national_id' ? '🪪 National ID' : u.idType === 'passport' ? '📘 Passport' : '—'}
+                    </td>
+                    <td>
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        {u.idFront && (
+                          <a href={imgUrl(u.idFront)} target="_blank" rel="noopener noreferrer">
+                            <img src={imgUrl(u.idFront)} alt="ID Front" style={{ width: '60px', height: '40px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #ddd' }} />
+                            <div style={{ fontSize: '10px', color: '#888', textAlign: 'center' }}>Front</div>
+                          </a>
+                        )}
+                        {u.idBack && (
+                          <a href={imgUrl(u.idBack)} target="_blank" rel="noopener noreferrer">
+                            <img src={imgUrl(u.idBack)} alt="ID Back" style={{ width: '60px', height: '40px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #ddd' }} />
+                            <div style={{ fontSize: '10px', color: '#888', textAlign: 'center' }}>Back</div>
+                          </a>
+                        )}
+                        {!u.idFront && '—'}
+                      </div>
+                    </td>
+                    <td>
+                      <span className={`status-pill ${
+                        u.kycStatus === 'approved' ? 'confirmed' :
+                        u.kycStatus === 'submitted' ? 'pending' :
+                        u.kycStatus === 'rejected' ? 'cancelled' : ''
+                      }`}>
+                        {u.kycStatus === 'approved'  && '✅ Approved'}
+                        {u.kycStatus === 'submitted' && '⏳ Submitted'}
+                        {u.kycStatus === 'rejected'  && '❌ Rejected'}
+                        {u.kycStatus === 'pending'   && '⬜ Pending'}
+                      </span>
+                    </td>
+                    <td>
+                      {u.kycStatus === 'submitted' && (
+                        <div style={{ display: 'flex', gap: '6px', flexDirection: 'column' }}>
+                          <button
+                            className="pv-approve-btn"
+                            style={{ padding: '4px 10px', fontSize: '12px' }}
+                            onClick={() => handleKycDecision(u.id, 'approved')}
+                          >
+                            ✅ Approve
+                          </button>
+                          <button
+                            className="pv-reject-btn"
+                            style={{ padding: '4px 10px', fontSize: '12px' }}
+                            onClick={() => {
+                              const reason = window.prompt('Rejection reason (shown to customer):');
+                              if (reason !== null) handleKycDecision(u.id, 'rejected', reason);
+                            }}
+                          >
+                            ❌ Reject
+                          </button>
+                        </div>
+                      )}
+                      {u.kycStatus === 'approved' && (
+                        <button
+                          className="decision-btn decision-btn--override"
+                          style={{ padding: '4px 10px', fontSize: '12px' }}
+                          onClick={() => {
+                            const reason = window.prompt('Rejection reason:');
+                            if (reason !== null) handleKycDecision(u.id, 'rejected', reason);
+                          }}
+                        >
+                          ↩ Revoke
+                        </button>
+                      )}
+                      {(u.kycStatus === 'pending' || u.kycStatus === 'rejected') && (
+                        <span style={{ color: '#aaa', fontSize: '12px' }}>Awaiting submission</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      )}
 
     </div>
   );

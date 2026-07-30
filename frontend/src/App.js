@@ -7,6 +7,7 @@ import PaymentForm from "./components/PaymentForm";
 import ReviewPage from "./components/ReviewPage";
 import VerifyEmailPage from "./components/VerifyEmailPage";
 import CustomerAuth, { getCustomerUser, logoutCustomer } from "./components/CustomerAuth";
+import ProfileSetup from "./components/ProfileSetup";
 import Rooms from "./components/Rooms";
 import Amenities from "./components/Amenities";
 import AvailabilitySearch from "./components/AvailabilitySearch";
@@ -153,6 +154,7 @@ function AppInner() {
           <Route path="/verify-email" element={<VerifyEmailPage />} />
           <Route path="/login" element={<CustomerAuth />} />
           <Route path="/register" element={<CustomerAuth />} />
+          <Route path="/profile-setup" element={<ProfileSetup />} />
           <Route path="/admin" element={<AdminPanel />} />
           <Route path="/payment" element={<PaymentForm />} />
           <Route

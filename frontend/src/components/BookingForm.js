@@ -11,6 +11,14 @@ import {
   logoutCustomer,
 } from "./CustomerAuth";
 
+// Check KYC status from stored user
+function getKycStatus() {
+  try {
+    const u = JSON.parse(localStorage.getItem("customerUser"));
+    return u?.kycStatus || "pending";
+  } catch { return "pending"; }
+}
+
 function convertPrice(etb, currency, rates) {
   return ctxConvert(etb, currency, rates);
 }
@@ -64,6 +72,7 @@ const BookingForm = () => {
   const customerToken = getCustomerToken();
   const customerUser  = getCustomerUser();
   const verified      = isCustomerVerified();
+  const kycStatus     = getKycStatus();
 
   // ── ALL hooks declared before any early return ──────────
   const [checkIn,  setCheckIn]  = useState(params.get("checkIn")  || "");
@@ -136,6 +145,61 @@ const BookingForm = () => {
   }
 
   if (!customerToken || !customerUser) return null;
+
+  // KYC wall — must submit identity documents before booking
+  if (kycStatus === "pending") {
+    return (
+      <div className="booking-form">
+        <div className="bfm-verify-wall">
+          <div className="bfm-verify-icon">🪪</div>
+          <h2>Identity Verification Required</h2>
+          <p>You need to verify your identity before making a booking.</p>
+          <p>Please submit your personal information and a valid ID document.</p>
+          <Link to="/profile-setup" className="bfm-verify-btn">
+            Complete Identity Verification
+          </Link>
+          <button className="bfm-logout-link" onClick={() => { logoutCustomer(); navigate("/login"); }}>
+            ← Log in with a different account
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (kycStatus === "submitted") {
+    return (
+      <div className="booking-form">
+        <div className="bfm-verify-wall">
+          <div className="bfm-verify-icon">⏳</div>
+          <h2>Verification Under Review</h2>
+          <p>Your documents are being reviewed by our staff.</p>
+          <p>You will be able to book once your identity is approved. This usually takes less than 24 hours.</p>
+          <Link to="/" className="bfm-verify-btn">Back to Home</Link>
+          <button className="bfm-logout-link" onClick={() => { logoutCustomer(); navigate("/login"); }}>
+            ← Log in with a different account
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (kycStatus === "rejected") {
+    return (
+      <div className="booking-form">
+        <div className="bfm-verify-wall">
+          <div className="bfm-verify-icon">❌</div>
+          <h2>Verification Rejected</h2>
+          <p>Your identity verification was rejected. Please resubmit with valid documents.</p>
+          <Link to="/profile-setup" className="bfm-verify-btn">
+            Resubmit Documents
+          </Link>
+          <button className="bfm-logout-link" onClick={() => { logoutCustomer(); navigate("/login"); }}>
+            ← Log in with a different account
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const today    = new Date().toISOString().split("T")[0];
   const tomorrow = new Date(Date.now() + 86400000).toISOString().split("T")[0];

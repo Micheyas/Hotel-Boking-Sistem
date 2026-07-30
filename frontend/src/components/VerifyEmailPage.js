@@ -72,8 +72,8 @@ const VerifyEmailPage = () => {
             <div style={styles.icon}>✅</div>
             <h2 style={styles.title}>Email Verified!</h2>
             <p style={styles.sub}>{message}</p>
-            <Link to="/booking" style={styles.btn}>
-              Book a Room Now
+            <Link to="/profile-setup" style={styles.btn}>
+              Complete Your Profile →
             </Link>
           </>
         )}

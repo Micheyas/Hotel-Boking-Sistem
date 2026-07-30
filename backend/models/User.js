@@ -30,12 +30,49 @@ const User = sequelize.define('User', {
     defaultValue: false,
   },
   verifyToken: {
-    // Short-lived UUID sent in the verification link
     type: DataTypes.STRING,
     allowNull: true,
   },
   verifyTokenExpires: {
     type: DataTypes.DATE,
+    allowNull: true,
+  },
+  // ── KYC fields ──────────────────────────────────────────
+  phone: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  dateOfBirth: {
+    type: DataTypes.DATEONLY,
+    allowNull: true,
+  },
+  nationality: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  idType: {
+    // 'national_id' or 'passport'
+    type: DataTypes.ENUM('national_id', 'passport'),
+    allowNull: true,
+  },
+  idFront: {
+    // Cloudinary URL for front of ID / passport photo page
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  idBack: {
+    // Cloudinary URL for back of national ID (null for passport)
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  kycStatus: {
+    // pending = not submitted, submitted = waiting staff review, approved = can book, rejected = needs resubmit
+    type: DataTypes.ENUM('pending', 'submitted', 'approved', 'rejected'),
+    allowNull: false,
+    defaultValue: 'pending',
+  },
+  kycRejectedReason: {
+    type: DataTypes.TEXT,
     allowNull: true,
   },
   createdAt: {

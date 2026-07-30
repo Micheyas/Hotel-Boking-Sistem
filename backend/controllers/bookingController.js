@@ -57,6 +57,18 @@ exports.createBooking = async (req, res) => {
         code: 'EMAIL_NOT_VERIFIED',
       });
     }
+    if (!['submitted', 'approved'].includes(bookingUser.kycStatus)) {
+      return res.status(403).json({
+        error: 'Please complete your identity verification (KYC) before making a booking.',
+        code: 'KYC_REQUIRED',
+      });
+    }
+    if (bookingUser.kycStatus === 'rejected') {
+      return res.status(403).json({
+        error: 'Your identity verification was rejected. Please resubmit your documents.',
+        code: 'KYC_REJECTED',
+      });
+    }
     // ─────────────────────────────────────────────────────
 
     // Verify room is available for the dates
@@ -119,15 +131,25 @@ exports.createGuestBooking = async (req, res) => {
       return res.status(400).json({ error: 'guestName and guestPhone are required' });
     }
 
-    // ── Email verification guard ──────────────────────────
-    // If the guest provides an email that belongs to a registered account,
-    // that account must be verified before they can book.
+    // ── Email verification + KYC guard ───────────────────
     if (normalizedEmail) {
       const registeredUser = await User.findOne({ where: { email: normalizedEmail } });
       if (registeredUser && !registeredUser.emailVerified) {
         return res.status(403).json({
-          error: 'This email is registered but not yet verified. Please check your inbox and verify your email before booking.',
+          error: 'This email is registered but not yet verified. Please verify your email before booking.',
           code: 'EMAIL_NOT_VERIFIED',
+        });
+      }
+      if (registeredUser && !['submitted', 'approved'].includes(registeredUser.kycStatus)) {
+        return res.status(403).json({
+          error: 'Please complete your identity verification (KYC) before making a booking.',
+          code: 'KYC_REQUIRED',
+        });
+      }
+      if (registeredUser && registeredUser.kycStatus === 'rejected') {
+        return res.status(403).json({
+          error: 'Your identity verification was rejected. Please resubmit your documents.',
+          code: 'KYC_REJECTED',
         });
       }
     }

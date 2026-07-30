@@ -1,0 +1,378 @@
+/* ═══════════════════════════════════════════════════════════
+   ProfileSetup.css — KYC / Identity Verification Page
+   Prefix: ps-
+   ═══════════════════════════════════════════════════════════ */
+
+.ps-loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  color: #888;
+  background: linear-gradient(135deg, #e2c97e 0%, #d4a574 50%, #c9a84c 100%);
+}
+
+/* ── Page ─────────────────────────────────────────────────── */
+.ps-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 2rem 1rem 3rem;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* ── Card ─────────────────────────────────────────────────── */
+.ps-card {
+  background: #fffdf5;
+  border-radius: 20px;
+  padding: 2.5rem 2rem;
+  max-width: 580px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  text-align: center;
+}
+
+.ps-card--form {
+  text-align: left;
+  max-width: 660px;
+}
+
+/* ── Status pages ─────────────────────────────────────────── */
+.ps-status-icon {
+  font-size: 3.5rem;
+  margin-bottom: 0.8rem;
+}
+
+.ps-card h2 {
+  margin: 0 0 0.6rem;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #1a1a2e;
+}
+
+.ps-card p {
+  color: #555;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin: 0 0 0.5rem;
+}
+
+.ps-sub {
+  font-size: 0.85rem !important;
+  color: #888 !important;
+}
+
+.ps-btn {
+  display: inline-block;
+  margin: 1.2rem 0 0.5rem;
+  padding: 0.8rem 2rem;
+  background: linear-gradient(135deg, #1a1a2e, #0f3460);
+  color: #e2c97e;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition: transform 0.15s, box-shadow 0.2s;
+  box-shadow: 0 4px 14px rgba(26, 26, 46, 0.2);
+}
+
+.ps-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(26, 26, 46, 0.3);
+}
+
+.ps-link {
+  display: block;
+  margin-top: 0.8rem;
+  color: #0f3460;
+  font-size: 0.88rem;
+  text-decoration: underline;
+}
+
+/* ── Header ───────────────────────────────────────────────── */
+.ps-header {
+  margin-bottom: 1.8rem;
+}
+
+.ps-logo {
+  display: inline-block;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #c9a84c;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-decoration: none;
+  margin-bottom: 0.8rem;
+}
+
+.ps-title {
+  margin: 0 0 0.4rem;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #1a1a2e;
+}
+
+.ps-subtitle {
+  margin: 0;
+  font-size: 0.88rem;
+  color: #777;
+  line-height: 1.5;
+}
+
+/* ── Rejection box ────────────────────────────────────────── */
+.ps-rejected-box {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 1rem;
+  background: #fff5f5;
+  border: 1.5px solid #feb2b2;
+  border-radius: 10px;
+  margin-bottom: 1.4rem;
+}
+
+.ps-rejected-icon { font-size: 1.4rem; flex-shrink: 0; }
+
+.ps-rejected-box strong {
+  display: block;
+  color: #c53030;
+  font-size: 0.88rem;
+  margin-bottom: 4px;
+}
+
+.ps-rejected-box p {
+  margin: 0;
+  font-size: 0.84rem;
+  color: #744;
+}
+
+/* ── Form ─────────────────────────────────────────────────── */
+.ps-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.ps-section-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  padding: 0.5rem 0 0.3rem;
+  border-bottom: 2px solid rgba(201, 168, 76, 0.3);
+  margin-top: 0.4rem;
+}
+
+.ps-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 520px) {
+  .ps-row { grid-template-columns: 1fr; }
+}
+
+.ps-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.ps-field label {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.ps-req { color: #e53e3e; }
+
+.ps-input {
+  padding: 0.65rem 0.9rem;
+  border: 1.5px solid #d4c4a0;
+  border-radius: 9px;
+  font-size: 0.92rem;
+  font-family: inherit;
+  background: #fffef8;
+  color: #1a1a2e;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.ps-input:focus {
+  outline: none;
+  border-color: #c9a84c;
+  box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.18);
+}
+
+.ps-input--disabled {
+  background: #f5f0e8;
+  color: #999;
+  cursor: not-allowed;
+}
+
+/* ── ID type buttons ──────────────────────────────────────── */
+.ps-id-type-row {
+  display: flex;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+}
+
+.ps-id-type-btn {
+  flex: 1;
+  min-width: 140px;
+  padding: 0.7rem 1rem;
+  border: 1.5px solid #d4c4a0;
+  border-radius: 10px;
+  background: #fffef8;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #555;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+  font-family: inherit;
+}
+
+.ps-id-type-btn--active {
+  border-color: #1a1a2e;
+  background: linear-gradient(135deg, #1a1a2e, #0f3460);
+  color: #e2c97e;
+}
+
+/* ── Upload area ──────────────────────────────────────────── */
+.ps-upload-area {
+  display: block;
+  border: 2px dashed #d4c4a0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.2s, background 0.2s;
+  background: #fffef8;
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ps-upload-area:hover {
+  border-color: #c9a84c;
+  background: rgba(201, 168, 76, 0.05);
+}
+
+.ps-upload-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.ps-upload-icon { font-size: 2rem; }
+
+.ps-upload-text {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #444;
+}
+
+.ps-upload-hint {
+  font-size: 0.76rem;
+  color: #aaa;
+}
+
+.ps-hidden-input { display: none; }
+
+.ps-id-preview {
+  max-height: 160px;
+  max-width: 100%;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+.ps-remove-btn {
+  margin-top: 4px;
+  background: none;
+  border: none;
+  color: #c53030;
+  font-size: 0.82rem;
+  cursor: pointer;
+  text-decoration: underline;
+  font-family: inherit;
+}
+
+/* ── Notice ───────────────────────────────────────────────── */
+.ps-notice {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 0.8rem 1rem;
+  background: rgba(201, 168, 76, 0.08);
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  border-radius: 10px;
+  font-size: 0.82rem;
+  color: #666;
+  line-height: 1.5;
+}
+
+/* ── Messages ─────────────────────────────────────────────── */
+.ps-error {
+  margin: 0;
+  padding: 0.6rem 1rem;
+  background: #fff5f5;
+  border: 1px solid #feb2b2;
+  border-radius: 8px;
+  color: #c53030;
+  font-size: 0.88rem;
+}
+
+.ps-success {
+  margin: 0;
+  padding: 0.6rem 1rem;
+  background: #f0fff4;
+  border: 1px solid #9ae6b4;
+  border-radius: 8px;
+  color: #276749;
+  font-size: 0.88rem;
+}
+
+/* ── Submit button ────────────────────────────────────────── */
+.ps-submit-btn {
+  padding: 0.85rem;
+  background: linear-gradient(135deg, #1a1a2e, #0f3460);
+  color: #e2c97e;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  letter-spacing: 0.3px;
+  transition: transform 0.15s, box-shadow 0.2s, opacity 0.2s;
+  box-shadow: 0 4px 14px rgba(26, 26, 46, 0.25);
+}
+
+.ps-submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(26, 26, 46, 0.35);
+}
+
+.ps-submit-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ── Logout link ──────────────────────────────────────────── */
+.ps-logout-link {
+  display: block;
+  margin-top: 1.2rem;
+  background: none;
+  border: none;
+  color: #aaa;
+  font-size: 0.82rem;
+  cursor: pointer;
+  text-decoration: underline;
+  font-family: inherit;
+  text-align: center;
+  width: 100%;
+}

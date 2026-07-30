@@ -262,4 +262,143 @@ router.post('/google', async (req, res) => {
   }
 });
 
+// ── POST /api/auth/kyc  (authenticated customer) ─────────────────────────────
+// Submit personal info + ID images for KYC verification
+const kycUpload = require('multer');
+const { v2: kycCloudinary } = require('cloudinary');
+
+kycCloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key:    process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+const { CloudinaryStorage: KycCloudinaryStorage } = require('multer-storage-cloudinary');
+const kycStorage = new KycCloudinaryStorage({
+  cloudinary: kycCloudinary,
+  params: {
+    folder: 'hotel-kyc',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'pdf'],
+    public_id: (req, file) => 'kyc-' + Date.now() + '-' + Math.round(Math.random() * 1e9),
+  },
+});
+const kycMulter = kycUpload({ storage: kycStorage, limits: { fileSize: 10 * 1024 * 1024 } });
+
+router.post('/kyc',
+  authenticateToken,
+  kycMulter.fields([
+    { name: 'idFront', maxCount: 1 },
+    { name: 'idBack',  maxCount: 1 },
+  ]),
+  async (req, res) => {
+    try {
+      const userId = req.user.id;
+      const { phone, dateOfBirth, nationality, idType } = req.body;
+
+      if (!phone || !dateOfBirth || !nationality || !idType) {
+        return res.status(400).json({ error: 'phone, dateOfBirth, nationality and idType are required' });
+      }
+      if (!['national_id', 'passport'].includes(idType)) {
+        return res.status(400).json({ error: 'idType must be national_id or passport' });
+      }
+      if (!req.files?.idFront) {
+        return res.status(400).json({ error: 'Front side of ID is required' });
+      }
+      if (idType === 'national_id' && !req.files?.idBack) {
+        return res.status(400).json({ error: 'Back side is required for National ID' });
+      }
+
+      const user = await User.findByPk(userId);
+      if (!user) return res.status(404).json({ error: 'User not found' });
+      if (!user.emailVerified) {
+        return res.status(403).json({ error: 'Please verify your email before submitting KYC' });
+      }
+
+      const idFrontUrl = req.files.idFront[0].path;
+      const idBackUrl  = req.files.idBack ? req.files.idBack[0].path : null;
+
+      await user.update({
+        phone:        phone.trim(),
+        dateOfBirth:  dateOfBirth,
+        nationality:  nationality.trim(),
+        idType,
+        idFront:      idFrontUrl,
+        idBack:       idBackUrl,
+        kycStatus:    'submitted',
+        kycRejectedReason: null,
+      });
+
+      res.json({
+        message: 'KYC documents submitted successfully. Staff will review within 24 hours.',
+        kycStatus: 'submitted',
+      });
+    } catch (error) {
+      console.error('[KYC] Error:', error.message);
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
+
+// ── GET /api/auth/kyc/status  (authenticated customer) ───────────────────────
+router.get('/kyc/status', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findByPk(req.user.id, {
+      attributes: ['id', 'name', 'email', 'emailVerified', 'kycStatus', 'kycRejectedReason', 'phone', 'nationality', 'idType'],
+    });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ── POST /api/auth/admin/kyc/:userId  (admin/manager/receptionist) ────────────
+// Staff approve or reject a KYC submission
+router.post('/admin/kyc/:userId',
+  authenticateToken,
+  authorizeRole(['admin', 'manager', 'receptionist']),
+  async (req, res) => {
+    try {
+      const { action, reason } = req.body; // action: 'approved' | 'rejected'
+      if (!['approved', 'rejected'].includes(action)) {
+        return res.status(400).json({ error: 'action must be approved or rejected' });
+      }
+
+      const user = await User.findByPk(req.params.userId);
+      if (!user) return res.status(404).json({ error: 'User not found' });
+
+      await user.update({
+        kycStatus: action,
+        kycRejectedReason: action === 'rejected' ? (reason || 'Documents unclear or invalid') : null,
+      });
+
+      res.json({
+        message: `KYC ${action} for ${user.email}`,
+        kycStatus: action,
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
+
+// ── GET /api/auth/admin/kyc  (admin/manager/receptionist) ────────────────────
+// Get all customers with their KYC status
+router.get('/admin/kyc',
+  authenticateToken,
+  authorizeRole(['admin', 'manager', 'receptionist']),
+  async (req, res) => {
+    try {
+      const users = await User.findAll({
+        where: { role: 'customer' },
+        attributes: ['id', 'name', 'email', 'phone', 'nationality', 'idType', 'idFront', 'idBack', 'kycStatus', 'kycRejectedReason', 'emailVerified', 'createdAt'],
+        order: [['createdAt', 'DESC']],
+      });
+      res.json(users);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
+
 module.exports = router;
