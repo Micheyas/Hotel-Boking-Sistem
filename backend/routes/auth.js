@@ -302,9 +302,13 @@ router.post('/kyc',
     try {
       const userId = req.user.id;
       const { phone, dateOfBirth, nationality, idType } = req.body;
+      const fullName = req.body.fullName ? req.body.fullName.trim() : null;
 
       if (!phone || !dateOfBirth || !nationality || !idType) {
         return res.status(400).json({ error: 'phone, dateOfBirth, nationality and idType are required' });
+      }
+      if (!fullName) {
+        return res.status(400).json({ error: 'Full name is required' });
       }
       if (!['national_id', 'passport'].includes(idType)) {
         return res.status(400).json({ error: 'idType must be national_id or passport' });
@@ -326,6 +330,7 @@ router.post('/kyc',
       const idBackUrl  = req.files.idBack ? req.files.idBack[0].path : null;
 
       await user.update({
+        name:         fullName,
         phone:        phone.trim(),
         dateOfBirth:  dateOfBirth,
         nationality:  nationality.trim(),

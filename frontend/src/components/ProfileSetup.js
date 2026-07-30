@@ -16,6 +16,7 @@ const ProfileSetup = () => {
   const [loadingStatus, setLoadingStatus] = useState(true);
 
   // Form fields
+  const [fullName, setFullName]       = useState("");
   const [phone, setPhone]             = useState("");
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [nationality, setNationality] = useState("");
@@ -64,7 +65,7 @@ const ProfileSetup = () => {
     e.preventDefault();
     setError(""); setSuccess("");
 
-    if (!phone || !dateOfBirth || !nationality) {
+    if (!fullName.trim() || !phone || !dateOfBirth || !nationality) {
       setError("Please fill in all personal information fields."); return;
     }
     if (!idFront) {
@@ -77,6 +78,7 @@ const ProfileSetup = () => {
     setSubmitting(true);
     try {
       const fd = new FormData();
+      fd.append("fullName",    fullName.trim());
       fd.append("phone",       phone.trim());
       fd.append("dateOfBirth", dateOfBirth);
       fd.append("nationality", nationality.trim());
@@ -182,8 +184,14 @@ const ProfileSetup = () => {
 
           <div className="ps-row">
             <div className="ps-field">
-              <label>Full Name</label>
-              <input type="text" value={user.name} disabled className="ps-input ps-input--disabled" />
+              <label>Full Name <span className="ps-req">*</span></label>
+              <input
+                type="text" required
+                placeholder="Enter your full name"
+                value={fullName}
+                onChange={e => setFullName(e.target.value)}
+                className="ps-input"
+              />
             </div>
             <div className="ps-field">
               <label>Email</label>
