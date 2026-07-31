@@ -1440,7 +1440,7 @@ const AdminPanel = () => {
           <div className="decision-modal" onClick={e => e.stopPropagation()}>
             <div className="decision-modal-header">
               <h3>
-                {selectedBookingForDecision.processedAction !== 'none'
+                {(selectedBookingForDecision.processedAction && selectedBookingForDecision.processedAction !== 'none')
                   ? `Override Decision — #${selectedBookingForDecision.id}`
                   : `Booking Decision — #${selectedBookingForDecision.id}`}
               </h3>
@@ -1453,7 +1453,7 @@ const AdminPanel = () => {
                 <p><strong>Dates:</strong> {new Date(selectedBookingForDecision.checkInDate).toLocaleDateString()} → {new Date(selectedBookingForDecision.checkOutDate).toLocaleDateString()}</p>
                 <p><strong>Amount:</strong> {convertPrice(Number(selectedBookingForDecision.totalPrice), currency, rates)}</p>
               </div>
-              {selectedBookingForDecision.processedAction !== 'none' && selectedBookingForDecision.processedByUser && (
+              {(selectedBookingForDecision.processedAction && selectedBookingForDecision.processedAction !== 'none') && selectedBookingForDecision.processedByUser && (
                 <div className="override-notice">
                   <span className="override-icon">⚠️</span>
                   <div>

@@ -564,13 +564,25 @@ exports.bookingDecision = async (req, res) => {
     // Set new status based on action
     const newStatus = action === 'approved' ? 'confirmed' : 'cancelled';
 
-    // If rejecting, free the room
-    if (action === 'rejected' && booking.room?.status === 'occupied') {
-      await booking.room.update({ status: 'available' });
-      try {
-        const io = socketService.getIO();
-        io.emit('roomStatusChanged', { roomId: booking.room.id, status: 'available' });
-      } catch (_) { /* socket not available in serverless */ }
+    // Handle room status correctly for both first decision and override
+    if (action === 'rejected') {
+      // Approving → Rejecting: free the room
+      if (booking.room?.status === 'occupied') {
+        await booking.room.update({ status: 'available' });
+        try {
+          const io = socketService.getIO();
+          io.emit('roomStatusChanged', { roomId: booking.room.id, status: 'available' });
+        } catch (_) { /* socket not available in serverless */ }
+      }
+    } else if (action === 'approved') {
+      // Rejecting → Approving (override): mark room occupied again
+      if (booking.room && booking.room.status !== 'occupied') {
+        await booking.room.update({ status: 'occupied' });
+        try {
+          const io = socketService.getIO();
+          io.emit('roomStatusChanged', { roomId: booking.room.id, status: 'occupied' });
+        } catch (_) { /* socket not available in serverless */ }
+      }
     }
 
     // Update booking with decision details
