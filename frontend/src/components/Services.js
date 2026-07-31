@@ -26,7 +26,7 @@ const MENU_CAT_ICONS = {
 };
 
 // Sub-menu items grid shown under a service category section
-const ServiceSubMenu = ({ items, currency, rates }) => {
+const ServiceSubMenu = ({ items, currency, rates, t }) => {
   const [catFilter, setCatFilter] = React.useState('All');
   const cats = ['All', ...new Set(items.map(i => i.category))];
   const filtered = catFilter === 'All' ? items : items.filter(i => i.category === catFilter);
@@ -34,14 +34,14 @@ const ServiceSubMenu = ({ items, currency, rates }) => {
   return (
     <div className="svc-submenu">
       <div className="svc-submenu-header">
-        <span className="svc-submenu-title">📋 Available Packages &amp; Pricing</span>
+        <span className="svc-submenu-title">{t ? t('menu.subMenuTitle') : '📋 Available Packages & Pricing'}</span>
         <div className="svc-submenu-cats">
           {cats.map(c => (
             <button
               key={c}
               onClick={() => setCatFilter(c)}
               className={`svc-submenu-cat-btn${catFilter === c ? ' active' : ''}`}
-            >{c}</button>
+            >{t ? (t(`menu.categories.${c}`) || c) : c}</button>
           ))}
         </div>
       </div>
@@ -55,15 +55,15 @@ const ServiceSubMenu = ({ items, currency, rates }) => {
             )}
             <div className="svc-submenu-body">
               <div className="svc-submenu-top">
-                <h4 className="svc-submenu-name">{item.name}</h4>
+                <h4 className="svc-submenu-name">{t ? (t(`menu.items.${item.name}`) || item.name) : item.name}</h4>
                 <span className="svc-submenu-price">
                   {Number(item.price) === 0
-                    ? 'Free'
+                    ? (t ? t('menu.free') : 'Free')
                     : convertPrice(Number(item.price), currency, rates)}
                 </span>
               </div>
               {item.description && <p className="svc-submenu-desc">{item.description}</p>}
-              <span className="svc-submenu-cat-badge">{item.category}</span>
+              <span className="svc-submenu-cat-badge">{t ? (t(`menu.categories.${item.category}`) || item.category) : item.category}</span>
             </div>
           </div>
         ))}
@@ -72,7 +72,7 @@ const ServiceSubMenu = ({ items, currency, rates }) => {
   );
 };
 
-const MenuItemCard = ({ item, currency, rates }) => (
+const MenuItemCard = ({ item, currency, rates, t }) => (
   <div className="menu-item-card">
     <div className="menu-item-img-wrap">
       {item.image
@@ -82,11 +82,11 @@ const MenuItemCard = ({ item, currency, rates }) => (
     </div>
     <div className="menu-item-body">
       <div className="menu-item-top">
-        <h4 className="menu-item-name">{item.name}</h4>
+        <h4 className="menu-item-name">{t ? (t(`menu.items.${item.name}`) || item.name) : item.name}</h4>
         <span className="menu-item-price">{convertPrice(Number(item.price), currency, rates)}</span>
       </div>
       {item.description && <p className="menu-item-desc">{item.description}</p>}
-      <span className="menu-item-cat">{MENU_CAT_ICONS[item.category] || '🍽️'} {item.category}</span>
+      <span className="menu-item-cat">{MENU_CAT_ICONS[item.category] || '🍽️'} {t ? (t(`menu.categories.${item.category}`) || item.category) : item.category}</span>
     </div>
   </div>
 );
@@ -301,7 +301,6 @@ const Services = () => {
   const [error, setError]           = useState('');
   const { currency, rates }         = useCurrency();
   const { t, language }             = useI18n();
-
   // Restaurant menu state
   const [menuItems, setMenuItems]         = useState([]);
   const [menuCatFilter, setMenuCatFilter] = useState('All');
@@ -628,7 +627,7 @@ const Services = () => {
               </div>
               {/* Sub-menu items for this service category */}
               {serviceMenus[cat] && serviceMenus[cat].length > 0 && (
-                <ServiceSubMenu items={serviceMenus[cat]} currency={currency} rates={rates} />
+                <ServiceSubMenu items={serviceMenus[cat]} currency={currency} rates={rates} t={t} />
               )}
             </section>
           ))
@@ -648,8 +647,8 @@ const Services = () => {
           <div className="menu-section-header">
             <span className="menu-section-icon">🍽️</span>
             <div>
-              <h2 className="menu-section-title">Restaurant Menu</h2>
-              <p className="menu-section-sub">Fresh ingredients, expertly prepared — dine in or order to your room</p>
+              <h2 className="menu-section-title">{t('menu.sectionTitle')}</h2>
+              <p className="menu-section-sub">{t('menu.sectionSub')}</p>
             </div>
           </div>
 
@@ -661,7 +660,7 @@ const Services = () => {
                 className={`menu-cat-tab ${menuCatFilter === cat ? 'menu-cat-tab--active' : ''}`}
                 onClick={() => setMenuCatFilter(cat)}
               >
-                {cat !== 'All' && (MENU_CAT_ICONS[cat] || '🍽️')} {cat}
+                {cat !== 'All' && (MENU_CAT_ICONS[cat] || '🍽️')} {t(`menu.categories.${cat}`) || cat}
               </button>
             ))}
           </div>
@@ -674,11 +673,11 @@ const Services = () => {
               return (
                 <div key={cat} className="menu-cat-group">
                   <div className="menu-cat-label">
-                    <span>{MENU_CAT_ICONS[cat] || '🍽️'}</span> {cat}
+                    <span>{MENU_CAT_ICONS[cat] || '🍽️'}</span> {t(`menu.categories.${cat}`) || cat}
                   </div>
                   <div className="menu-grid">
                     {catItems.map(item => (
-                      <MenuItemCard key={item.id} item={item} currency={currency} rates={rates} />
+                      <MenuItemCard key={item.id} item={item} currency={currency} rates={rates} t={t} />
                     ))}
                   </div>
                 </div>
@@ -687,7 +686,7 @@ const Services = () => {
           ) : (
             <div className="menu-grid">
               {menuItems.filter(i => i.category === menuCatFilter).map(item => (
-                <MenuItemCard key={item.id} item={item} currency={currency} rates={rates} />
+                <MenuItemCard key={item.id} item={item} currency={currency} rates={rates} t={t} />
               ))}
             </div>
           )}
