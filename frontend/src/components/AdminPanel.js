@@ -2360,6 +2360,7 @@ const AdminPanel = () => {
                     <th>TARGET EMAIL</th>
                     <th>NAME</th>
                     <th>ROLE</th>
+                    <th>NEW EMAIL</th>
                     <th>STATUS</th>
                     <th>SUBMITTED</th>
                     <th>ACTIONS</th>
@@ -2367,7 +2368,7 @@ const AdminPanel = () => {
                 </thead>
                 <tbody>
                   {(itApprovalFilter === 'pending' ? itPendingRequests : itAllRequests).length === 0 ? (
-                    <tr><td colSpan="9" className="no-results">No requests found.</td></tr>
+                    <tr><td colSpan="10" className="no-results">No requests found.</td></tr>
                   ) : (itApprovalFilter === 'pending' ? itPendingRequests : itAllRequests).map(req => (
                     <tr key={req.id}>
                       <td>#{req.id}</td>
@@ -2376,6 +2377,12 @@ const AdminPanel = () => {
                       <td>{req.targetEmail}</td>
                       <td>{req.targetName || '—'}</td>
                       <td>{req.targetRole || '—'}</td>
+                      <td>
+                        {req.type === 'rename' && req.newPassword && req.newPassword.includes('@')
+                          ? <span style={{ color: '#1a73e8', fontWeight: '600', fontSize: '12px' }}>📧 {req.newPassword}</span>
+                          : <span style={{ color: '#aaa', fontSize: '12px' }}>—</span>
+                        }
+                      </td>
                       <td><span className={`status-pill ${req.status}`}>{req.status}</span></td>
                       <td style={{ fontSize: '12px' }}>{new Date(req.createdAt).toLocaleString()}</td>
                       <td>
