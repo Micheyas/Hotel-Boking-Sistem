@@ -39,13 +39,6 @@ const AdminPanel = () => {
   // View: 'list' | 'room-management' | 'repeat-customers' | 'booking-history' | 'kyc' | 'it-management' | 'it-approvals'
   const [view, setView]               = useState('list');
 
-  // Set default view based on role when user logs in
-  useEffect(() => {
-    if (isLoggedIn && user?.role === 'it') {
-      setView('it-management');
-    }
-  }, [isLoggedIn, user?.role]);
-
   // IT Management state (for IT role)
   const [itForm, setItForm] = useState({ type: 'create', email: '', name: '', role: 'receptionist', password: '' });
   const [itSubmitting, setItSubmitting] = useState(false);
@@ -109,6 +102,13 @@ const AdminPanel = () => {
   const [email, setEmail]           = useState('');
   const [password, setPassword]     = useState('');
   const [loginLoading, setLoginLoading] = useState(false);
+
+  // Set default view to IT Management for IT role after login
+  useEffect(() => {
+    if (isLoggedIn && user?.role === 'it') {
+      setView('it-management');
+    }
+  }, [isLoggedIn, user?.role]);
 
   const location = useLocation();
 
