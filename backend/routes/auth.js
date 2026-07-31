@@ -330,14 +330,15 @@ router.post('/kyc',
       const idBackUrl  = req.files.idBack ? req.files.idBack[0].path : null;
 
       await user.update({
-        name:         fullName,
-        phone:        phone.trim(),
-        dateOfBirth:  dateOfBirth,
-        nationality:  nationality.trim(),
+        name:             fullName,
+        phone:            phone.trim(),
+        dateOfBirth:      dateOfBirth,
+        nationality:      nationality.trim(),
         idType,
-        idFront:      idFrontUrl,
-        idBack:       idBackUrl,
-        kycStatus:    'submitted',
+        idFront:          idFrontUrl,
+        idBack:           idBackUrl,
+        kycStatus:        'submitted',
+        kycSubmittedAt:   new Date(),
         kycRejectedReason: null,
       });
 
@@ -404,8 +405,8 @@ router.get('/admin/kyc',
     try {
       const users = await User.findAll({
         where: { role: 'customer' },
-        attributes: ['id', 'name', 'email', 'phone', 'nationality', 'idType', 'idFront', 'idBack', 'kycStatus', 'kycRejectedReason', 'emailVerified', 'createdAt'],
-        order: [['createdAt', 'DESC']],
+        attributes: ['id', 'name', 'email', 'phone', 'nationality', 'idType', 'idFront', 'idBack', 'kycStatus', 'kycRejectedReason', 'kycSubmittedAt', 'emailVerified', 'createdAt'],
+        order: [['kycSubmittedAt', 'DESC'], ['createdAt', 'DESC']],
       });
       res.json(users);
     } catch (error) {

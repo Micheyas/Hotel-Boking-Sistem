@@ -115,6 +115,7 @@ sequelize.sync({ alter: false }).then(async () => {
   await addColumnIfMissing('Users', 'idBack',             { type: DataTypes.STRING,  allowNull: true });
   await addColumnIfMissing('Users', 'kycStatus',          { type: DataTypes.STRING,  allowNull: false, defaultValue: 'pending' });
   await addColumnIfMissing('Users', 'kycRejectedReason',  { type: DataTypes.TEXT,    allowNull: true });
+  await addColumnIfMissing('Users', 'kycSubmittedAt',     { type: DataTypes.DATE,    allowNull: true });
 
   // ── Auto-verify existing users when email is not configured ──
   // Any user created before email verification existed (emailVerified = false)

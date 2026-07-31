@@ -270,8 +270,12 @@ exports.getRepeatCustomers = async (req, res) => {
   try {
     const { Op } = require('sequelize');
 
-    // Get all bookings and their guest info
+    // Get all VERIFIED bookings only (confirmed, checked_in, checked_out)
+    // Exclude cancelled and pending bookings from repeat customer count
     const bookings = await Booking.findAll({
+      where: {
+        status: { [Op.in]: ['confirmed', 'checked_in', 'checked_out'] },
+      },
       include: [
         { model: User, as: 'user', required: false },
         { model: Room, as: 'room' }

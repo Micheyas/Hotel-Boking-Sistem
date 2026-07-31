@@ -201,6 +201,14 @@ const AdminPanel = () => {
     } finally { setKycLoading(false); }
   };
 
+  // Auto-refresh KYC list every 30 seconds when on KYC tab
+  useEffect(() => {
+    if (view !== 'kyc') return;
+    const interval = setInterval(() => { fetchKycUsers(); }, 30000);
+    return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view]);
+
   const handleKycDecision = async (userId, action, reason = '') => {
     const token = sessionStorage.getItem('staffToken');
     try {
@@ -1908,6 +1916,7 @@ const AdminPanel = () => {
                   <th>PHONE</th>
                   <th>NATIONALITY</th>
                   <th>ID TYPE</th>
+                  <th>SUBMITTED</th>
                   <th>DOCUMENTS</th>
                   <th>STATUS</th>
                   <th>ACTION</th>
@@ -1926,6 +1935,11 @@ const AdminPanel = () => {
                     <td>{u.nationality || '—'}</td>
                     <td>
                       {u.idType === 'national_id' ? '🪪 National ID' : u.idType === 'passport' ? '📘 Passport' : '—'}
+                    </td>
+                    <td style={{ fontSize: '12px', color: '#666' }}>
+                      {u.kycSubmittedAt
+                        ? new Date(u.kycSubmittedAt).toLocaleString()
+                        : '—'}
                     </td>
                     <td>
                       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>

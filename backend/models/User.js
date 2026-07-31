@@ -66,13 +66,16 @@ const User = sequelize.define('User', {
     allowNull: true,
   },
   kycStatus: {
-    // pending = not submitted, submitted = waiting staff review, approved = can book, rejected = needs resubmit
     type: DataTypes.ENUM('pending', 'submitted', 'approved', 'rejected'),
     allowNull: false,
     defaultValue: 'pending',
   },
   kycRejectedReason: {
     type: DataTypes.TEXT,
+    allowNull: true,
+  },
+  kycSubmittedAt: {
+    type: DataTypes.DATE,
     allowNull: true,
   },
   createdAt: {
