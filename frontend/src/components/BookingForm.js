@@ -72,9 +72,9 @@ const BookingForm = () => {
   const customerToken = getCustomerToken();
   const customerUser  = getCustomerUser();
   const verified      = isCustomerVerified();
-  const kycStatus     = getKycStatus();
 
   // ── ALL hooks declared before any early return ──────────
+  const [kycStatus, setKycStatus] = useState(getKycStatus());
   const [checkIn,  setCheckIn]  = useState(params.get("checkIn")  || "");
   const [checkOut, setCheckOut] = useState(params.get("checkOut") || "");
   const [adults,   setAdults]   = useState(Number(params.get("adults"))   || 1);
@@ -108,6 +108,38 @@ const BookingForm = () => {
       if (loyaltyTimerRef.current) clearTimeout(loyaltyTimerRef.current);
     };
   }, []);
+
+  // Refresh KYC status from server (customer might have been approved while logged in)
+  const [kycStatus, setKycStatus] = useState(getKycStatus());
+
+  useEffect(() => {
+    if (!customerToken) return;
+
+    const refreshKyc = async () => {
+      try {
+        const res = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/auth/kyc/status`, {
+          headers: { Authorization: `Bearer ${customerToken}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const freshKyc = data.kycStatus || 'pending';
+          setKycStatus(freshKyc);
+          // Also update localStorage so other components see the new status
+          const stored = localStorage.getItem('customerUser');
+          if (stored) {
+            const user = JSON.parse(stored);
+            user.kycStatus = freshKyc;
+            localStorage.setItem('customerUser', JSON.stringify(user));
+          }
+        }
+      } catch (e) {
+        // Silently fail — we'll use cached status
+        console.warn('[KYC] Could not refresh status:', e.message);
+      }
+    };
+
+    refreshKyc();
+  }, [customerToken]);
 
   // Auto-search if dates came from URL
   useEffect(() => {

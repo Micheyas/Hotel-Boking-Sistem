@@ -39,7 +39,7 @@ const GoogleSignInButton = ({ onLogin, label = "Continue with Google" }) => {
       const { token, user } = res.data;
       localStorage.setItem("customerToken", token);
       localStorage.setItem("customerUser", JSON.stringify(user));
-      onLogin(user);
+      await onLogin(user);
     } catch (err) {
       setError(err.response?.data?.error || "Google sign-in failed. Try again.");
     }
@@ -233,7 +233,7 @@ const LoginForm = ({ onSwitch, onLogin }) => {
 
       localStorage.setItem("customerToken", token);
       localStorage.setItem("customerUser", JSON.stringify(user));
-      onLogin(user);
+      await onLogin(user);
     } catch (err) {
       setError(err.response?.data?.error || "Login failed. Check your credentials.");
     } finally {
@@ -256,7 +256,7 @@ const LoginForm = ({ onSwitch, onLogin }) => {
   return (
     <form className="ca-form" onSubmit={handleSubmit}>
       {/* Google Sign-In */}
-      <GoogleSignInButton onLogin={onLogin} label="Sign in with Google" />
+      <GoogleSignInButton onLogin={async (u) => { await onLogin(u); }} label="Sign in with Google" />
       <OrDivider />
       <div className="ca-field">
         <label>Email Address <span className="ca-req">*</span></label>
@@ -328,7 +328,25 @@ const CustomerAuth = () => {
   // Where to go after login — default to home, not booking
   const from = new URLSearchParams(location.search).get("from") || "/";
 
-  const handleLogin = (user) => {
+  const handleLogin = async (user) => {
+    // Also fetch fresh KYC status from server (in case admin approved while user was logged out)
+    if (user.role === 'customer') {
+      try {
+        const API = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
+        const token = localStorage.getItem('customerToken');
+        const res = await fetch(`${API}/auth/kyc/status`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          user.kycStatus = data.kycStatus || 'pending';
+          localStorage.setItem('customerUser', JSON.stringify(user));
+        }
+      } catch (e) {
+        console.warn('[KYC] Could not refresh status after login:', e.message);
+      }
+    }
+
     // If KYC not done yet, always go to profile setup first
     if (user.kycStatus === 'pending' || user.kycStatus === 'rejected') {
       navigate("/profile-setup");
