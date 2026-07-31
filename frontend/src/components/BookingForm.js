@@ -110,8 +110,6 @@ const BookingForm = () => {
   }, []);
 
   // Refresh KYC status from server (customer might have been approved while logged in)
-  const [kycStatus, setKycStatus] = useState(getKycStatus());
-
   useEffect(() => {
     if (!customerToken) return;
 
