@@ -1089,7 +1089,7 @@ const AdminPanel = () => {
       )}
 
       {/* ── Repeat Customers (Admin & Receptionist) ── */}
-      {view === 'repeat-customers' && {(user?.role === 'admin' || user?.role === 'manager' || user?.role === 'receptionist') && (
+      {view === 'repeat-customers' && (user?.role === 'admin' || user?.role === 'manager' || user?.role === 'receptionist') && (
         <div className="admin-table-card">
           <div style={{ marginBottom: '20px' }}>
             <h3>🔄 Repeat Customers</h3>
@@ -1186,11 +1186,11 @@ const AdminPanel = () => {
       )}
 
       {/* Access Denied for non-admin/non-receptionist on Repeat Customers */}
-      {view === 'repeat-customers' && user?.role !== 'admin' && user?.role !== 'receptionist' && (
+      {view === 'repeat-customers' && user?.role !== 'admin' && user?.role !== 'manager' && user?.role !== 'receptionist' && (
         <div className="access-denied">
           <span>🚫</span>
           <h3>Access Denied</h3>
-          <p>Repeat Customers view is only available to <strong>Admin</strong> and <strong>Receptionist</strong>.</p>
+          <p>Repeat Customers view is only available to Admin, Manager and Receptionist.</p>
         </div>
       )}
 
