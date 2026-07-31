@@ -696,6 +696,16 @@ router.post('/admin/it-requests/:id/approve',
         await user.destroy();
         resultMessage = `Account deleted: ${request.targetEmail}`;
       }
+      else if (request.type === 'rename') {
+        // Rename staff display name
+        const user = await User.findOne({ where: { email: request.targetEmail } });
+        if (!user) {
+          return res.status(404).json({ error: 'Target user not found' });
+        }
+        const oldName = user.name;
+        await user.update({ name: request.targetName });
+        resultMessage = `Username renamed: ${oldName} → ${request.targetName}`;
+      }
 
       // Mark request as approved
       await request.update({
@@ -747,6 +757,53 @@ router.post('/admin/it-requests/:id/reject',
       res.json({
         message: 'Request rejected',
         request,
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
+
+// ── POST /api/auth/it/request-rename ─────────────────────────────────────────
+// IT staff requests to rename (change display name) for a staff account
+router.post('/it/request-rename',
+  authenticateToken,
+  authorizeRole(['it']),
+  async (req, res) => {
+    try {
+      const { email, newName } = req.body;
+
+      if (!email || !newName) {
+        return res.status(400).json({ error: 'email and newName are required' });
+      }
+
+      const user = await User.findOne({ where: { email: email.toLowerCase().trim() } });
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      if (!['admin', 'manager', 'receptionist', 'it'].includes(user.role)) {
+        return res.status(400).json({ error: 'Can only rename staff accounts' });
+      }
+
+      const request = await ITRequest.create({
+        type: 'rename',
+        targetEmail: email.toLowerCase().trim(),
+        targetName: newName.trim(),   // stores the NEW name as targetName
+        targetRole: user.role,
+        status: 'pending',
+        requestedBy: req.user.id,
+      });
+
+      res.status(201).json({
+        message: 'Username rename request submitted. Awaiting admin approval.',
+        request: {
+          id: request.id,
+          type: request.type,
+          targetEmail: request.targetEmail,
+          targetName: request.targetName,
+          status: request.status,
+        },
       });
     } catch (error) {
       res.status(500).json({ error: error.message });

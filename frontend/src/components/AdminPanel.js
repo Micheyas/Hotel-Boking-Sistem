@@ -579,6 +579,12 @@ const AdminPanel = () => {
         payload = {
           email: itForm.email.trim(),
         };
+      } else if (itForm.type === 'rename') {
+        endpoint = '/auth/it/request-rename';
+        payload = {
+          email: itForm.email.trim(),
+          newName: itForm.name.trim(),
+        };
       }
 
       await api.post(endpoint, payload, { headers: { Authorization: `Bearer ${token}` } });
@@ -2207,6 +2213,7 @@ const AdminPanel = () => {
                 <select value={itForm.type} onChange={e => setItForm({ ...itForm, type: e.target.value, email: '', name: '', password: '' })} style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '14px' }}>
                   <option value="create">➕ Create New Staff Account</option>
                   <option value="reset">🔑 Reset Password</option>
+                  <option value="rename">✏️ Rename Username</option>
                   <option value="delete">🗑️ Delete Staff Account</option>
                 </select>
               </div>
@@ -2235,6 +2242,12 @@ const AdminPanel = () => {
                 <div>
                   <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600', fontSize: '14px' }}>{itForm.type === 'create' ? 'Password' : 'New Password'}</label>
                   <input type="password" required minLength="6" value={itForm.password} onChange={e => setItForm({ ...itForm, password: e.target.value })} placeholder="Min. 6 characters" style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '14px', boxSizing: 'border-box' }} />
+                </div>
+              )}
+              {itForm.type === 'rename' && (
+                <div>
+                  <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600', fontSize: '14px' }}>New Display Name</label>
+                  <input type="text" required value={itForm.name} onChange={e => setItForm({ ...itForm, name: e.target.value })} placeholder="Enter new name..." style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '14px', boxSizing: 'border-box' }} />
                 </div>
               )}
             </div>

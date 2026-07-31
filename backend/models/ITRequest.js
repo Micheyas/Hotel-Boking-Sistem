@@ -8,7 +8,7 @@ const ITRequest = sequelize.define('ITRequest', {
     autoIncrement: true,
   },
   type: {
-    type: DataTypes.ENUM('create', 'reset', 'delete'),
+    type: DataTypes.ENUM('create', 'reset', 'delete', 'rename'),
     allowNull: false,
   },
   targetEmail: {
