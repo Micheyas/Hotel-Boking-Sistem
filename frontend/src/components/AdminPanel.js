@@ -224,6 +224,16 @@ const AdminPanel = () => {
         }
       }
 
+      // Load pending IT requests for admin (so the badge shows on login)
+      if (role === 'admin') {
+        try {
+          const itRes = await api.get('/auth/admin/it-requests?status=pending', authHeader);
+          setItPendingRequests(itRes.data || []);
+        } catch (err) {
+          console.warn('Could not load IT requests:', err.message);
+        }
+      }
+
       if (role !== 'receptionist') {
         const [roomsRes, typesRes] = await Promise.all([
           api.get('/rooms', authHeader),
