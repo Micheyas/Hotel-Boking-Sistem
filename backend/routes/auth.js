@@ -426,8 +426,6 @@ router.get('/admin/kyc',
   }
 );
 
-module.exports = router;
-
 // ══════════════════════════════════════════════════════════════════════════════
 // IT MANAGEMENT ROUTES (IT role submits requests, Admin approves)
 // ══════════════════════════════════════════════════════════════════════════════
@@ -615,8 +613,6 @@ router.get('/it/my-requests',
   }
 );
 
-module.exports = router;
-
 // ══════════════════════════════════════════════════════════════════════════════
 // ADMIN APPROVAL ROUTES (Admin reviews and approves/rejects IT requests)
 // ══════════════════════════════════════════════════════════════════════════════
@@ -757,3 +753,5 @@ router.post('/admin/it-requests/:id/reject',
     }
   }
 );
+
+module.exports = router;
