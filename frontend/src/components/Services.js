@@ -494,7 +494,7 @@ const Services = () => {
         api.get('/services/categories'),
       ]);
       setServices(svcRes.data);
-      setCategories(['All', ...catRes.data]);
+      setCategories(['All', ...catRes.data.filter(c => c !== 'Food & Beverage')]);
 
       // Load restaurant menu separately
       try {
@@ -532,9 +532,12 @@ const Services = () => {
 
   useEffect(() => { fetchServices(); }, [fetchServices]);
 
+  // Hide Food & Beverage from public view — the Restaurant Menu section below covers food
+  const HIDDEN_CATEGORIES = ['Food & Beverage'];
+
   const displayed = activeCategory === 'All'
-    ? services
-    : services.filter(s => s.category === activeCategory);
+    ? services.filter(s => !HIDDEN_CATEGORIES.includes(s.category))
+    : services.filter(s => s.category === activeCategory && !HIDDEN_CATEGORIES.includes(s.category));
 
   // Group by category for the "All" view
   const grouped = displayed.reduce((acc, s) => {
