@@ -140,7 +140,7 @@ const AdminPanel = () => {
     try {
       const res = await api.post('/auth/login', { email, password });
       const { token, user } = res.data;
-      if (!['admin', 'manager', 'receptionist'].includes(user.role)) {
+      if (!['admin', 'manager', 'receptionist', 'it'].includes(user.role)) {
         setError('Access denied. Staff only.'); setLoginLoading(false); return;
       }
       sessionStorage.setItem('staffToken', token);
@@ -674,6 +674,7 @@ const AdminPanel = () => {
             <p>admin@hotel.com / admin123</p>
             <p>manager@hotel.com / manager123</p>
             <p>receptionist@hotel.com / receptionist123</p>
+            <p>it@hotel.com / it123</p>
           </div>
         </div>
       </div>

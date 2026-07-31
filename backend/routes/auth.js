@@ -160,10 +160,10 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // Staff accounts (admin / manager / receptionist) never get blocked by
+    // Staff accounts (admin / manager / receptionist / it) never get blocked by
     // emailVerified — they may have been created by seed scripts without
     // going through the email verification flow.
-    const isStaff = ['admin', 'manager', 'receptionist'].includes(user.role);
+    const isStaff = ['admin', 'manager', 'receptionist', 'it'].includes(user.role);
     if (!isStaff && !user.emailVerified) {
       return res.status(403).json({
         error: 'Please verify your email before logging in.',
