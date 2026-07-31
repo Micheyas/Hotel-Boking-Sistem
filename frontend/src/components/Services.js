@@ -634,9 +634,15 @@ const ServiceCard = ({ service: s, formatHours, formatPrice, translateServiceNam
   const isFree = !s.price && !s.priceLabel;
 
   return (
-    <div className={`svc-card ${s.status === 'inactive' ? 'svc-card--inactive' : ''}`}>
-      <div className="svc-card-icon">{s.icon || '🏨'}</div>
+    <div className={`svc-card ${s.status === 'inactive' ? 'svc-card--inactive' : ''} ${s.image ? 'svc-card--has-img' : ''}`}>
+      {s.image && (
+        <div className="svc-card-img-wrap">
+          <img src={s.image} alt={s.name} className="svc-card-img" loading="lazy" />
+          <div className="svc-card-img-overlay" />
+        </div>
+      )}
       <div className="svc-card-body">
+        {!s.image && <div className="svc-card-icon">{s.icon || '🏨'}</div>}
         <div className="svc-card-top">
           <h3 className="svc-card-name">{translateServiceName(s.name)}</h3>
           <span className={`svc-price-badge ${isFree ? 'svc-price-badge--free' : ''}`}>
