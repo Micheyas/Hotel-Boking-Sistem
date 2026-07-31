@@ -1,7 +1,7 @@
 const Stripe = require('stripe');
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY || '');
 const path = require('path');
-const Booking = require('../models/Booking');
+const { Booking } = require('../models');
 
 exports.createCheckoutSession = async (req, res) => {
   try {

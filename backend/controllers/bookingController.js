@@ -1,6 +1,4 @@
-const Booking = require('../models/Booking');
-const Room = require('../models/Room');
-const User = require('../models/User');
+const { Booking, Room, User } = require('../models');
 const { Op } = require('sequelize');
 const { sendEmail } = require('../middleware/mailer');
 const socketService = require('../socket');

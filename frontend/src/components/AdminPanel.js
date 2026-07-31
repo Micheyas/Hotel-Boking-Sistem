@@ -298,9 +298,17 @@ const AdminPanel = () => {
   };
 
   const handleBookingDecision = async () => {
-    if (!decisionAction || !selectedBookingForDecision) return;
+    if (!decisionAction) {
+      setError('Please select Approve or Reject first.');
+      return;
+    }
+    if (!selectedBookingForDecision) {
+      setError('No booking selected.');
+      return;
+    }
     try {
       setDecidingLoading(true);
+      setError('');
       const token = sessionStorage.getItem('staffToken');
       await api.post(
         `/bookings/${selectedBookingForDecision.id}/decision`,
@@ -311,12 +319,12 @@ const AdminPanel = () => {
       setDecisionAction('');
       setDecisionNotes('');
       setSelectedBookingForDecision(null);
-      setError('');
       fetchAdminData();
     } catch (err) {
+      const status = err.response?.status;
       const msg = err.response?.data?.error || err.message || 'Failed to submit decision';
-      setError(`Decision failed: ${msg}`);
-      console.error('Decision error:', err.response?.status, err.response?.data);
+      setError(`Decision failed (${status}): ${msg}`);
+      console.error('[BookingDecision] error:', status, err.response?.data);
     } finally {
       setDecidingLoading(false);
     }
@@ -1010,6 +1018,8 @@ const AdminPanel = () => {
                             className="decision-btn"
                             onClick={() => {
                               setSelectedBookingForDecision(b);
+                              setDecisionAction('');
+                              setDecisionNotes('');
                               setShowDecisionModal(true);
                             }}
                           >
@@ -1021,6 +1031,8 @@ const AdminPanel = () => {
                             className="decision-btn decision-btn--override"
                             onClick={() => {
                               setSelectedBookingForDecision(b);
+                              setDecisionAction('');
+                              setDecisionNotes('');
                               setShowDecisionModal(true);
                             }}
                           >
