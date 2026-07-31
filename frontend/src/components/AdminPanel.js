@@ -31,6 +31,7 @@ const AdminPanel = () => {
   const [rooms, setRooms]             = useState([]);
   const [roomTypes, setRoomTypes]     = useState([]);
   const [repeatCustomers, setRepeatCustomers] = useState([]);
+  const [repeatCustomersViewed, setRepeatCustomersViewed] = useState(false);
   const [loading, setLoading]         = useState(false);
   const [error, setError]             = useState('');
 
@@ -602,9 +603,15 @@ const AdminPanel = () => {
             </button>
           )}
           {(user?.role === 'admin' || user?.role === 'manager' || user?.role === 'receptionist') && (
-            <button className={`view-tab ${view === 'repeat-customers' ? 'active' : ''}`} onClick={() => setView('repeat-customers')}>
+            <button
+              className={`view-tab ${view === 'repeat-customers' ? 'active' : ''}`}
+              onClick={() => {
+                setView('repeat-customers');
+                setRepeatCustomersViewed(true);
+              }}
+            >
               🔄 Repeat Customers
-              {repeatCustomers.length > 0 && (
+              {repeatCustomers.length > 0 && !repeatCustomersViewed && (
                 <span className="tab-badge">{repeatCustomers.length}</span>
               )}
             </button>
