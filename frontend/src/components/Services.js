@@ -25,6 +25,25 @@ const MENU_CAT_ICONS = {
   'Special':     '⭐',
 };
 
+const MenuItemCard = ({ item, currency, rates }) => (
+  <div className="menu-item-card">
+    <div className="menu-item-img-wrap">
+      {item.image
+        ? <img src={item.image} alt={item.name} className="menu-item-img" loading="lazy" />
+        : <div className="menu-item-img-placeholder">{MENU_CAT_ICONS[item.category] || '🍽️'}</div>
+      }
+    </div>
+    <div className="menu-item-body">
+      <div className="menu-item-top">
+        <h4 className="menu-item-name">{item.name}</h4>
+        <span className="menu-item-price">{convertPrice(Number(item.price), currency, rates)}</span>
+      </div>
+      {item.description && <p className="menu-item-desc">{item.description}</p>}
+      <span className="menu-item-cat">{MENU_CAT_ICONS[item.category] || '🍽️'} {item.category}</span>
+    </div>
+  </div>
+);
+
 // Translation mapping for service categories
 const CATEGORY_TRANSLATIONS = {
   en: {
@@ -421,18 +440,23 @@ const Services = () => {
   const fetchServices = useCallback(async () => {
     try {
       setLoading(true);
-      const [svcRes, catRes, menuRes] = await Promise.all([
+      const [svcRes, catRes] = await Promise.all([
         api.get('/services'),
         api.get('/services/categories'),
-        api.get('/menu'),
       ]);
       setServices(svcRes.data);
       setCategories(['All', ...catRes.data]);
 
-      const items = menuRes.data.items || [];
-      setMenuItems(items);
-      const cats = [...new Set(items.map(i => i.category))];
-      setMenuCategories(cats);
+      // Load menu separately so a menu error never breaks the services page
+      try {
+        const menuRes = await api.get('/menu');
+        const items = menuRes.data.items || [];
+        setMenuItems(items);
+        const cats = [...new Set(items.map(i => i.category))];
+        setMenuCategories(cats);
+      } catch (menuErr) {
+        console.warn('[Menu] Could not load menu items:', menuErr.message);
+      }
     } catch (err) {
       setError('Unable to load hotel services. Please try again later.');
       console.error('Services fetch error:', err);
@@ -642,22 +666,3 @@ const ServiceCard = ({ service: s, formatHours, formatPrice, translateServiceNam
 };
 
 export default Services;
-
-const MenuItemCard = ({ item, currency, rates }) => (
-  <div className="menu-item-card">
-    <div className="menu-item-img-wrap">
-      {item.image
-        ? <img src={item.image} alt={item.name} className="menu-item-img" loading="lazy" />
-        : <div className="menu-item-img-placeholder">{MENU_CAT_ICONS[item.category] || '🍽️'}</div>
-      }
-    </div>
-    <div className="menu-item-body">
-      <div className="menu-item-top">
-        <h4 className="menu-item-name">{item.name}</h4>
-        <span className="menu-item-price">{convertPrice(Number(item.price), currency, rates)}</span>
-      </div>
-      {item.description && <p className="menu-item-desc">{item.description}</p>}
-      <span className="menu-item-cat">{MENU_CAT_ICONS[item.category] || '🍽️'} {item.category}</span>
-    </div>
-  </div>
-);
