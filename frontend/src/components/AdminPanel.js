@@ -31,7 +31,6 @@ const AdminPanel = () => {
   const [rooms, setRooms]             = useState([]);
   const [roomTypes, setRoomTypes]     = useState([]);
   const [repeatCustomers, setRepeatCustomers] = useState([]);
-  const [repeatCustomersViewed, setRepeatCustomersViewed] = useState(false);
   const [loading, setLoading]         = useState(false);
   const [error, setError]             = useState('');
 
@@ -148,6 +147,20 @@ const AdminPanel = () => {
     localStorage.removeItem('token'); localStorage.removeItem('user');
     setIsLoggedIn(false); setUser(null);
     setAllBookings([]); setOffers([]); setRooms([]);
+  };
+
+  // Helper: check if current user has viewed repeat customers
+  const hasViewedRepeatCustomers = () => {
+    if (!user?.email) return false;
+    const key = `repeatCustomersViewed_${user.email}`;
+    return localStorage.getItem(key) === 'true';
+  };
+
+  // Helper: mark repeat customers as viewed for current user
+  const markRepeatCustomersViewed = () => {
+    if (!user?.email) return;
+    const key = `repeatCustomersViewed_${user.email}`;
+    localStorage.setItem(key, 'true');
   };
 
   const fetchAdminData = async () => {
@@ -607,11 +620,11 @@ const AdminPanel = () => {
               className={`view-tab ${view === 'repeat-customers' ? 'active' : ''}`}
               onClick={() => {
                 setView('repeat-customers');
-                setRepeatCustomersViewed(true);
+                markRepeatCustomersViewed();
               }}
             >
               🔄 Repeat Customers
-              {repeatCustomers.length > 0 && !repeatCustomersViewed && (
+              {repeatCustomers.length > 0 && !hasViewedRepeatCustomers() && (
                 <span className="tab-badge">{repeatCustomers.length}</span>
               )}
             </button>
