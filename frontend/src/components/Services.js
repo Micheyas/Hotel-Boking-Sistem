@@ -62,7 +62,9 @@ const ServiceSubMenu = ({ items, currency, rates, t }) => {
                     : convertPrice(Number(item.price), currency, rates)}
                 </span>
               </div>
-              {item.description && <p className="svc-submenu-desc">{item.description}</p>}
+              {item.description && <p className="svc-submenu-desc">
+                {t ? (t(`menu.descriptions.${item.name}`) || item.description) : item.description}
+              </p>}
               <span className="svc-submenu-cat-badge">{t ? (t(`menu.categories.${item.category}`) || item.category) : item.category}</span>
             </div>
           </div>
@@ -85,7 +87,11 @@ const MenuItemCard = ({ item, currency, rates, t }) => (
         <h4 className="menu-item-name">{t ? (t(`menu.items.${item.name}`) || item.name) : item.name}</h4>
         <span className="menu-item-price">{convertPrice(Number(item.price), currency, rates)}</span>
       </div>
-      {item.description && <p className="menu-item-desc">{item.description}</p>}
+      {item.description && (
+        <p className="menu-item-desc">
+          {t ? (t(`menu.descriptions.${item.name}`) || item.description) : item.description}
+        </p>
+      )}
       <span className="menu-item-cat">{MENU_CAT_ICONS[item.category] || '🍽️'} {t ? (t(`menu.categories.${item.category}`) || item.category) : item.category}</span>
     </div>
   </div>
