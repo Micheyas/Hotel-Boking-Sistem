@@ -660,8 +660,10 @@ router.post('/admin/it-requests/:id/approve',
         return res.status(404).json({ error: 'Request not found' });
       }
 
-      if (request.status !== 'pending') {
-        return res.status(400).json({ error: `Request already ${request.status}` });
+      // Allow re-approving already approved requests (e.g. to re-execute a reset or rename)
+      // Only block if already rejected — admin must explicitly un-reject first
+      if (request.status === 'rejected') {
+        return res.status(400).json({ error: 'This request was rejected. IT must submit a new request.' });
       }
 
       // Execute the requested action
