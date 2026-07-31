@@ -163,8 +163,8 @@ const AdminPanel = () => {
 
       const role = JSON.parse(sessionStorage.getItem('staffUser') || '{}').role;
 
-      // Load repeat customers for admins and receptionists
-      if (role === 'admin' || role === 'receptionist') {
+      // Load repeat customers for admins, managers and receptionists
+      if (role === 'admin' || role === 'manager' || role === 'receptionist') {
         try {
           const repeatRes = await api.get('/bookings/repeat-customers', authHeader);
           setRepeatCustomers(repeatRes.data.repeatCustomers || []);
@@ -511,7 +511,7 @@ const AdminPanel = () => {
       String(b.id).includes(search);
     const matchStatus = !statusFilter || b.status === statusFilter;
     const matchReception = !receptionFilter ||
-      (receptionFilter === 'pending' && b.processedAction === 'none') ||
+      (receptionFilter === 'pending' && (!b.processedAction || b.processedAction === 'none')) ||
       (receptionFilter === 'approved' && b.processedAction === 'approved') ||
       (receptionFilter === 'rejected' && b.processedAction === 'rejected');
     return matchSearch && matchStatus && matchReception;
@@ -601,7 +601,7 @@ const AdminPanel = () => {
               🏨 Room Management
             </button>
           )}
-          {(user?.role === 'admin' || user?.role === 'receptionist') && (
+          {(user?.role === 'admin' || user?.role === 'manager' || user?.role === 'receptionist') && (
             <button className={`view-tab ${view === 'repeat-customers' ? 'active' : ''}`} onClick={() => setView('repeat-customers')}>
               🔄 Repeat Customers
               {repeatCustomers.length > 0 && (
@@ -748,7 +748,7 @@ const AdminPanel = () => {
                         <span className={`reception-badge ${b.processedAction || 'none'}`}>
                           {b.processedAction === 'approved' && '✅ Approved'}
                           {b.processedAction === 'rejected' && '❌ Rejected'}
-                          {b.processedAction === 'none' && '⏳ Pending'}
+                          {(!b.processedAction || b.processedAction === 'none') && '⏳ Pending'}
                         </span>
                       </td>
                       {isAdminOrManager && (
@@ -777,7 +777,7 @@ const AdminPanel = () => {
                         </td>
                       )}
                       <td>
-                        {b.processedAction === 'none' && (
+                        {(!b.processedAction || b.processedAction === 'none') && (
                           <button
                             className="decision-btn"
                             onClick={() => {
@@ -788,7 +788,7 @@ const AdminPanel = () => {
                             ⚖️ Decide
                           </button>
                         )}
-                        {b.processedAction !== 'none' && isAdminOrManager && (
+                        {(b.processedAction && b.processedAction !== 'none') && isAdminOrManager && (
                           <button
                             className="decision-btn decision-btn--override"
                             onClick={() => {
@@ -1089,7 +1089,7 @@ const AdminPanel = () => {
       )}
 
       {/* ── Repeat Customers (Admin & Receptionist) ── */}
-      {view === 'repeat-customers' && (user?.role === 'admin' || user?.role === 'receptionist') && (
+      {view === 'repeat-customers' && {(user?.role === 'admin' || user?.role === 'manager' || user?.role === 'receptionist') && (
         <div className="admin-table-card">
           <div style={{ marginBottom: '20px' }}>
             <h3>🔄 Repeat Customers</h3>
