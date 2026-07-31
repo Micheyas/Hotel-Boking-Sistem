@@ -566,11 +566,13 @@ exports.bookingDecision = async (req, res) => {
     // Set new status based on action
     const newStatus = action === 'approved' ? 'confirmed' : 'cancelled';
 
-    // If rejecting, mark room as available again if it was occupied
+    // If rejecting, free the room
     if (action === 'rejected' && booking.room?.status === 'occupied') {
       await booking.room.update({ status: 'available' });
-      const io = socketService.getIO();
-      io.emit('roomStatusChanged', { roomId: booking.room.id, status: 'available' });
+      try {
+        const io = socketService.getIO();
+        io.emit('roomStatusChanged', { roomId: booking.room.id, status: 'available' });
+      } catch (_) { /* socket not available in serverless */ }
     }
 
     // Update booking with decision details
@@ -582,34 +584,43 @@ exports.bookingDecision = async (req, res) => {
       receptionNotes: notes || '',
     });
 
-    // Send email to guest about the decision
-    if (booking.guestEmail) {
+    // Send confirmation email to guest (non-blocking)
+    if (booking.guestEmail || booking.user?.email) {
+      const guestEmail = booking.guestEmail || booking.user.email;
+      const guestName  = booking.guestName  || booking.user?.name || 'Guest';
+      const roomNum    = booking.room?.roomNumber || '';
+
       const subject = action === 'approved'
         ? 'Booking Approved — The William Vale Hotel'
-        : 'Booking Rejected — The William Vale Hotel';
+        : 'Booking Update — The William Vale Hotel';
 
       const text = action === 'approved'
-        ? `Dear ${booking.guestName},\n\nYour booking for room ${booking.room?.roomNumber} has been approved.\n\nThank you for choosing The William Vale Hotel!`
-        : `Dear ${booking.guestName},\n\nUnfortunately, your booking for room ${booking.room?.roomNumber} could not be confirmed at this time.\n\nPlease contact us for more information.\n\nThank you for considering The William Vale Hotel!`;
+        ? `Dear ${guestName},\n\nYour booking for room ${roomNum} has been approved. We look forward to welcoming you!\n\nThank you for choosing The William Vale Hotel!`
+        : `Dear ${guestName},\n\nUnfortunately your booking for room ${roomNum} could not be confirmed. Please contact us for more information.\n\nThank you for considering The William Vale Hotel!`;
 
       const html = action === 'approved'
-        ? `<p>Dear <strong>${booking.guestName}</strong>,</p><p>Your booking for room <strong>${booking.room?.roomNumber}</strong> has been <span style="color:green;font-weight:700">approved</span>.</p><p>Thank you for choosing <strong>The William Vale Hotel</strong>!</p>`
-        : `<p>Dear <strong>${booking.guestName}</strong>,</p><p>Unfortunately, your booking for room <strong>${booking.room?.roomNumber}</strong> could not be confirmed at this time.</p><p>Please contact us for more information.</p><p>Thank you for considering <strong>The William Vale Hotel</strong>!</p>`;
+        ? `<p>Dear <strong>${guestName}</strong>,</p><p>Your booking for room <strong>${roomNum}</strong> has been <span style="color:green;font-weight:700">approved</span>. We look forward to welcoming you!</p><p>Thank you for choosing <strong>The William Vale Hotel</strong>!</p>`
+        : `<p>Dear <strong>${guestName}</strong>,</p><p>Unfortunately your booking for room <strong>${roomNum}</strong> could not be confirmed at this time.</p><p>Please contact us for more information.</p>`;
 
-      await sendEmail({ to: booking.guestEmail, subject, text, html });
+      sendEmail({ to: guestEmail, subject, text, html }).catch(e =>
+        console.warn('[Decision] Email failed:', e.message)
+      );
     }
 
-    // Emit socket event for live admin updates
-    const io = socketService.getIO();
-    io.emit('bookingProcessed', {
-      bookingId: booking.id,
-      action,
-      processedBy: receptionistId,
-      processedAt: booking.processedAt,
-    });
+    // Emit socket event (safe for serverless environments)
+    try {
+      const io = socketService.getIO();
+      io.emit('bookingProcessed', {
+        bookingId: booking.id,
+        action,
+        processedBy: receptionistId,
+        processedAt: booking.processedAt,
+      });
+    } catch (_) { /* socket not available in serverless */ }
 
     res.json({ message: `Booking ${action}`, booking });
   } catch (error) {
+    console.error('[bookingDecision] Error:', error.message);
     res.status(400).json({ error: error.message });
   }
 };
