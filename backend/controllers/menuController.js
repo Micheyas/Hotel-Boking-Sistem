@@ -10,23 +10,32 @@ cloudinary.config({
 const MENU_CATEGORIES = ['Starter', 'Main Course', 'Dessert', 'Drink', 'Breakfast', 'Vegan', 'Special'];
 
 // ── GET /api/menu  (public) ───────────────────────────────────────────────────
-// Returns all available menu items grouped by category
+// Returns menu items — optionally filtered by serviceCategory
 exports.getPublicMenu = async (req, res) => {
   try {
-    const { category } = req.query;
+    const { category, serviceCategory } = req.query;
     const where = { available: true };
     if (category && category !== 'All') where.category = category;
+    // Default to Restaurant items; pass serviceCategory=all to get everything
+    if (serviceCategory === 'all') {
+      // no filter — return all service menus
+    } else if (serviceCategory) {
+      where.serviceCategory = serviceCategory;
+    } else {
+      where.serviceCategory = 'Restaurant';
+    }
 
     const items = await MenuItem.findAll({
       where,
-      order: [['category', 'ASC'], ['sortOrder', 'ASC'], ['name', 'ASC']],
+      order: [['serviceCategory', 'ASC'], ['category', 'ASC'], ['sortOrder', 'ASC'], ['name', 'ASC']],
     });
 
     // Group by category
     const grouped = {};
     for (const item of items) {
-      if (!grouped[item.category]) grouped[item.category] = [];
-      grouped[item.category].push(item);
+      const key = item.category;
+      if (!grouped[key]) grouped[key] = [];
+      grouped[key].push(item);
     }
 
     res.json({ items, grouped, categories: Object.keys(grouped) });
@@ -72,6 +81,7 @@ exports.createMenuItem = async (req, res) => {
       image: imageUrl,
       price: parseFloat(price),
       category: category || 'Main Course',
+      serviceCategory: req.body.serviceCategory || 'Restaurant',
       available: available !== 'false' && available !== false,
       sortOrder: parseInt(sortOrder) || 0,
     });

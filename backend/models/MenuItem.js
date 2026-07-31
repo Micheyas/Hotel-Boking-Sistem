@@ -27,9 +27,18 @@ const MenuItem = sequelize.define('MenuItem', {
   },
   category: {
     // Starter | Main Course | Dessert | Drink | Special | Breakfast | Vegan
+    // Also used for service sub-menus: Massage | Facial | Pool | Gym | etc.
     type: DataTypes.STRING,
     allowNull: false,
     defaultValue: 'Main Course',
+  },
+  serviceCategory: {
+    // Which hotel service this item belongs to.
+    // 'Restaurant' = food menu, 'Wellness & Spa' = spa menu, etc.
+    // NULL = restaurant/food items only
+    type: DataTypes.STRING,
+    allowNull: true,
+    defaultValue: 'Restaurant',
   },
   available: {
     type: DataTypes.BOOLEAN,

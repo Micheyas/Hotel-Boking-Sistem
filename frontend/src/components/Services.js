@@ -25,6 +25,53 @@ const MENU_CAT_ICONS = {
   'Special':     '⭐',
 };
 
+// Sub-menu items grid shown under a service category section
+const ServiceSubMenu = ({ items, currency, rates }) => {
+  const [catFilter, setCatFilter] = React.useState('All');
+  const cats = ['All', ...new Set(items.map(i => i.category))];
+  const filtered = catFilter === 'All' ? items : items.filter(i => i.category === catFilter);
+
+  return (
+    <div className="svc-submenu">
+      <div className="svc-submenu-header">
+        <span className="svc-submenu-title">📋 Available Packages &amp; Pricing</span>
+        <div className="svc-submenu-cats">
+          {cats.map(c => (
+            <button
+              key={c}
+              onClick={() => setCatFilter(c)}
+              className={`svc-submenu-cat-btn${catFilter === c ? ' active' : ''}`}
+            >{c}</button>
+          ))}
+        </div>
+      </div>
+      <div className="svc-submenu-grid">
+        {filtered.map(item => (
+          <div key={item.id} className="svc-submenu-card">
+            {item.image && (
+              <div className="svc-submenu-img-wrap">
+                <img src={item.image} alt={item.name} className="svc-submenu-img" loading="lazy" />
+              </div>
+            )}
+            <div className="svc-submenu-body">
+              <div className="svc-submenu-top">
+                <h4 className="svc-submenu-name">{item.name}</h4>
+                <span className="svc-submenu-price">
+                  {Number(item.price) === 0
+                    ? 'Free'
+                    : convertPrice(Number(item.price), currency, rates)}
+                </span>
+              </div>
+              {item.description && <p className="svc-submenu-desc">{item.description}</p>}
+              <span className="svc-submenu-cat-badge">{item.category}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const MenuItemCard = ({ item, currency, rates }) => (
   <div className="menu-item-card">
     <div className="menu-item-img-wrap">
@@ -259,6 +306,8 @@ const Services = () => {
   const [menuItems, setMenuItems]         = useState([]);
   const [menuCatFilter, setMenuCatFilter] = useState('All');
   const [menuCategories, setMenuCategories] = useState([]);
+  // Service sub-menus (spa, fitness, transport, etc.)
+  const [serviceMenus, setServiceMenus]   = useState({});
 
   // Translate category name based on current language
   const translateCategory = (category) => {
@@ -447,15 +496,31 @@ const Services = () => {
       setServices(svcRes.data);
       setCategories(['All', ...catRes.data]);
 
-      // Load menu separately so a menu error never breaks the services page
+      // Load restaurant menu separately
       try {
-        const menuRes = await api.get('/menu');
+        const menuRes = await api.get('/menu?serviceCategory=Restaurant');
         const items = menuRes.data.items || [];
         setMenuItems(items);
         const cats = [...new Set(items.map(i => i.category))];
         setMenuCategories(cats);
       } catch (menuErr) {
-        console.warn('[Menu] Could not load menu items:', menuErr.message);
+        console.warn('[Menu] Could not load restaurant menu:', menuErr.message);
+      }
+
+      // Load all service sub-menus (spa, fitness, transport, etc.)
+      try {
+        const allMenuRes = await api.get('/menu?serviceCategory=all');
+        const allItems = allMenuRes.data.items || [];
+        // Group by serviceCategory
+        const grouped = {};
+        for (const item of allItems) {
+          if (item.serviceCategory === 'Restaurant') continue;
+          if (!grouped[item.serviceCategory]) grouped[item.serviceCategory] = [];
+          grouped[item.serviceCategory].push(item);
+        }
+        setServiceMenus(grouped);
+      } catch (e) {
+        console.warn('[Menu] Could not load service menus:', e.message);
       }
     } catch (err) {
       setError('Unable to load hotel services. Please try again later.');
@@ -545,7 +610,7 @@ const Services = () => {
             <p>{t('services.noServices')}</p>
           </div>
         ) : activeCategory === 'All' ? (
-          // Grouped by category
+          // Grouped by category — each section shows its service cards + sub-menu
           Object.entries(grouped).map(([cat, items]) => (
             <section key={cat} className="svc-section">
               <div className="svc-section-header">
@@ -558,6 +623,10 @@ const Services = () => {
                   <ServiceCard key={s.id} service={s} formatHours={formatHours} formatPrice={formatPrice} translateServiceName={translateServiceName} translateDescription={translateDescription} translateLocation={translateLocation} />
                 ))}
               </div>
+              {/* Sub-menu items for this service category */}
+              {serviceMenus[cat] && serviceMenus[cat].length > 0 && (
+                <ServiceSubMenu items={serviceMenus[cat]} currency={currency} rates={rates} />
+              )}
             </section>
           ))
         ) : (
