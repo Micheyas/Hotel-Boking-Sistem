@@ -7,6 +7,7 @@ const ExchangeRate = require('./ExchangeRate');
 const Offer = require('./Offer');
 const Review = require('./Review');
 const HotelService = require('./HotelService');
+const ITRequest = require('./ITRequest');
 
 // Define associations
 Room.belongsTo(RoomType, { foreignKey: 'roomTypeId', as: 'roomType' });
@@ -31,6 +32,13 @@ Review.belongsTo(Room, { foreignKey: 'roomId', as: 'room' });
 HotelService.hasMany(Review, { foreignKey: 'serviceId', as: 'reviews' });
 Review.belongsTo(HotelService, { foreignKey: 'serviceId', as: 'service' });
 
+// IT Request associations
+User.hasMany(ITRequest, { foreignKey: 'requestedBy', as: 'itRequests' });
+ITRequest.belongsTo(User, { foreignKey: 'requestedBy', as: 'requester' });
+
+User.hasMany(ITRequest, { foreignKey: 'approvedBy', as: 'approvedRequests' });
+ITRequest.belongsTo(User, { foreignKey: 'approvedBy', as: 'approver' });
+
 module.exports = {
   sequelize,
   Room,
@@ -41,4 +49,5 @@ module.exports = {
   Offer,
   Review,
   HotelService,
+  ITRequest,
 };

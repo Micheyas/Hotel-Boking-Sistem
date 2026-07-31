@@ -427,3 +427,333 @@ router.get('/admin/kyc',
 );
 
 module.exports = router;
+
+// ══════════════════════════════════════════════════════════════════════════════
+// IT MANAGEMENT ROUTES (IT role submits requests, Admin approves)
+// ══════════════════════════════════════════════════════════════════════════════
+
+const ITRequest = require('../models/ITRequest');
+
+// ── POST /api/auth/it/request-create ─────────────────────────────────────────
+// IT staff requests to create a new staff account (admin/manager/receptionist/it)
+router.post('/it/request-create',
+  authenticateToken,
+  authorizeRole(['it']),
+  async (req, res) => {
+    try {
+      const { email, name, role, password } = req.body;
+      
+      if (!email || !name || !role || !password) {
+        return res.status(400).json({ error: 'email, name, role and password are required' });
+      }
+
+      if (!['admin', 'manager', 'receptionist', 'it'].includes(role)) {
+        return res.status(400).json({ error: 'Invalid role. Must be admin, manager, receptionist, or it' });
+      }
+
+      // Check if user already exists
+      const existing = await User.findOne({ where: { email: email.toLowerCase().trim() } });
+      if (existing) {
+        return res.status(400).json({ error: 'An account with this email already exists' });
+      }
+
+      // Hash password for storage in request
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      const request = await ITRequest.create({
+        type: 'create',
+        targetEmail: email.toLowerCase().trim(),
+        targetName: name.trim(),
+        targetRole: role,
+        newPassword: hashedPassword,
+        status: 'pending',
+        requestedBy: req.user.id,
+      });
+
+      res.status(201).json({
+        message: 'Account creation request submitted. Awaiting admin approval.',
+        request: {
+          id: request.id,
+          type: request.type,
+          targetEmail: request.targetEmail,
+          targetName: request.targetName,
+          targetRole: request.targetRole,
+          status: request.status,
+        },
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
+
+// ── POST /api/auth/it/request-reset ──────────────────────────────────────────
+// IT staff requests to reset password for an existing staff account
+router.post('/it/request-reset',
+  authenticateToken,
+  authorizeRole(['it']),
+  async (req, res) => {
+    try {
+      const { email, newPassword } = req.body;
+      
+      if (!email || !newPassword) {
+        return res.status(400).json({ error: 'email and newPassword are required' });
+      }
+
+      // Check if user exists and is staff
+      const user = await User.findOne({ where: { email: email.toLowerCase().trim() } });
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      if (!['admin', 'manager', 'receptionist', 'it'].includes(user.role)) {
+        return res.status(400).json({ error: 'Can only reset passwords for staff accounts' });
+      }
+
+      // Hash password for storage in request
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      const request = await ITRequest.create({
+        type: 'reset',
+        targetEmail: email.toLowerCase().trim(),
+        targetName: user.name,
+        targetRole: user.role,
+        newPassword: hashedPassword,
+        status: 'pending',
+        requestedBy: req.user.id,
+      });
+
+      res.status(201).json({
+        message: 'Password reset request submitted. Awaiting admin approval.',
+        request: {
+          id: request.id,
+          type: request.type,
+          targetEmail: request.targetEmail,
+          targetName: request.targetName,
+          status: request.status,
+        },
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
+
+// ── POST /api/auth/it/request-delete ─────────────────────────────────────────
+// IT staff requests to delete a staff account
+router.post('/it/request-delete',
+  authenticateToken,
+  authorizeRole(['it']),
+  async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ error: 'email is required' });
+      }
+
+      // Check if user exists and is staff
+      const user = await User.findOne({ where: { email: email.toLowerCase().trim() } });
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      if (!['admin', 'manager', 'receptionist', 'it'].includes(user.role)) {
+        return res.status(400).json({ error: 'Can only delete staff accounts' });
+      }
+
+      // Prevent deleting yourself
+      if (user.id === req.user.id) {
+        return res.status(400).json({ error: 'Cannot delete your own account' });
+      }
+
+      const request = await ITRequest.create({
+        type: 'delete',
+        targetEmail: email.toLowerCase().trim(),
+        targetName: user.name,
+        targetRole: user.role,
+        status: 'pending',
+        requestedBy: req.user.id,
+      });
+
+      res.status(201).json({
+        message: 'Account deletion request submitted. Awaiting admin approval.',
+        request: {
+          id: request.id,
+          type: request.type,
+          targetEmail: request.targetEmail,
+          targetName: request.targetName,
+          targetRole: request.targetRole,
+          status: request.status,
+        },
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
+
+// ── GET /api/auth/it/my-requests ─────────────────────────────────────────────
+// IT staff views their own submitted requests
+router.get('/it/my-requests',
+  authenticateToken,
+  authorizeRole(['it']),
+  async (req, res) => {
+    try {
+      const requests = await ITRequest.findAll({
+        where: { requestedBy: req.user.id },
+        include: [
+          { model: User, as: 'approver', attributes: ['id', 'name', 'email', 'role'] },
+        ],
+        order: [['createdAt', 'DESC']],
+      });
+
+      res.json(requests);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
+
+module.exports = router;
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ADMIN APPROVAL ROUTES (Admin reviews and approves/rejects IT requests)
+// ══════════════════════════════════════════════════════════════════════════════
+
+// ── GET /api/auth/admin/it-requests ──────────────────────────────────────────
+// Admin views all pending IT requests
+router.get('/admin/it-requests',
+  authenticateToken,
+  authorizeRole(['admin']),
+  async (req, res) => {
+    try {
+      const { status } = req.query;
+      const where = status ? { status } : {};
+
+      const requests = await ITRequest.findAll({
+        where,
+        include: [
+          { model: User, as: 'requester', attributes: ['id', 'name', 'email', 'role'] },
+          { model: User, as: 'approver', attributes: ['id', 'name', 'email', 'role'] },
+        ],
+        order: [['createdAt', 'DESC']],
+      });
+
+      res.json(requests);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
+
+// ── POST /api/auth/admin/it-requests/:id/approve ─────────────────────────────
+// Admin approves an IT request and executes the action
+router.post('/admin/it-requests/:id/approve',
+  authenticateToken,
+  authorizeRole(['admin']),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      const request = await ITRequest.findByPk(id, {
+        include: [{ model: User, as: 'requester', attributes: ['id', 'name', 'email'] }],
+      });
+
+      if (!request) {
+        return res.status(404).json({ error: 'Request not found' });
+      }
+
+      if (request.status !== 'pending') {
+        return res.status(400).json({ error: `Request already ${request.status}` });
+      }
+
+      // Execute the requested action
+      let resultMessage = '';
+
+      if (request.type === 'create') {
+        // Create new staff account
+        const newUser = await User.create({
+          name: request.targetName,
+          email: request.targetEmail,
+          password: request.newPassword, // already hashed
+          role: request.targetRole,
+          emailVerified: true, // Staff accounts are pre-verified
+        });
+        resultMessage = `Staff account created: ${newUser.email} (${newUser.role})`;
+      } 
+      else if (request.type === 'reset') {
+        // Reset password for existing account
+        const user = await User.findOne({ where: { email: request.targetEmail } });
+        if (!user) {
+          return res.status(404).json({ error: 'Target user not found' });
+        }
+        await user.update({ password: request.newPassword }); // already hashed
+        resultMessage = `Password reset for: ${user.email}`;
+      } 
+      else if (request.type === 'delete') {
+        // Delete staff account
+        const user = await User.findOne({ where: { email: request.targetEmail } });
+        if (!user) {
+          return res.status(404).json({ error: 'Target user not found' });
+        }
+        await user.destroy();
+        resultMessage = `Account deleted: ${request.targetEmail}`;
+      }
+
+      // Mark request as approved
+      await request.update({
+        status: 'approved',
+        approvedBy: req.user.id,
+        approvedAt: new Date(),
+      });
+
+      res.json({
+        message: `Request approved. ${resultMessage}`,
+        request,
+      });
+    } catch (error) {
+      console.error('[IT Request Approval] Error:', error.message);
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
+
+// ── POST /api/auth/admin/it-requests/:id/reject ──────────────────────────────
+// Admin rejects an IT request
+router.post('/admin/it-requests/:id/reject',
+  authenticateToken,
+  authorizeRole(['admin']),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { reason } = req.body;
+      
+      const request = await ITRequest.findByPk(id, {
+        include: [{ model: User, as: 'requester', attributes: ['id', 'name', 'email'] }],
+      });
+
+      if (!request) {
+        return res.status(404).json({ error: 'Request not found' });
+      }
+
+      if (request.status !== 'pending') {
+        return res.status(400).json({ error: `Request already ${request.status}` });
+      }
+
+      await request.update({
+        status: 'rejected',
+        approvedBy: req.user.id,
+        approvedAt: new Date(),
+        rejectionReason: reason || 'No reason provided',
+      });
+
+      res.json({
+        message: 'Request rejected',
+        request,
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+);

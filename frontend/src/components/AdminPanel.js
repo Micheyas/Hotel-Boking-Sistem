@@ -36,8 +36,20 @@ const AdminPanel = () => {
 
   const { currency, rates } = useCurrency();
 
-  // View: 'list' | 'room-management' | 'repeat-customers' | 'booking-history' | 'kyc'
+  // View: 'list' | 'room-management' | 'repeat-customers' | 'booking-history' | 'kyc' | 'it-management' | 'it-approvals'
   const [view, setView]               = useState('list');
+
+  // IT Management state (for IT role)
+  const [itForm, setItForm] = useState({ type: 'create', email: '', name: '', role: 'receptionist', password: '' });
+  const [itSubmitting, setItSubmitting] = useState(false);
+  const [itMyRequests, setItMyRequests] = useState([]);
+  const [itRequestsLoading, setItRequestsLoading] = useState(false);
+
+  // IT Approvals state (for Admin role)
+  const [itPendingRequests, setItPendingRequests] = useState([]);
+  const [itAllRequests, setItAllRequests] = useState([]);
+  const [itApprovalsLoading, setItApprovalsLoading] = useState(false);
+  const [itApprovalFilter, setItApprovalFilter] = useState('pending'); // 'pending' | 'approved' | 'rejected' | 'all'
 
   // Booking filters
   const [search, setSearch]           = useState('');
@@ -511,6 +523,109 @@ const AdminPanel = () => {
     catch (err) { setError(err.response?.data?.error || 'Failed to delete room'); }
   };
 
+  // ── IT Management helpers (IT role) ──
+  const fetchItMyRequests = async () => {
+    setItRequestsLoading(true);
+    const token = sessionStorage.getItem('staffToken');
+    try {
+      const res = await api.get('/auth/it/my-requests', { headers: { Authorization: `Bearer ${token}` } });
+      setItMyRequests(res.data);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to load your requests');
+    } finally {
+      setItRequestsLoading(false);
+    }
+  };
+
+  const handleItSubmit = async (e) => {
+    e.preventDefault();
+    setItSubmitting(true);
+    setError('');
+    const token = sessionStorage.getItem('staffToken');
+    
+    try {
+      let endpoint = '';
+      let payload = {};
+
+      if (itForm.type === 'create') {
+        endpoint = '/auth/it/request-create';
+        payload = {
+          email: itForm.email.trim(),
+          name: itForm.name.trim(),
+          role: itForm.role,
+          password: itForm.password,
+        };
+      } else if (itForm.type === 'reset') {
+        endpoint = '/auth/it/request-reset';
+        payload = {
+          email: itForm.email.trim(),
+          newPassword: itForm.password,
+        };
+      } else if (itForm.type === 'delete') {
+        endpoint = '/auth/it/request-delete';
+        payload = {
+          email: itForm.email.trim(),
+        };
+      }
+
+      await api.post(endpoint, payload, { headers: { Authorization: `Bearer ${token}` } });
+      
+      setItForm({ type: 'create', email: '', name: '', role: 'receptionist', password: '' });
+      fetchItMyRequests();
+      alert('Request submitted successfully. Awaiting admin approval.');
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to submit request');
+    } finally {
+      setItSubmitting(false);
+    }
+  };
+
+  // ── IT Approvals helpers (Admin role) ──
+  const fetchItRequests = async (filterStatus = 'pending') => {
+    setItApprovalsLoading(true);
+    const token = sessionStorage.getItem('staffToken');
+    try {
+      const url = filterStatus === 'all' 
+        ? '/auth/admin/it-requests' 
+        : `/auth/admin/it-requests?status=${filterStatus}`;
+      const res = await api.get(url, { headers: { Authorization: `Bearer ${token}` } });
+      
+      if (filterStatus === 'pending') {
+        setItPendingRequests(res.data);
+      } else {
+        setItAllRequests(res.data);
+      }
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to load IT requests');
+    } finally {
+      setItApprovalsLoading(false);
+    }
+  };
+
+  const handleItApprove = async (requestId) => {
+    if (!window.confirm('Approve this IT request? The action will be executed immediately.')) return;
+    const token = sessionStorage.getItem('staffToken');
+    try {
+      await api.post(`/auth/admin/it-requests/${requestId}/approve`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      fetchItRequests(itApprovalFilter);
+      alert('Request approved and executed successfully.');
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to approve request');
+    }
+  };
+
+  const handleItReject = async (requestId) => {
+    const reason = prompt('Enter rejection reason (optional):');
+    const token = sessionStorage.getItem('staffToken');
+    try {
+      await api.post(`/auth/admin/it-requests/${requestId}/reject`, { reason }, { headers: { Authorization: `Bearer ${token}` } });
+      fetchItRequests(itApprovalFilter);
+      alert('Request rejected.');
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to reject request');
+    }
+  };
+
   // Stats
   const totalBookings   = allBookings.length;
   const pendingBookings = allBookings.filter(b => b.status === 'pending').length;
@@ -664,6 +779,25 @@ const AdminPanel = () => {
               <span className="tab-badge">{kycUsers.filter(u => u.kycStatus === 'submitted').length}</span>
             )}
           </button>
+          {user?.role === 'it' && (
+            <button
+              className={`view-tab ${view === 'it-management' ? 'active' : ''}`}
+              onClick={() => { setView('it-management'); fetchItMyRequests(); }}
+            >
+              🔧 IT Management
+            </button>
+          )}
+          {user?.role === 'admin' && (
+            <button
+              className={`view-tab ${view === 'it-approvals' ? 'active' : ''}`}
+              onClick={() => { setView('it-approvals'); fetchItRequests('pending'); }}
+            >
+              ✅ IT Approvals
+              {itPendingRequests.length > 0 && (
+                <span className="tab-badge">{itPendingRequests.length}</span>
+              )}
+            </button>
+          )}
         </div>
         {view === 'list' && (
           <div className="admin-filters">
