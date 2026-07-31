@@ -2194,6 +2194,165 @@ const AdminPanel = () => {
         </div>
       )}
 
+      {/* ── IT Management (IT role only) ── */}
+      {view === 'it-management' && user?.role === 'it' && (
+        <div className="admin-table-card">
+          <h3>🔧 IT Management — Staff Account Operations</h3>
+          <p style={{ color: '#666', marginBottom: '20px' }}>Submit requests to create, reset passwords, or delete staff accounts. All actions require admin approval before taking effect.</p>
+
+          <form onSubmit={handleItSubmit} style={{ marginBottom: '30px', padding: '20px', background: '#f9f9f9', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '15px' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600', fontSize: '14px' }}>Action Type</label>
+                <select value={itForm.type} onChange={e => setItForm({ ...itForm, type: e.target.value, email: '', name: '', password: '' })} style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '14px' }}>
+                  <option value="create">➕ Create New Staff Account</option>
+                  <option value="reset">🔑 Reset Password</option>
+                  <option value="delete">🗑️ Delete Staff Account</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600', fontSize: '14px' }}>Staff Email</label>
+                <input type="email" required value={itForm.email} onChange={e => setItForm({ ...itForm, email: e.target.value })} placeholder="staff@hotel.com" style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '14px', boxSizing: 'border-box' }} />
+              </div>
+              {itForm.type === 'create' && (
+                <>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600', fontSize: '14px' }}>Full Name</label>
+                    <input type="text" required value={itForm.name} onChange={e => setItForm({ ...itForm, name: e.target.value })} placeholder="John Doe" style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '14px', boxSizing: 'border-box' }} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600', fontSize: '14px' }}>Role</label>
+                    <select value={itForm.role} onChange={e => setItForm({ ...itForm, role: e.target.value })} style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '14px' }}>
+                      <option value="receptionist">Receptionist</option>
+                      <option value="manager">Manager</option>
+                      <option value="admin">Admin</option>
+                      <option value="it">IT</option>
+                    </select>
+                  </div>
+                </>
+              )}
+              {(itForm.type === 'create' || itForm.type === 'reset') && (
+                <div>
+                  <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600', fontSize: '14px' }}>{itForm.type === 'create' ? 'Password' : 'New Password'}</label>
+                  <input type="password" required minLength="6" value={itForm.password} onChange={e => setItForm({ ...itForm, password: e.target.value })} placeholder="Min. 6 characters" style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '14px', boxSizing: 'border-box' }} />
+                </div>
+              )}
+            </div>
+            <button type="submit" disabled={itSubmitting} style={{ marginTop: '15px', padding: '10px 24px', background: itSubmitting ? '#aaa' : '#1a73e8', color: 'white', border: 'none', borderRadius: '6px', fontWeight: '600', fontSize: '14px', cursor: itSubmitting ? 'not-allowed' : 'pointer' }}>
+              {itSubmitting ? '⏳ Submitting...' : '📤 Submit Request for Admin Approval'}
+            </button>
+          </form>
+
+          <h4 style={{ marginBottom: '12px' }}>Your Submitted Requests</h4>
+          {itRequestsLoading ? (
+            <p style={{ color: '#888' }}>Loading...</p>
+          ) : (
+            <div className="admin-table-card" style={{ padding: 0 }}>
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>TYPE</th>
+                    <th>TARGET EMAIL</th>
+                    <th>TARGET NAME</th>
+                    <th>ROLE</th>
+                    <th>STATUS</th>
+                    <th>SUBMITTED</th>
+                    <th>APPROVED BY</th>
+                    <th>REJECTION REASON</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {itMyRequests.length === 0 ? (
+                    <tr><td colSpan="9" className="no-results">No requests submitted yet.</td></tr>
+                  ) : itMyRequests.map(req => (
+                    <tr key={req.id}>
+                      <td>#{req.id}</td>
+                      <td><span className={`status-pill ${req.type}`}>{req.type}</span></td>
+                      <td>{req.targetEmail}</td>
+                      <td>{req.targetName || '—'}</td>
+                      <td>{req.targetRole || '—'}</td>
+                      <td><span className={`status-pill ${req.status}`}>{req.status}</span></td>
+                      <td style={{ fontSize: '12px' }}>{new Date(req.createdAt).toLocaleString()}</td>
+                      <td>{req.approver?.name || '—'}</td>
+                      <td style={{ color: '#c53030', fontSize: '12px' }}>{req.rejectionReason || '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── IT Approvals (Admin only) ── */}
+      {view === 'it-approvals' && user?.role === 'admin' && (
+        <div className="admin-table-card">
+          <h3>✅ IT Approvals — Review Staff Account Requests</h3>
+          <p style={{ color: '#666', marginBottom: '20px' }}>Approve or reject IT requests for staff account management. Approved actions execute immediately.</p>
+
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ marginRight: '10px', fontWeight: '600', fontSize: '14px' }}>Filter by status:</label>
+            <select value={itApprovalFilter} onChange={e => { setItApprovalFilter(e.target.value); fetchItRequests(e.target.value); }} style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '14px' }}>
+              <option value="pending">⏳ Pending Only</option>
+              <option value="approved">✅ Approved</option>
+              <option value="rejected">❌ Rejected</option>
+              <option value="all">All Requests</option>
+            </select>
+          </div>
+
+          {itApprovalsLoading ? (
+            <p style={{ color: '#888' }}>Loading...</p>
+          ) : (
+            <div className="admin-table-card" style={{ padding: 0 }}>
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>TYPE</th>
+                    <th>REQUESTED BY</th>
+                    <th>TARGET EMAIL</th>
+                    <th>NAME</th>
+                    <th>ROLE</th>
+                    <th>STATUS</th>
+                    <th>SUBMITTED</th>
+                    <th>ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(itApprovalFilter === 'pending' ? itPendingRequests : itAllRequests).length === 0 ? (
+                    <tr><td colSpan="9" className="no-results">No requests found.</td></tr>
+                  ) : (itApprovalFilter === 'pending' ? itPendingRequests : itAllRequests).map(req => (
+                    <tr key={req.id}>
+                      <td>#{req.id}</td>
+                      <td><span className={`status-pill ${req.type}`}>{req.type}</span></td>
+                      <td>{req.requester?.name || '—'}<br /><span style={{ fontSize: '11px', color: '#888' }}>{req.requester?.role}</span></td>
+                      <td>{req.targetEmail}</td>
+                      <td>{req.targetName || '—'}</td>
+                      <td>{req.targetRole || '—'}</td>
+                      <td><span className={`status-pill ${req.status}`}>{req.status}</span></td>
+                      <td style={{ fontSize: '12px' }}>{new Date(req.createdAt).toLocaleString()}</td>
+                      <td>
+                        {req.status === 'pending' ? (
+                          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                            <button onClick={() => handleItApprove(req.id)} style={{ padding: '5px 12px', background: '#2e7d32', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: '600', fontSize: '12px' }}>✅ Approve</button>
+                            <button onClick={() => handleItReject(req.id)} style={{ padding: '5px 12px', background: '#c53030', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: '600', fontSize: '12px' }}>❌ Reject</button>
+                          </div>
+                        ) : req.status === 'approved' ? (
+                          <span style={{ color: '#2e7d32', fontWeight: '600', fontSize: '13px' }}>✅ Approved by {req.approver?.name}</span>
+                        ) : (
+                          <span style={{ color: '#c53030', fontSize: '12px' }}>❌ {req.rejectionReason || 'Rejected'}</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
     </div>
   );
 };
