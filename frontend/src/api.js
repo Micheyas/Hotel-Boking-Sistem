@@ -6,9 +6,12 @@ const api = axios.create({
   baseURL: API_URL,
 });
 
-// Add auth token to requests — always prefer staffToken (freshest login)
+// Add auth token to requests — staffToken takes absolute priority over customer token
 api.interceptors.request.use((config) => {
-  const token = sessionStorage.getItem('staffToken') || localStorage.getItem('token');
+  const staffToken = sessionStorage.getItem('staffToken');
+  const customerToken = localStorage.getItem('token');
+  // Never mix staff and customer tokens — use whichever is appropriate
+  const token = staffToken || customerToken;
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }

@@ -647,14 +647,14 @@ const AdminPanel = () => {
   const handleItApprove = async (requestId) => {
     if (!window.confirm('Approve this IT request? The action will be executed immediately.')) return;
     const token = sessionStorage.getItem('staffToken');
+    setError('');
     try {
       const res = await api.post(`/auth/admin/it-requests/${requestId}/approve`, {}, { headers: { Authorization: `Bearer ${token}` } });
       fetchItRequests(itApprovalFilter);
+      fetchItRequests('pending');
 
-      // If a rename was approved and it affected the currently logged-in user,
-      // refresh their session data so the dashboard header updates immediately
-      const req = (itApprovalFilter === 'pending' ? itPendingRequests : itAllRequests)
-        .find(r => r.id === requestId);
+      const allList = [...itPendingRequests, ...itAllRequests];
+      const req = allList.find(r => r.id === requestId);
       if (req?.type === 'rename' && res.data?.updatedUser) {
         const currentUser = JSON.parse(sessionStorage.getItem('staffUser') || '{}');
         if (currentUser.email === req.targetEmail) {
@@ -664,21 +664,28 @@ const AdminPanel = () => {
         }
       }
 
-      alert('Request approved and executed successfully.');
+      alert('✅ Request approved and executed successfully.');
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to approve request');
+      const msg = err.response?.data?.error || err.message || 'Failed to approve';
+      setError(`IT Approval failed (${err.response?.status}): ${msg}`);
+      console.error('[IT Approve]', err.response?.status, err.response?.data);
     }
   };
 
   const handleItReject = async (requestId) => {
     const reason = prompt('Enter rejection reason (optional):');
+    if (reason === null) return;
     const token = sessionStorage.getItem('staffToken');
+    setError('');
     try {
       await api.post(`/auth/admin/it-requests/${requestId}/reject`, { reason }, { headers: { Authorization: `Bearer ${token}` } });
       fetchItRequests(itApprovalFilter);
+      fetchItRequests('pending');
       alert('Request rejected.');
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to reject request');
+      const msg = err.response?.data?.error || err.message || 'Failed to reject';
+      setError(`IT Rejection failed (${err.response?.status}): ${msg}`);
+      console.error('[IT Reject]', err.response?.status, err.response?.data);
     }
   };
 
