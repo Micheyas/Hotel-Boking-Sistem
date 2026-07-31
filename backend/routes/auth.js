@@ -697,14 +697,23 @@ router.post('/admin/it-requests/:id/approve',
         resultMessage = `Account deleted: ${request.targetEmail}`;
       }
       else if (request.type === 'rename') {
-        // Rename staff display name
+        // Rename staff display name AND email (login address)
         const user = await User.findOne({ where: { email: request.targetEmail } });
         if (!user) {
           return res.status(404).json({ error: 'Target user not found' });
         }
         const oldName = user.name;
-        await user.update({ name: request.targetName });
-        resultMessage = `Username renamed: ${oldName} → ${request.targetName}`;
+        const updateData = { name: request.targetName };
+        // If a new email was stored in newPassword field, update email too
+        if (request.newPassword && request.newPassword.includes('@')) {
+          const emailTaken = await User.findOne({ where: { email: request.newPassword } });
+          if (emailTaken && emailTaken.id !== user.id) {
+            return res.status(400).json({ error: 'New email already in use' });
+          }
+          updateData.email = request.newPassword;
+        }
+        await user.update(updateData);
+        resultMessage = `User renamed: ${oldName} → ${request.targetName}${updateData.email ? ` (email: ${request.targetEmail} → ${updateData.email})` : ''}`;
       }
       // Mark request as approved
       await request.update({
@@ -794,7 +803,7 @@ router.post('/it/request-rename',
   authorizeRole(['it']),
   async (req, res) => {
     try {
-      const { email, newName } = req.body;
+      const { email, newName, newEmail } = req.body;
 
       if (!email || !newName) {
         return res.status(400).json({ error: 'email and newName are required' });
@@ -809,22 +818,33 @@ router.post('/it/request-rename',
         return res.status(400).json({ error: 'Can only rename staff accounts' });
       }
 
+      // If a new email is provided, check it's not already taken
+      if (newEmail) {
+        const taken = await User.findOne({ where: { email: newEmail.toLowerCase().trim() } });
+        if (taken && taken.id !== user.id) {
+          return res.status(400).json({ error: 'New email address is already in use' });
+        }
+      }
+
       const request = await ITRequest.create({
         type: 'rename',
         targetEmail: email.toLowerCase().trim(),
-        targetName: newName.trim(),   // stores the NEW name as targetName
+        targetName: newName.trim(),
         targetRole: user.role,
+        // Store new email in newPassword field (reusing the column to avoid schema change)
+        newPassword: newEmail ? newEmail.toLowerCase().trim() : null,
         status: 'pending',
         requestedBy: req.user.id,
       });
 
       res.status(201).json({
-        message: 'Username rename request submitted. Awaiting admin approval.',
+        message: 'Rename request submitted. Awaiting admin approval.',
         request: {
           id: request.id,
           type: request.type,
           targetEmail: request.targetEmail,
           targetName: request.targetName,
+          newEmail: newEmail || null,
           status: request.status,
         },
       });

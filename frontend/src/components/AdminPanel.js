@@ -40,7 +40,7 @@ const AdminPanel = () => {
   const [view, setView]               = useState('list');
 
   // IT Management state (for IT role)
-  const [itForm, setItForm] = useState({ type: 'create', email: '', name: '', role: 'receptionist', password: '' });
+  const [itForm, setItForm] = useState({ type: 'create', email: '', name: '', role: 'receptionist', password: '', newEmail: '' });
   const [itSubmitting, setItSubmitting] = useState(false);
   const [itMyRequests, setItMyRequests] = useState([]);
   const [itRequestsLoading, setItRequestsLoading] = useState(false);
@@ -596,6 +596,7 @@ const AdminPanel = () => {
         payload = {
           email: itForm.email.trim(),
           newName: itForm.name.trim(),
+          newEmail: itForm.newEmail.trim() || undefined,
         };
       }
 
@@ -2236,7 +2237,7 @@ const AdminPanel = () => {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '15px' }}>
               <div>
                 <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600', fontSize: '14px' }}>Action Type</label>
-                <select value={itForm.type} onChange={e => setItForm({ ...itForm, type: e.target.value, email: '', name: '', password: '' })} style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '14px' }}>
+                <select value={itForm.type} onChange={e => setItForm({ ...itForm, type: e.target.value, email: '', name: '', password: '', newEmail: '' })} style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '14px' }}>
                   <option value="create">➕ Create New Staff Account</option>
                   <option value="reset">🔑 Reset Password</option>
                   <option value="rename">✏️ Rename Username</option>
@@ -2271,10 +2272,16 @@ const AdminPanel = () => {
                 </div>
               )}
               {itForm.type === 'rename' && (
-                <div>
-                  <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600', fontSize: '14px' }}>New Display Name</label>
-                  <input type="text" required value={itForm.name} onChange={e => setItForm({ ...itForm, name: e.target.value })} placeholder="Enter new name..." style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '14px', boxSizing: 'border-box' }} />
-                </div>
+                <>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600', fontSize: '14px' }}>New Display Name</label>
+                    <input type="text" required value={itForm.name} onChange={e => setItForm({ ...itForm, name: e.target.value })} placeholder="Enter new display name..." style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '14px', boxSizing: 'border-box' }} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600', fontSize: '14px' }}>New Login Email <span style={{ fontWeight: '400', color: '#888' }}>(optional — changes what they use to log in)</span></label>
+                    <input type="email" value={itForm.newEmail} onChange={e => setItForm({ ...itForm, newEmail: e.target.value })} placeholder="new@hotel.com (leave blank to keep current)" style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '14px', boxSizing: 'border-box' }} />
+                  </div>
+                </>
               )}
             </div>
             <button type="submit" disabled={itSubmitting} style={{ marginTop: '15px', padding: '10px 24px', background: itSubmitting ? '#aaa' : '#1a73e8', color: 'white', border: 'none', borderRadius: '6px', fontWeight: '600', fontSize: '14px', cursor: itSubmitting ? 'not-allowed' : 'pointer' }}>
