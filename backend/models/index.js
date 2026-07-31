@@ -8,6 +8,7 @@ const Offer = require('./Offer');
 const Review = require('./Review');
 const HotelService = require('./HotelService');
 const ITRequest = require('./ITRequest');
+const MenuItem = require('./MenuItem');
 
 // Define associations
 Room.belongsTo(RoomType, { foreignKey: 'roomTypeId', as: 'roomType' });
@@ -50,4 +51,5 @@ module.exports = {
   Review,
   HotelService,
   ITRequest,
+  MenuItem,
 };

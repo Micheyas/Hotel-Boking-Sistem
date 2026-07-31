@@ -83,6 +83,19 @@ const AdminPanel = () => {
   };
   const [serviceForm, setServiceForm] = useState(BLANK_SERVICE);
 
+  // Menu (Restaurant) state
+  const MENU_CATEGORIES = ['Starter', 'Main Course', 'Dessert', 'Drink', 'Breakfast', 'Vegan', 'Special'];
+  const BLANK_MENU_ITEM = { name: '', description: '', price: '', category: 'Main Course', available: true, sortOrder: 0 };
+  const [menuItems, setMenuItems]           = useState([]);
+  const [menuLoading, setMenuLoading]       = useState(false);
+  const [menuCatFilter, setMenuCatFilter]   = useState('All');
+  const [showMenuModal, setShowMenuModal]   = useState(false);
+  const [editingMenuItem, setEditingMenuItem] = useState(null);
+  const [menuForm, setMenuForm]             = useState(BLANK_MENU_ITEM);
+  const [menuImageFile, setMenuImageFile]   = useState(null);
+  const [menuImagePreview, setMenuImagePreview] = useState(null);
+  const [menuSaving, setMenuSaving]         = useState(false);
+
   // Decision modal
   const [showDecisionModal, setShowDecisionModal] = useState(false);
   const [selectedBookingForDecision, setSelectedBookingForDecision] = useState(null);
@@ -402,6 +415,101 @@ const AdminPanel = () => {
     a.download = `booking-history-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  // ── Menu (Restaurant) helpers ──
+  const fetchMenuItems = async () => {
+    setMenuLoading(true);
+    const token = sessionStorage.getItem('staffToken');
+    try {
+      const res = await api.get('/menu/all', { headers: { Authorization: `Bearer ${token}` } });
+      setMenuItems(res.data);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to load menu items');
+    } finally {
+      setMenuLoading(false);
+    }
+  };
+
+  const openCreateMenuItem = () => {
+    setEditingMenuItem(null);
+    setMenuForm(BLANK_MENU_ITEM);
+    setMenuImageFile(null);
+    setMenuImagePreview(null);
+    setShowMenuModal(true);
+  };
+
+  const openEditMenuItem = (item) => {
+    setEditingMenuItem(item);
+    setMenuForm({
+      name: item.name || '',
+      description: item.description || '',
+      price: item.price != null ? String(item.price) : '',
+      category: item.category || 'Main Course',
+      available: item.available !== false,
+      sortOrder: item.sortOrder != null ? String(item.sortOrder) : '0',
+    });
+    setMenuImageFile(null);
+    setMenuImagePreview(item.image || null);
+    setShowMenuModal(true);
+  };
+
+  const handleSaveMenuItem = async (e) => {
+    e.preventDefault();
+    setMenuSaving(true);
+    const token = sessionStorage.getItem('staffToken');
+    try {
+      const fd = new FormData();
+      fd.append('name', menuForm.name);
+      fd.append('description', menuForm.description);
+      fd.append('price', menuForm.price);
+      fd.append('category', menuForm.category);
+      fd.append('available', menuForm.available);
+      fd.append('sortOrder', menuForm.sortOrder || 0);
+      if (menuImageFile) fd.append('image', menuImageFile);
+
+      if (editingMenuItem) {
+        await api.put(`/menu/${editingMenuItem.id}`, fd, {
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
+        });
+      } else {
+        await api.post('/menu', fd, {
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
+        });
+      }
+      setShowMenuModal(false);
+      fetchMenuItems();
+      setError('');
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to save menu item');
+    } finally {
+      setMenuSaving(false);
+    }
+  };
+
+  const handleDeleteMenuItem = async (id) => {
+    if (!window.confirm('Delete this menu item?')) return;
+    const token = sessionStorage.getItem('staffToken');
+    try {
+      await api.delete(`/menu/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      fetchMenuItems();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to delete menu item');
+    }
+  };
+
+  const handleToggleMenuAvailable = async (item) => {
+    const token = sessionStorage.getItem('staffToken');
+    try {
+      const fd = new FormData();
+      fd.append('available', !item.available);
+      await api.put(`/menu/${item.id}`, fd, {
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
+      });
+      fetchMenuItems();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to update menu item');
+    }
   };
 
   // ── Services helpers ──
@@ -848,6 +956,14 @@ const AdminPanel = () => {
               onClick={() => { setView('services'); fetchServices(); }}
             >
               🛎️ Services
+            </button>
+          )}
+          {isAdminOrManager && (
+            <button
+              className={`view-tab ${view === 'menu' ? 'active' : ''}`}
+              onClick={() => { setView('menu'); fetchMenuItems(); }}
+            >
+              🍽️ Restaurant Menu
             </button>
           )}
           {user?.role !== 'it' && (
@@ -2252,6 +2368,134 @@ const AdminPanel = () => {
                 ))}
               </tbody>
             </table>
+          )}
+        </div>
+      )}
+
+      {/* ── Restaurant Menu Management (Admin & Manager) ── */}
+      {view === 'menu' && isAdminOrManager && (
+        <div className="admin-table-card">
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'16px', flexWrap:'wrap', gap:'10px' }}>
+            <div>
+              <h3 style={{ margin:0, fontSize:'20px', fontWeight:700, color:'#1a1a2e' }}>🍽️ Restaurant Menu</h3>
+              <p style={{ margin:'4px 0 0', fontSize:'13px', color:'#888' }}>Manage food items with photos and prices. Customers see this on the Services page.</p>
+            </div>
+            <button onClick={openCreateMenuItem} style={{ padding:'9px 18px', background:'#1976d2', color:'#fff', border:'none', borderRadius:'6px', fontWeight:700, cursor:'pointer' }}>
+              + Add Menu Item
+            </button>
+          </div>
+
+          {/* Category filter */}
+          <div style={{ display:'flex', flexWrap:'wrap', gap:'8px', marginBottom:'16px' }}>
+            {['All', ...MENU_CATEGORIES].map(cat => (
+              <button key={cat} onClick={() => setMenuCatFilter(cat)}
+                style={{ padding:'6px 14px', borderRadius:'20px', border:'1px solid', fontSize:'12px', fontWeight:600, cursor:'pointer',
+                  background: menuCatFilter === cat ? '#1976d2' : '#fff',
+                  color: menuCatFilter === cat ? '#fff' : '#555',
+                  borderColor: menuCatFilter === cat ? '#1976d2' : '#dde0e8' }}>
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          {menuLoading ? <p style={{ color:'#888' }}>Loading...</p> : (
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:'16px' }}>
+              {menuItems.filter(item => menuCatFilter === 'All' || item.category === menuCatFilter).length === 0 ? (
+                <div style={{ gridColumn:'1/-1', textAlign:'center', padding:'40px', color:'#aaa' }}>
+                  No menu items yet. Click "+ Add Menu Item" to get started.
+                </div>
+              ) : menuItems.filter(item => menuCatFilter === 'All' || item.category === menuCatFilter).map(item => (
+                <div key={item.id} style={{ background:'#fff', borderRadius:'12px', border:'1px solid #e8eaf0', overflow:'hidden', boxShadow:'0 2px 8px rgba(0,0,0,0.06)', opacity: item.available ? 1 : 0.6 }}>
+                  {item.image ? (
+                    <img src={item.image} alt={item.name} style={{ width:'100%', height:'160px', objectFit:'cover' }} />
+                  ) : (
+                    <div style={{ width:'100%', height:'160px', background:'linear-gradient(135deg, #e8eaf0, #c5cae9)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'48px' }}>🍽️</div>
+                  )}
+                  <div style={{ padding:'14px' }}>
+                    <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:'6px' }}>
+                      <h4 style={{ margin:0, fontSize:'15px', fontWeight:700, color:'#1a1a2e', flex:1 }}>{item.name}</h4>
+                      <span style={{ background:'#e8f0fe', color:'#1565c0', padding:'3px 10px', borderRadius:'20px', fontSize:'13px', fontWeight:700, whiteSpace:'nowrap', marginLeft:'8px' }}>
+                        {Number(item.price).toFixed(0)} ETB
+                      </span>
+                    </div>
+                    <span style={{ display:'inline-block', background:'#f0f2f5', color:'#666', padding:'2px 8px', borderRadius:'10px', fontSize:'11px', fontWeight:600, marginBottom:'8px' }}>{item.category}</span>
+                    {item.description && <p style={{ margin:'0 0 10px', fontSize:'12px', color:'#777', lineHeight:1.5 }}>{item.description}</p>}
+                    <div style={{ display:'flex', gap:'6px', flexWrap:'wrap' }}>
+                      <button onClick={() => openEditMenuItem(item)} style={{ padding:'5px 10px', background:'#e3f2fd', color:'#0d47a1', border:'none', borderRadius:'4px', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>✏️ Edit</button>
+                      <button onClick={() => handleToggleMenuAvailable(item)} style={{ padding:'5px 10px', background:'#f3e5f5', color:'#6a1b9a', border:'none', borderRadius:'4px', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>
+                        {item.available ? '🙈 Hide' : '👁 Show'}
+                      </button>
+                      {user?.role === 'admin' && (
+                        <button onClick={() => handleDeleteMenuItem(item.id)} style={{ padding:'5px 10px', background:'#ffebee', color:'#c62828', border:'none', borderRadius:'4px', fontSize:'12px', fontWeight:600, cursor:'pointer' }}>🗑️ Delete</button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Add/Edit Modal */}
+          {showMenuModal && (
+            <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000, padding:'20px' }}
+              onClick={() => setShowMenuModal(false)}>
+              <div style={{ background:'#fff', borderRadius:'14px', width:'100%', maxWidth:'520px', maxHeight:'90vh', overflowY:'auto', boxShadow:'0 10px 40px rgba(0,0,0,0.25)' }}
+                onClick={e => e.stopPropagation()}>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'20px 24px', borderBottom:'1px solid #e8eaf0', position:'sticky', top:0, background:'#fff', zIndex:1 }}>
+                  <h3 style={{ margin:0, fontSize:'18px', color:'#1a1a2e' }}>{editingMenuItem ? `Edit — ${editingMenuItem.name}` : 'Add Menu Item'}</h3>
+                  <button onClick={() => setShowMenuModal(false)} style={{ background:'none', border:'none', fontSize:'20px', cursor:'pointer', color:'#888' }}>✕</button>
+                </div>
+                <form onSubmit={handleSaveMenuItem} style={{ padding:'24px', display:'flex', flexDirection:'column', gap:'16px' }}>
+                  {/* Image upload */}
+                  <div style={{ display:'flex', flexDirection:'column', gap:'8px' }}>
+                    <label style={{ fontSize:'13px', fontWeight:600, color:'#444' }}>Photo</label>
+                    {menuImagePreview && (
+                      <img src={menuImagePreview} alt="preview" style={{ width:'100%', height:'180px', objectFit:'cover', borderRadius:'8px', marginBottom:'6px' }} />
+                    )}
+                    <input type="file" accept="image/*" onChange={e => {
+                      const f = e.target.files[0];
+                      if (f) { setMenuImageFile(f); setMenuImagePreview(URL.createObjectURL(f)); }
+                    }} style={{ fontSize:'13px' }} />
+                    <span style={{ fontSize:'11px', color:'#aaa' }}>JPG, PNG or WebP — max 5 MB. Recommended: 800×600px.</span>
+                  </div>
+
+                  <div style={{ display:'flex', flexDirection:'column', gap:'6px' }}>
+                    <label style={{ fontSize:'13px', fontWeight:600, color:'#444' }}>Name *</label>
+                    <input required value={menuForm.name} onChange={e => setMenuForm(p=>({...p, name:e.target.value}))} placeholder="e.g. Grilled Tilapia" style={{ padding:'9px 12px', border:'1px solid #dde0e8', borderRadius:'6px', fontSize:'13px' }} />
+                  </div>
+
+                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
+                    <div style={{ display:'flex', flexDirection:'column', gap:'6px' }}>
+                      <label style={{ fontSize:'13px', fontWeight:600, color:'#444' }}>Price (ETB) *</label>
+                      <input required type="number" min="0" step="0.01" value={menuForm.price} onChange={e => setMenuForm(p=>({...p, price:e.target.value}))} placeholder="e.g. 450" style={{ padding:'9px 12px', border:'1px solid #dde0e8', borderRadius:'6px', fontSize:'13px' }} />
+                    </div>
+                    <div style={{ display:'flex', flexDirection:'column', gap:'6px' }}>
+                      <label style={{ fontSize:'13px', fontWeight:600, color:'#444' }}>Category *</label>
+                      <select value={menuForm.category} onChange={e => setMenuForm(p=>({...p, category:e.target.value}))} style={{ padding:'9px 12px', border:'1px solid #dde0e8', borderRadius:'6px', fontSize:'13px' }}>
+                        {MENU_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div style={{ display:'flex', flexDirection:'column', gap:'6px' }}>
+                    <label style={{ fontSize:'13px', fontWeight:600, color:'#444' }}>Description</label>
+                    <textarea value={menuForm.description} onChange={e => setMenuForm(p=>({...p, description:e.target.value}))} placeholder="Brief description of the dish..." rows="3" style={{ padding:'9px 12px', border:'1px solid #dde0e8', borderRadius:'6px', fontSize:'13px', resize:'vertical' }} />
+                  </div>
+
+                  <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
+                    <input type="checkbox" id="menuAvail" checked={menuForm.available} onChange={e => setMenuForm(p=>({...p, available:e.target.checked}))} />
+                    <label htmlFor="menuAvail" style={{ fontSize:'13px', fontWeight:600, color:'#444' }}>Available (visible to customers)</label>
+                  </div>
+
+                  <div style={{ display:'flex', justifyContent:'flex-end', gap:'10px', paddingTop:'8px', borderTop:'1px solid #e8eaf0' }}>
+                    <button type="button" onClick={() => setShowMenuModal(false)} style={{ padding:'9px 18px', background:'#f5f5f5', border:'1px solid #dde0e8', borderRadius:'6px', fontWeight:600, cursor:'pointer' }}>Cancel</button>
+                    <button type="submit" disabled={menuSaving} style={{ padding:'9px 18px', background:'#1976d2', color:'#fff', border:'none', borderRadius:'6px', fontWeight:700, cursor: menuSaving ? 'not-allowed' : 'pointer' }}>
+                      {menuSaving ? 'Saving...' : editingMenuItem ? 'Save Changes' : 'Add Item'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
           )}
         </div>
       )}

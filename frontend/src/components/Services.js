@@ -15,6 +15,16 @@ const CATEGORY_ICONS = {
   'Other':           '✨',
 };
 
+const MENU_CAT_ICONS = {
+  'Starter':     '🥗',
+  'Main Course': '🍛',
+  'Dessert':     '🍰',
+  'Drink':       '🥤',
+  'Breakfast':   '🍳',
+  'Vegan':       '🥦',
+  'Special':     '⭐',
+};
+
 // Translation mapping for service categories
 const CATEGORY_TRANSLATIONS = {
   en: {
@@ -226,6 +236,11 @@ const Services = () => {
   const { currency, rates }         = useCurrency();
   const { t, language }             = useI18n();
 
+  // Restaurant menu state
+  const [menuItems, setMenuItems]         = useState([]);
+  const [menuCatFilter, setMenuCatFilter] = useState('All');
+  const [menuCategories, setMenuCategories] = useState([]);
+
   // Translate category name based on current language
   const translateCategory = (category) => {
     if (category === 'All') return language === 'am' ? 'ሁሉም' : 'All';
@@ -406,12 +421,18 @@ const Services = () => {
   const fetchServices = useCallback(async () => {
     try {
       setLoading(true);
-      const [svcRes, catRes] = await Promise.all([
+      const [svcRes, catRes, menuRes] = await Promise.all([
         api.get('/services'),
         api.get('/services/categories'),
+        api.get('/menu'),
       ]);
       setServices(svcRes.data);
       setCategories(['All', ...catRes.data]);
+
+      const items = menuRes.data.items || [];
+      setMenuItems(items);
+      const cats = [...new Set(items.map(i => i.category))];
+      setMenuCategories(cats);
     } catch (err) {
       setError('Unable to load hotel services. Please try again later.');
       console.error('Services fetch error:', err);
@@ -525,6 +546,58 @@ const Services = () => {
         )}
       </div>
 
+      {/* ── Restaurant Menu Section ── */}
+      {menuItems.length > 0 && (
+        <div className="menu-section">
+          <div className="menu-section-header">
+            <span className="menu-section-icon">🍽️</span>
+            <div>
+              <h2 className="menu-section-title">Restaurant Menu</h2>
+              <p className="menu-section-sub">Fresh ingredients, expertly prepared — dine in or order to your room</p>
+            </div>
+          </div>
+
+          {/* Menu category tabs */}
+          <div className="menu-cat-tabs">
+            {['All', ...menuCategories].map(cat => (
+              <button
+                key={cat}
+                className={`menu-cat-tab ${menuCatFilter === cat ? 'menu-cat-tab--active' : ''}`}
+                onClick={() => setMenuCatFilter(cat)}
+              >
+                {cat !== 'All' && (MENU_CAT_ICONS[cat] || '🍽️')} {cat}
+              </button>
+            ))}
+          </div>
+
+          {/* Menu items grid — grouped by category */}
+          {menuCatFilter === 'All' ? (
+            menuCategories.map(cat => {
+              const catItems = menuItems.filter(i => i.category === cat);
+              if (!catItems.length) return null;
+              return (
+                <div key={cat} className="menu-cat-group">
+                  <div className="menu-cat-label">
+                    <span>{MENU_CAT_ICONS[cat] || '🍽️'}</span> {cat}
+                  </div>
+                  <div className="menu-grid">
+                    {catItems.map(item => (
+                      <MenuItemCard key={item.id} item={item} currency={currency} rates={rates} />
+                    ))}
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <div className="menu-grid">
+              {menuItems.filter(i => i.category === menuCatFilter).map(item => (
+                <MenuItemCard key={item.id} item={item} currency={currency} rates={rates} />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       <FAQAndLocation />
       <FooterBar />
     </div>
@@ -569,3 +642,22 @@ const ServiceCard = ({ service: s, formatHours, formatPrice, translateServiceNam
 };
 
 export default Services;
+
+const MenuItemCard = ({ item, currency, rates }) => (
+  <div className="menu-item-card">
+    <div className="menu-item-img-wrap">
+      {item.image
+        ? <img src={item.image} alt={item.name} className="menu-item-img" loading="lazy" />
+        : <div className="menu-item-img-placeholder">{MENU_CAT_ICONS[item.category] || '🍽️'}</div>
+      }
+    </div>
+    <div className="menu-item-body">
+      <div className="menu-item-top">
+        <h4 className="menu-item-name">{item.name}</h4>
+        <span className="menu-item-price">{convertPrice(Number(item.price), currency, rates)}</span>
+      </div>
+      {item.description && <p className="menu-item-desc">{item.description}</p>}
+      <span className="menu-item-cat">{MENU_CAT_ICONS[item.category] || '🍽️'} {item.category}</span>
+    </div>
+  </div>
+);

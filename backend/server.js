@@ -27,6 +27,7 @@ app.use('/api/payments', require('./routes/payments'));
 app.use('/api/analytics', require('./routes/analytics'));
 app.use('/api/reviews', require('./routes/reviews'));
 app.use('/api/services', require('./routes/services'));
+app.use('/api/menu', require('./routes/menu'));
 
 app.get('/', (req, res) => {
   res.json({ message: 'Hotel Booking API is running' });
@@ -141,6 +142,15 @@ sequelize.sync({ alter: false }).then(async () => {
   await addColumnIfMissing('HotelServices', 'location',      { type: DataTypes.STRING,  allowNull: true });
   await addColumnIfMissing('HotelServices', 'availableDays', { type: DataTypes.TEXT,    allowNull: true, defaultValue: '["Daily"]' });
   await addColumnIfMissing('HotelServices', 'priceLabel',    { type: DataTypes.STRING,  allowNull: true });
+
+  // ── MenuItems table ──
+  try {
+    const { MenuItem } = require('./models');
+    await MenuItem.sync({ force: false });
+    console.log('MenuItems table ready');
+  } catch (e) {
+    console.warn('[Menu] Table sync failed:', e.message);
+  }
 
   // Seed default hotel services if table is empty
   try {
