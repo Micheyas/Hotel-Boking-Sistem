@@ -94,9 +94,6 @@ const GoogleSignInButton = ({ onLogin, label = "Continue with Google" }) => {
     </div>
   );
 };
-    </div>
-  );
-};
 
 // ── Divider ───────────────────────────────────────────────
 const OrDivider = () => (
