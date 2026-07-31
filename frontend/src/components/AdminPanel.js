@@ -39,6 +39,13 @@ const AdminPanel = () => {
   // View: 'list' | 'room-management' | 'repeat-customers' | 'booking-history' | 'kyc' | 'it-management' | 'it-approvals'
   const [view, setView]               = useState('list');
 
+  // Set default view based on role when user logs in
+  useEffect(() => {
+    if (isLoggedIn && user?.role === 'it') {
+      setView('it-management');
+    }
+  }, [isLoggedIn, user?.role]);
+
   // IT Management state (for IT role)
   const [itForm, setItForm] = useState({ type: 'create', email: '', name: '', role: 'receptionist', password: '' });
   const [itSubmitting, setItSubmitting] = useState(false);
@@ -179,6 +186,14 @@ const AdminPanel = () => {
     setLoading(true);
     const token = sessionStorage.getItem('staffToken');
     const authHeader = { headers: { Authorization: `Bearer ${token}` } };
+    const role = JSON.parse(sessionStorage.getItem('staffUser') || '{}').role;
+
+    // IT role only needs to load their own requests, not all booking/room data
+    if (role === 'it') {
+      setLoading(false);
+      return;
+    }
+
     try {
       const [bookingsRes, offersRes] = await Promise.all([
         api.get('/bookings', authHeader),
@@ -186,8 +201,6 @@ const AdminPanel = () => {
       ]);
       setAllBookings(bookingsRes.data);
       setOffers(offersRes.data);
-
-      const role = JSON.parse(sessionStorage.getItem('staffUser') || '{}').role;
 
       // Load repeat customers for admins, managers and receptionists
       if (role === 'admin' || role === 'manager' || role === 'receptionist') {
@@ -699,7 +712,7 @@ const AdminPanel = () => {
       {error && <div className="admin-error">{error}</div>}
 
       {/* Stats cards — admin & manager only */}
-      {isAdminOrManager && (
+      {isAdminOrManager && user?.role !== 'it' && (
       <div className="admin-stats">
         <div className="stat-card-new">
           <div><p className="stat-label">Total Bookings</p><p className="stat-value">{totalBookings}</p></div>
@@ -723,9 +736,11 @@ const AdminPanel = () => {
       {/* View tabs + search + filter */}
       <div className="admin-toolbar">
         <div className="admin-view-tabs">
-          <button className={`view-tab ${view === 'list' ? 'active' : ''}`} onClick={() => setView('list')}>
-            ☰ List View
-          </button>
+          {user?.role !== 'it' && (
+            <button className={`view-tab ${view === 'list' ? 'active' : ''}`} onClick={() => setView('list')}>
+              ☰ List View
+            </button>
+          )}
           {isAdminOrManager && (
             <button className={`view-tab ${view === 'room-management' ? 'active' : ''}`} onClick={() => setView('room-management')}>
               🏨 Room Management
@@ -745,24 +760,30 @@ const AdminPanel = () => {
               )}
             </button>
           )}
-          <button className={`view-tab ${view === 'payments' ? 'active' : ''}`} onClick={() => setView('payments')}>
-            💳 Payment Verification
-            {allBookings.filter(b => b.paymentStatus === 'proof_submitted').length > 0 && (
-              <span className="tab-badge">{allBookings.filter(b => b.paymentStatus === 'proof_submitted').length}</span>
-            )}
-          </button>
-          <button className={`view-tab ${view === 'offers' ? 'active' : ''}`} onClick={() => setView('offers')}>
-            🎁 Offers
-          </button>
-          <button
-            className={`view-tab ${view === 'booking-history' ? 'active' : ''}`}
-            onClick={() => {
-              setView('booking-history');
-              fetchHistory(historyFilters, 1);
-            }}
-          >
-            📋 Booking History
-          </button>
+          {user?.role !== 'it' && (
+            <button className={`view-tab ${view === 'payments' ? 'active' : ''}`} onClick={() => setView('payments')}>
+              💳 Payment Verification
+              {allBookings.filter(b => b.paymentStatus === 'proof_submitted').length > 0 && (
+                <span className="tab-badge">{allBookings.filter(b => b.paymentStatus === 'proof_submitted').length}</span>
+              )}
+            </button>
+          )}
+          {user?.role !== 'it' && (
+            <button className={`view-tab ${view === 'offers' ? 'active' : ''}`} onClick={() => setView('offers')}>
+              🎁 Offers
+            </button>
+          )}
+          {user?.role !== 'it' && (
+            <button
+              className={`view-tab ${view === 'booking-history' ? 'active' : ''}`}
+              onClick={() => {
+                setView('booking-history');
+                fetchHistory(historyFilters, 1);
+              }}
+            >
+              📋 Booking History
+            </button>
+          )}
           {isAdminOrManager && (
             <button
               className={`view-tab ${view === 'services' ? 'active' : ''}`}
@@ -771,15 +792,17 @@ const AdminPanel = () => {
               🛎️ Services
             </button>
           )}
-          <button
-            className={`view-tab ${view === 'kyc' ? 'active' : ''}`}
-            onClick={() => { setView('kyc'); fetchKycUsers(); }}
-          >
-            🪪 KYC Verification
-            {kycUsers.filter(u => u.kycStatus === 'submitted').length > 0 && (
-              <span className="tab-badge">{kycUsers.filter(u => u.kycStatus === 'submitted').length}</span>
-            )}
-          </button>
+          {user?.role !== 'it' && (
+            <button
+              className={`view-tab ${view === 'kyc' ? 'active' : ''}`}
+              onClick={() => { setView('kyc'); fetchKycUsers(); }}
+            >
+              🪪 KYC Verification
+              {kycUsers.filter(u => u.kycStatus === 'submitted').length > 0 && (
+                <span className="tab-badge">{kycUsers.filter(u => u.kycStatus === 'submitted').length}</span>
+              )}
+            </button>
+          )}
           {user?.role === 'it' && (
             <button
               className={`view-tab ${view === 'it-management' ? 'active' : ''}`}
@@ -800,7 +823,7 @@ const AdminPanel = () => {
             </button>
           )}
         </div>
-        {view === 'list' && (
+        {view === 'list' && user?.role !== 'it' && (
           <div className="admin-filters">
             <div className="admin-search-box">
               <span>🔍</span>
