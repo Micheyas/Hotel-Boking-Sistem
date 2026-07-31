@@ -119,11 +119,23 @@ const AdminPanel = () => {
     return () => window.removeEventListener('beforeunload', clear);
   }, []);
 
-  // Restore session
+  // Restore session and refresh name from server
   useEffect(() => {
     const t = sessionStorage.getItem('staffToken');
     const u = sessionStorage.getItem('staffUser');
-    if (t && u) { setIsLoggedIn(true); setUser(JSON.parse(u)); }
+    if (t && u) {
+      const parsed = JSON.parse(u);
+      setIsLoggedIn(true);
+      setUser(parsed);
+      // Fetch fresh user data to pick up any renames
+      api.get('/auth/me', { headers: { Authorization: `Bearer ${t}` } })
+        .then(res => {
+          const fresh = res.data;
+          setUser(fresh);
+          sessionStorage.setItem('staffUser', JSON.stringify(fresh));
+        })
+        .catch(() => {}); // silent — cached data still works
+    }
   }, []);
 
   // Auto-logout when leaving /admin
@@ -625,8 +637,22 @@ const AdminPanel = () => {
     if (!window.confirm('Approve this IT request? The action will be executed immediately.')) return;
     const token = sessionStorage.getItem('staffToken');
     try {
-      await api.post(`/auth/admin/it-requests/${requestId}/approve`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await api.post(`/auth/admin/it-requests/${requestId}/approve`, {}, { headers: { Authorization: `Bearer ${token}` } });
       fetchItRequests(itApprovalFilter);
+
+      // If a rename was approved and it affected the currently logged-in user,
+      // refresh their session data so the dashboard header updates immediately
+      const req = (itApprovalFilter === 'pending' ? itPendingRequests : itAllRequests)
+        .find(r => r.id === requestId);
+      if (req?.type === 'rename' && res.data?.updatedUser) {
+        const currentUser = JSON.parse(sessionStorage.getItem('staffUser') || '{}');
+        if (currentUser.email === req.targetEmail) {
+          const refreshed = { ...currentUser, name: res.data.updatedUser.name };
+          sessionStorage.setItem('staffUser', JSON.stringify(refreshed));
+          setUser(refreshed);
+        }
+      }
+
       alert('Request approved and executed successfully.');
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to approve request');

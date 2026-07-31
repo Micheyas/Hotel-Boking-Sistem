@@ -706,7 +706,6 @@ router.post('/admin/it-requests/:id/approve',
         await user.update({ name: request.targetName });
         resultMessage = `Username renamed: ${oldName} → ${request.targetName}`;
       }
-
       // Mark request as approved
       await request.update({
         status: 'approved',
@@ -714,9 +713,19 @@ router.post('/admin/it-requests/:id/approve',
         approvedAt: new Date(),
       });
 
+      // For rename, return the updated user so the frontend can refresh the session
+      let updatedUser = null;
+      if (request.type === 'rename') {
+        updatedUser = await User.findOne({
+          where: { email: request.targetEmail },
+          attributes: ['id', 'name', 'email', 'role'],
+        });
+      }
+
       res.json({
         message: `Request approved. ${resultMessage}`,
         request,
+        updatedUser,
       });
     } catch (error) {
       console.error('[IT Request Approval] Error:', error.message);
@@ -763,6 +772,20 @@ router.post('/admin/it-requests/:id/reject',
     }
   }
 );
+
+// ── GET /api/auth/me  (any authenticated staff) ──────────────────────────────
+// Returns fresh user data — used to refresh session after a rename
+router.get('/me', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findByPk(req.user.id, {
+      attributes: ['id', 'name', 'email', 'role', 'emailVerified'],
+    });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // ── POST /api/auth/it/request-rename ─────────────────────────────────────────
 // IT staff requests to rename (change display name) for a staff account
