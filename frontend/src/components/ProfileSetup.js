@@ -189,9 +189,22 @@ const ProfileSetup = () => {
     }
   };
 
+  const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp", "application/pdf"];
+  const MAX_MB = 10;
+
+  const validateFile = (file) => {
+    if (!file) return "";
+    if (!ALLOWED_TYPES.includes(file.type)) return "Invalid file type. Use JPG, PNG, WebP, or PDF.";
+    if (file.size > MAX_MB * 1024 * 1024) return `File too large. Max ${MAX_MB}MB (your file: ${(file.size/1024/1024).toFixed(1)}MB).`;
+    return "";
+  };
+
   const handleFileChange = (side) => (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    const err = validateFile(file);
+    if (err) { setError(err); return; }
+    setError("");
     if (side === "front") { setIdFront(file); setPreviewFront(URL.createObjectURL(file)); }
     else                  { setIdBack(file);  setPreviewBack(URL.createObjectURL(file)); }
   };
@@ -494,7 +507,9 @@ const ProfileSetup = () => {
           {success && <p className="ps-success">{success}</p>}
 
           <button type="submit" className="ps-submit-btn" disabled={submitting}>
-            {submitting ? "Uploading… / በመጫን ላይ…" : "Submit for Verification / ለማረጋገጥ ያስገቡ"}
+            {submitting ? (
+              <><span className="spinner spinner--sm" style={{borderTopColor:'#1a1a2e',borderColor:'rgba(26,26,46,0.2)'}} /> Uploading… / በመጫን ላይ…</>
+            ) : "Submit for Verification / ለማረጋገጥ ያስገቡ"}
           </button>
 
         </form>

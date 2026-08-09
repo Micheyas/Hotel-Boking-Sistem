@@ -57,7 +57,11 @@ const LocationSection = () => {
         <div className="page-location-details">
           <div className="page-loc-item">
             <span>📞</span>
-            <span>+251 11 234 5678</span>
+            <span>+251 995 111 015</span>
+          </div>
+          <div className="page-loc-item">
+            <span>📱</span>
+            <span>+251 706 104 273</span>
           </div>
           <div className="page-loc-item">
             <span>✉️</span>
@@ -119,7 +123,8 @@ const FooterBar = () => {
         </div>
         <div className="sf-links-group">
           <h4>{t("footer.contact")}</h4>
-          <span>📞 +251 11 234 5678</span>
+          <span>📞 +251 995 111 015</span>
+          <span>📱 +251 706 104 273</span>
           <span>✉️ info@2rnsolomon.com</span>
           <span>🕐 {t("location.frontDesk")}</span>
           <Link to="/admin" className="sf-staff-link">

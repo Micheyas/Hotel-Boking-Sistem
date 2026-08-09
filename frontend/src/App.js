@@ -14,6 +14,7 @@ import AvailabilitySearch from "./components/AvailabilitySearch";
 import RoomSlideshow from "./components/RoomSlideshow";
 import Services from "./components/Services";
 import { FAQAndLocation, FooterBar } from "./components/Footer";
+import { ToastProvider } from "./components/Toast";
 import {
   CurrencyProvider,
   useCurrency,
@@ -26,9 +27,11 @@ function App() {
   return (
     <LanguageProvider>
       <CurrencyProvider>
-        <Router>
-          <AppInner />
-        </Router>
+        <ToastProvider>
+          <Router>
+            <AppInner />
+          </Router>
+        </ToastProvider>
       </CurrencyProvider>
     </LanguageProvider>
   );
@@ -46,6 +49,8 @@ function AppInner() {
       ? t("language.switchToAmharic")
       : t("language.switchToEnglish");
 
+  const [menuOpen, setMenuOpen] = React.useState(false);
+
   // Customer auth state — re-evaluated on every render so nav stays in sync
   const [customerUser, setCustomerUser] = React.useState(getCustomerUser());
   React.useEffect(() => {
@@ -54,27 +59,41 @@ function AppInner() {
     return () => window.removeEventListener("storage", sync);
   }, []);
 
+  // Close drawer on route change
+  React.useEffect(() => { setMenuOpen(false); }, []);
+
   const handleCustomerLogout = () => {
     logoutCustomer();
     setCustomerUser(null);
+    setMenuOpen(false);
     window.location.href = "/";
   };
+
+  const closeMenu = () => setMenuOpen(false);
+
+  const navLinks = (
+    <>
+      <Link to="/" onClick={closeMenu}>{t("nav.home")}</Link>
+      <Link to="/rooms" onClick={closeMenu}>{t("nav.rooms")}</Link>
+      <Link to="/services" onClick={closeMenu}>🛎️ {t("nav.services")}</Link>
+      <Link to="/amenities" onClick={closeMenu}>{t("nav.amenities")}</Link>
+      <Link to="/reviews" onClick={closeMenu}>⭐ {t("nav.reviews")}</Link>
+      <Link to="/admin" className="navbar-staff" onClick={closeMenu}>
+        🔑 {t("nav.staff")}
+      </Link>
+    </>
+  );
 
   return (
     <div className="App">
       <header className="navbar">
-        <Link to="/" className="navbar-logo">
+        <Link to="/" className="navbar-logo" onClick={closeMenu}>
           2RN Solomon
         </Link>
+
+        {/* Desktop nav */}
         <nav className="navbar-links">
-          <Link to="/">{t("nav.home")}</Link>
-          <Link to="/rooms">{t("nav.rooms")}</Link>
-          <Link to="/services">🛎️ {t("nav.services")}</Link>
-          <Link to="/amenities">{t("nav.amenities")}</Link>
-          <Link to="/reviews">⭐ {t("nav.reviews")}</Link>
-          <Link to="/admin" className="navbar-staff">
-            🔑 {t("nav.staff")}
-          </Link>
+          {navLinks}
           <div className="navbar-currency">
             <span>{activeCurrency.flag}</span>
             <select
@@ -84,19 +103,11 @@ function AppInner() {
               aria-label="Select currency"
             >
               {CURRENCIES.map((c) => (
-                <option key={c.code} value={c.code}>
-                  {c.label}
-                </option>
+                <option key={c.code} value={c.code}>{c.label}</option>
               ))}
             </select>
             <span
-              title={
-                ratesLoading
-                  ? t("currency.loadingRates")
-                  : isLiveRate
-                    ? t("currency.liveRates")
-                    : t("currency.estimatedRates")
-              }
+              title={ratesLoading ? t("currency.loadingRates") : isLiveRate ? t("currency.liveRates") : t("currency.estimatedRates")}
               style={{ cursor: "default", fontSize: "0.7rem" }}
             >
               {ratesLoading ? "⏳" : isLiveRate ? "🟢" : "🟡"}
@@ -126,30 +137,73 @@ function AppInner() {
               ) : customerUser.kycStatus === 'submitted' ? (
                 <span className="navbar-customer-name" style={{fontSize:'0.78rem',color:'#e2c97e'}}>⏳ KYC Under Review</span>
               ) : (
-                <Link to="/booking" className="navbar-book-btn">
-                  {t("nav.bookNow")}
-                </Link>
+                <Link to="/booking" className="navbar-book-btn">{t("nav.bookNow")}</Link>
               )}
-              <button
-                className="navbar-logout-btn"
-                onClick={handleCustomerLogout}
-                title="Log out"
-              >
-                ↪ Logout
-              </button>
+              <button className="navbar-logout-btn" onClick={handleCustomerLogout} title="Log out">↪ Logout</button>
             </div>
           ) : (
             <div className="navbar-customer-menu">
-              <Link to="/login" className="navbar-login-btn">
-                Login
-              </Link>
-              <Link to="/register" className="navbar-book-btn">
-                Register &amp; Book
-              </Link>
+              <Link to="/login" className="navbar-login-btn">Login</Link>
+              <Link to="/register" className="navbar-book-btn">Register &amp; Book</Link>
             </div>
           )}
         </nav>
+
+        {/* Mobile hamburger */}
+        <button
+          className={`navbar-hamburger${menuOpen ? ' open' : ''}`}
+          onClick={() => setMenuOpen(o => !o)}
+          aria-label={menuOpen ? "Close menu" : "Open menu"}
+          aria-expanded={menuOpen}
+        >
+          <span /><span /><span />
+        </button>
       </header>
+
+      {/* Mobile drawer overlay */}
+      <div className={`navbar-drawer-overlay${menuOpen ? ' open' : ''}`} onClick={closeMenu} />
+
+      {/* Mobile drawer */}
+      <nav className={`navbar-drawer${menuOpen ? ' open' : ''}`} aria-hidden={!menuOpen}>
+        {navLinks}
+        <div className="navbar-drawer-divider" />
+        <div className="navbar-currency">
+          <span>{activeCurrency.flag}</span>
+          <select
+            value={activeCurrency.code}
+            onChange={(e) => { setCurrency(e.target.value); }}
+            className="navbar-currency-select"
+            aria-label="Select currency"
+          >
+            {CURRENCIES.map((c) => (
+              <option key={c.code} value={c.code}>{c.label}</option>
+            ))}
+          </select>
+        </div>
+        <button
+          type="button"
+          className="navbar-language-link"
+          onClick={() => { toggleLanguage(); }}
+          title={languageButtonTitle}
+        >
+          {languageButtonLabel}
+        </button>
+        <div className="navbar-drawer-divider" />
+        {customerUser ? (
+          <div className="navbar-customer-menu">
+            <span className="navbar-customer-name">👤 {customerUser.name}</span>
+            {customerUser.kycStatus === 'approved' && (
+              <Link to="/booking" className="navbar-book-btn" onClick={closeMenu}>{t("nav.bookNow")}</Link>
+            )}
+            <button className="navbar-logout-btn" onClick={handleCustomerLogout}>↪ Logout</button>
+          </div>
+        ) : (
+          <>
+            <Link to="/login" className="navbar-login-btn" onClick={closeMenu}>Login</Link>
+            <Link to="/register" className="navbar-book-btn" onClick={closeMenu}>Register &amp; Book</Link>
+          </>
+        )}
+      </nav>
 
       <main>
         <Routes>
@@ -165,10 +219,7 @@ function AppInner() {
           <Route path="/profile-setup" element={<ProfileSetup />} />
           <Route path="/admin" element={<AdminPanel />} />
           <Route path="/payment" element={<PaymentForm />} />
-          <Route
-            path="/reviews/:roomId"
-            element={<ReviewPage />}
-          />
+          <Route path="/reviews/:roomId" element={<ReviewPage />} />
         </Routes>
       </main>
     </div>

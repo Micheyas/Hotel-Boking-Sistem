@@ -82,14 +82,39 @@ const Rooms = () => {
   if (loading)
     return (
       <div className="rooms-container">
-        <div className="loading">{t("rooms.loading")}</div>
+        <div className="rooms-header">
+          <h2>{t("rooms.title")}</h2>
+        </div>
+        <div className="rooms-grid">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="skeleton-card">
+              <div className="skeleton-img" />
+              <div className="skeleton-body">
+                <div className="skeleton-line skeleton-line--medium" />
+                <div className="skeleton-line skeleton-line--full" />
+                <div className="skeleton-line skeleton-line--full" />
+                <div className="skeleton-line skeleton-line--short" />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
 
   if (error)
     return (
       <div className="rooms-container">
-        <div className="error-message">{error}</div>
+        <div className="page-loading" style={{ flexDirection: 'column', gap: 16 }}>
+          <span style={{ fontSize: '2.5rem' }}>😕</span>
+          <p style={{ color: '#c0392b', fontWeight: 600 }}>{error}</p>
+          <button
+            className="btn btn-primary"
+            onClick={() => { setError(""); setLoading(true); fetchRooms(); }}
+            style={{ padding: '10px 24px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#c9a84c,#e2c97e)', color: '#1a1a2e', fontWeight: 700, cursor: 'pointer' }}
+          >
+            {t("services.retry")}
+          </button>
+        </div>
       </div>
     );
 
