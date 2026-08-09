@@ -11,6 +11,27 @@ A full-stack hotel management platform built with React and Node.js. Covers the 
 
 ---
 
+## Recent Improvements (v2)
+
+### UI & Mobile Experience
+- Full **mobile-responsive** design — hamburger drawer menu, stacked search fields, touch-friendly buttons
+- **CSS design token system** — all colors, spacing, radius, and shadows use `:root` CSS variables for consistency
+- Skeleton loading cards on the rooms page while data loads
+- Improved button states, spacing, and premium hotel color palette (navy / gold)
+
+### Loading & Error States
+- **Skeleton loaders** on every data fetch (rooms, services, menu)
+- **Toast notification system** — success / error / info / warning toasts with auto-dismiss and slide animation
+- All form submit buttons show a spinner and are disabled while submitting
+
+### Strengthened File Uploads
+- Payment proof and KYC document uploads now validate **file type** (JPG, PNG, WebP, PDF) and **file size** (max 5 MB / 10 MB)
+- **Drag-and-drop** upload zone with visual feedback
+- Image preview shown immediately after file selection
+- Clear error messages for wrong type or oversized files
+
+---
+
 ## Features
 
 ### Guest-Facing
@@ -19,16 +40,15 @@ A full-stack hotel management platform built with React and Node.js. Covers the 
 - **Online Booking** — logged-in customers book specific rooms with KYC verification
 - **Guest Booking** — walk-in/phone guests book without an account
 - **Loyalty Discounts** — returning guests receive 5–15% discount based on booking history
-- **Payment Proof Upload** — guests upload a payment screenshot for staff verification
+- **Payment Proof Upload** — drag-and-drop with file validation, preview before submit
 - **Hotel Services Page** — Wellness & Spa, Fitness, Transport, Facilities, Recreation — each with sub-menu items showing photos and prices
-- **Restaurant Menu** — full food menu with photos, prices, and category filters (Starter, Main Course, Dessert, Drink, Breakfast, Vegan, Special)
+- **Restaurant Menu** — full food menu with photos, prices, and category filters
 - **Guest Reviews** — 5-star ratings with comments per room
 - **Multi-Currency** — live ETB / USD / GBP / EUR conversion
-- **Bilingual UI** — English / Amharic toggle
+- **Bilingual UI** — English / Amharic toggle (all pages including menus)
 - **KYC Identity Verification** — customers submit ID documents before booking; staff review and approve
 
 ### Staff Portal (`/admin`)
-All staff roles share one login page. Access is role-gated.
 
 | Feature | Admin | Manager | Receptionist | IT |
 |---|:---:|:---:|:---:|:---:|
@@ -86,7 +106,7 @@ All IT requests are **pending** until an admin approves or rejects them. Approve
 | Real-Time | Socket.io (live room status updates) |
 | Email | Nodemailer (SMTP — optional) |
 | Auth | JWT, Google OAuth |
-| Styling | CSS3 (Flexbox / Grid, no UI framework) |
+| Styling | CSS3 with design tokens (Flexbox / Grid, no UI framework) |
 
 ---
 
@@ -95,8 +115,7 @@ All IT requests are **pending** until an admin approves or rejects them. Approve
 ```
 Hotel-Boking/
 ├── backend/
-│   ├── config/
-│   │   └── database.js
+│   ├── config/database.js
 │   ├── controllers/
 │   │   ├── bookingController.js   # Booking CRUD, history, decisions, loyalty
 │   │   ├── menuController.js      # Restaurant + service sub-menu CRUD
@@ -109,7 +128,7 @@ Hotel-Boking/
 │   │   └── analyticsController.js
 │   ├── middleware/
 │   │   ├── auth.js                # JWT + role guard
-│   │   ├── mailer.js              # Nodemailer wrapper
+│   │   ├── mailer.js
 │   │   ├── upload.js              # Room image uploads (Cloudinary)
 │   │   └── uploadPayment.js       # Payment proof uploads
 │   ├── models/
@@ -127,7 +146,7 @@ Hotel-Boking/
 │   ├── routes/
 │   │   ├── auth.js                # Auth, KYC, IT requests, admin approvals
 │   │   ├── bookings.js
-│   │   ├── menu.js                # Restaurant + service menus
+│   │   ├── menu.js
 │   │   ├── services.js
 │   │   ├── rooms.js
 │   │   ├── offers.js
@@ -136,17 +155,11 @@ Hotel-Boking/
 │   │   ├── currency.js
 │   │   └── analytics.js
 │   ├── scripts/
-│   │   ├── seedUsers.js           # Seed demo staff accounts
-│   │   ├── seedMenu.js            # Seed 10 restaurant menu items
-│   │   ├── seedServiceMenus.js    # Seed 22 service sub-menu items
-│   │   ├── addServiceImages.js    # Add Unsplash photos to all services
-│   │   ├── resetStaffPasswords.js # Reset staff passwords directly in DB
-│   │   ├── fixStaffVerified.js    # Set emailVerified=true for all staff
-│   │   ├── fixReceptionist.js
-│   │   ├── cancelBooking.js
-│   │   ├── cancelPending.js
-│   │   └── checkUsers.js
-│   ├── socket.js
+│   │   ├── seedUsers.js
+│   │   ├── seedMenu.js
+│   │   ├── seedServiceMenus.js
+│   │   ├── addServiceImages.js
+│   │   └── resetStaffPasswords.js
 │   └── server.js
 └── frontend/
     └── src/
@@ -156,10 +169,11 @@ Hotel-Boking/
         │   ├── BookingForm.js       # Availability → room select → booking
         │   ├── CustomerAuth.js      # Customer login/register + Google OAuth
         │   ├── ProfileSetup.js      # KYC document submission
-        │   ├── Rooms.js
+        │   ├── PaymentForm.js       # Payment proof upload with drag-drop
+        │   ├── Toast.js             # Global toast notification system
+        │   ├── Rooms.js             # Public room gallery with skeleton loader
         │   ├── Amenities.js
         │   ├── AvailabilitySearch.js
-        │   ├── PaymentForm.js
         │   ├── ReviewForm.js
         │   ├── RoomSlideshow.js
         │   └── Footer.js
@@ -169,7 +183,7 @@ Hotel-Boking/
         ├── CurrencyContext.js
         ├── LanguageContext.js
         ├── api.js
-        └── App.js
+        └── App.js                   # Hamburger nav, ToastProvider, routing
 ```
 
 ---
@@ -192,52 +206,40 @@ cd backend
 npm install
 ```
 
-Create `backend/.env` (copy from `.env.example`):
+Create `backend/.env`:
 ```env
-# Database
 DB_HOST=your_postgres_host
 DB_PORT=5432
 DB_NAME=neondb
 DB_USER=neondb_owner
 DB_PASS=your_db_password
-
-# JWT
 JWT_SECRET=your_secret_key
 PORT=5000
 
-# Cloudinary (images)
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
 
-# Google OAuth (optional)
 GOOGLE_CLIENT_ID=your_google_client_id
 
-# Email notifications (optional)
+# Optional email
 EMAIL_SERVICE=gmail
 EMAIL_USER=your_email@gmail.com
 EMAIL_PASS=your_app_password
 
-# Frontend URL (for email links)
 FRONTEND_URL=https://your-frontend.vercel.app
 ```
 
-Start backend:
 ```bash
 npm start
 ```
 
-On first run the server will:
-1. Sync the database schema (all tables created automatically)
-2. Seed 3 room types and rooms if none exist
-3. Seed 22 hotel services across 6 categories
-
-Then seed demo data:
+Seed demo data:
 ```bash
-node scripts/seedUsers.js        # staff accounts
-node scripts/seedMenu.js         # 10 restaurant items
-node scripts/seedServiceMenus.js # service sub-menus
-node scripts/addServiceImages.js # photos for services
+node scripts/seedUsers.js
+node scripts/seedMenu.js
+node scripts/seedServiceMenus.js
+node scripts/addServiceImages.js
 ```
 
 ### 3. Frontend
@@ -252,7 +254,6 @@ REACT_APP_API_URL=http://localhost:5000/api
 REACT_APP_GOOGLE_CLIENT_ID=your_google_client_id
 ```
 
-Start frontend:
 ```bash
 npm start
 ```
@@ -305,21 +306,30 @@ Visit `http://localhost:3000`
 | PUT | `/api/menu/:id` | Admin, Manager | Update menu item |
 | DELETE | `/api/menu/:id` | Admin | Delete menu item |
 | PUT | `/api/payments/:id/verify-proof` | Staff | Verify payment screenshot |
-| GET | `/api/analytics` | Admin, Manager | Dashboard metrics |
+| GET | `/api/reports/dashboard` | Staff | Dashboard metrics |
+| GET | `/api/reports/top-products` | Admin, Manager | Top selling items |
+| GET | `/api/reports/profit-loss` | Admin, Manager | Profit & loss |
 
-Full endpoint documentation: see `API_DOCUMENTATION.md`
+---
+
+## Contact
+
+📞 +251 995 111 015
+📱 +251 706 104 273
+✉️ info@2rnsolomon.com
+📍 Bole Road, Addis Ababa, Ethiopia
 
 ---
 
 ## Data Safety
 
-- **Bookings are never hard-deleted.** Cancellations set `status = 'cancelled'` and write an audit note to `receptionNotes`.
-- Pending bookings with no payment auto-cancel after 5 minutes (soft cancel, record preserved).
-- `.env` is excluded from git via `.gitignore` — never commit real credentials.
-- KYC documents are stored on Cloudinary — never on the server filesystem.
+- Bookings are **never hard-deleted** — cancellations set `status = 'cancelled'` and write an audit note
+- Pending bookings with no payment auto-cancel after 5 minutes (soft cancel, record preserved)
+- `.env` is excluded from git — never commit real credentials
+- KYC documents are stored on Cloudinary — never on the server filesystem
 
 ---
 
 ## License
 
-MIT License — © 2026 2RN Solomon
+MIT License — © 2026 2RN Solomon Hotel
