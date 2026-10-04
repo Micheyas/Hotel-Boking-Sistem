@@ -144,14 +144,43 @@ const Rooms = () => {
       </div>
 
       <div className="rooms-grid">
-        {filtered.map((room) => {
+        {filtered.map((room, idx) => {
           const sInfo = statusStyle(room.status);
           const amenities = parseAmenities(room.amenities);
           const price = room.roomType?.basePrice;
           const typeName = room.roomType?.name || t("featured.roomFallback");
+          const description = room.description || room.roomType?.description;
+          const specs = [
+            room.floor != null &&
+              room.floor !== "" && {
+                icon: "🏢",
+                label: t("rooms.floor"),
+                value: room.floor,
+              },
+            room.bedType && {
+              icon: "🛏️",
+              label: t("rooms.bedType"),
+              value: room.bedType,
+            },
+            room.roomSize && {
+              icon: "📐",
+              label: t("rooms.roomSize"),
+              value: room.roomSize,
+            },
+            {
+              icon: "👥",
+              label: t("rooms.guests"),
+              value: `${t("rooms.upToGuests")} ${
+                room.maxGuests || room.roomType?.capacity || 2
+              }`,
+            },
+          ].filter(Boolean);
 
           return (
-            <div key={room.id} className="room-card">
+            <div
+              key={room.id}
+              className={`room-card ${idx % 2 === 0 ? "room-card--img-right" : ""}`}
+            >
               <div className="room-image">
                 <RoomSlideshow
                   images={(() => {
@@ -182,31 +211,67 @@ const Rooms = () => {
               </div>
 
               <div className="room-details">
+                <div className="room-details-top">
+                  <span className="room-number-pill">
+                    {t("rooms.roomNo")} {room.roomNumber}
+                  </span>
+                  <span
+                    className="room-status-pill"
+                    style={{ background: sInfo.bg, color: sInfo.color }}
+                  >
+                    ● {statusLabel(room.status)}
+                  </span>
+                </div>
                 <h3 className="room-type-name">{typeName}</h3>
-                {room.roomType?.description && (
-                  <p className="room-description">
-                    {room.roomType.description}
-                  </p>
+                {description && (
+                  <p className="room-description">{description}</p>
+                )}
+                {specs.length > 0 && (
+                  <div className="room-specs">
+                    {specs.map((s, i) => (
+                      <div key={i} className="room-spec">
+                        <span className="room-spec-icon">{s.icon}</span>
+                        <span className="room-spec-text">
+                          <span className="room-spec-label">{s.label}</span>
+                          <span className="room-spec-value">{s.value}</span>
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 )}
                 {amenities.length > 0 && (
                   <div className="room-amenities">
-                    {amenities.slice(0, 3).map((a, i) => (
+                    {amenities.slice(0, 6).map((a, i) => (
                       <span key={i} className="amenity-tag">
-                        {a}
+                        ✓ {a}
                       </span>
                     ))}
-                    {amenities.length > 3 && (
+                    {amenities.length > 6 && (
                       <span className="amenity-tag">
-                        +{amenities.length - 3} {t("common.more")}
+                        +{amenities.length - 6} {t("common.more")}
                       </span>
                     )}
                   </div>
                 )}
                 <div className="room-footer">
-                  <span className="room-guests">
-                    {t("rooms.upToGuests")} {room.roomType?.capacity || 2}{" "}
-                    {t("rooms.guests")}
-                  </span>
+                  <div className="room-price-block">
+                    {price ? (
+                      <>
+                        <span className="room-price-amount">
+                          {convertPrice(price, currency, rates)}
+                        </span>
+                        <span className="room-price-per">
+                          {t("rooms.priceNight")}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="room-guests">
+                        {t("rooms.upToGuests")}{" "}
+                        {room.maxGuests || room.roomType?.capacity || 2}{" "}
+                        {t("rooms.guests")}
+                      </span>
+                    )}
+                  </div>
                   <div className="room-footer-buttons">
                     {room.status === "available" ? (
                       <Link to="/booking" className="book-room-btn">

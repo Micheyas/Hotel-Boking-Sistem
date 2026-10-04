@@ -1885,17 +1885,17 @@ table tbody tr:hover {
 
 /* ── Rooms Grid ── */
 .rooms-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 28px;
-    max-width: 1200px;
+    display: flex;
+    flex-direction: column;
+    gap: 48px;
+    max-width: 1150px;
     margin: 0 auto;
 }
 
 /* ── Room Card ── */
 .room-card {
     background: #fff;
-    border-radius: 18px;
+    border-radius: 22px;
     overflow: hidden;
     box-shadow: 0 2px 16px rgba(26, 26, 46, 0.09);
     border: 1px solid rgba(201, 168, 76, 0.15);
@@ -1903,7 +1903,14 @@ table tbody tr:hover {
         transform 0.3s ease,
         box-shadow 0.3s ease;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    align-items: stretch;
+    min-height: 360px;
+}
+
+/* Alternate: image on the right for even cards (1st, 3rd, 5th…) */
+.room-card--img-right {
+    flex-direction: row-reverse;
 }
 
 .room-card:hover {
@@ -1914,7 +1921,8 @@ table tbody tr:hover {
 /* ── Room Image ── */
 .room-image {
     position: relative;
-    height: 210px;
+    flex: 0 0 44%;
+    min-height: 360px;
     overflow: hidden;
     flex-shrink: 0;
 }
@@ -1948,26 +1956,96 @@ table tbody tr:hover {
 
 /* ── Room Details ── */
 .room-details {
-    padding: 20px 22px 22px;
+    padding: 30px 34px 28px;
     display: flex;
     flex-direction: column;
     flex: 1;
+    justify-content: center;
+}
+
+.room-details-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.room-number-pill {
+    background: linear-gradient(135deg, #1a1a2e, #2d2d5a);
+    color: #f0d68a;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(226, 201, 126, 0.35);
+}
+
+.room-status-pill {
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 999px;
+    white-space: nowrap;
 }
 
 .room-type-name {
-    font-size: 1.25rem;
-    font-weight: 700;
+    font-size: 1.6rem;
+    font-weight: 800;
     color: #1a1a2e;
-    margin: 0 0 7px 0;
+    margin: 0 0 10px 0;
     letter-spacing: 0.1px;
 }
 
 .room-description {
     color: #6b7280;
-    font-size: 0.88rem;
-    line-height: 1.55;
-    margin: 0 0 14px 0;
-    flex: 1;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    margin: 0 0 18px 0;
+}
+
+/* ── Room spec list (floor, bed, size, guests) ── */
+.room-specs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 10px;
+    margin-bottom: 18px;
+    background: linear-gradient(135deg, #faf8f2, #f5efe2);
+    border: 1px solid rgba(201, 168, 76, 0.22);
+    border-radius: 14px;
+    padding: 14px 16px;
+}
+
+.room-spec {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.room-spec-icon {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.room-spec-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.3;
+}
+
+.room-spec-label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #9c8a5a;
+    font-weight: 700;
+}
+
+.room-spec-value {
+    font-size: 0.9rem;
+    color: #1a1a2e;
+    font-weight: 600;
 }
 
 /* ── Amenity Tags ── */
@@ -2005,6 +2083,28 @@ table tbody tr:hover {
     color: #9ca3af;
     font-weight: 500;
     white-space: nowrap;
+}
+
+.room-price-block {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+}
+
+.room-price-amount {
+    font-size: 1.5rem;
+    font-weight: 800;
+    background: linear-gradient(120deg, #c9a84c, #e2c97e);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    white-space: nowrap;
+}
+
+.room-price-per {
+    font-size: 0.85rem;
+    color: #9ca3af;
+    font-weight: 500;
 }
 
 /* ── Book Now Button ── */
@@ -2083,8 +2183,23 @@ table tbody tr:hover {
         font-size: 2em;
     }
     .rooms-grid {
-        grid-template-columns: 1fr;
-        gap: 20px;
+        gap: 28px;
+    }
+    .room-card,
+    .room-card--img-right {
+        flex-direction: column;
+        min-height: 0;
+    }
+    .room-image {
+        flex: none;
+        min-height: 250px;
+        height: 250px;
+    }
+    .room-details {
+        padding: 22px 22px 24px;
+    }
+    .room-type-name {
+        font-size: 1.35rem;
     }
 }
 

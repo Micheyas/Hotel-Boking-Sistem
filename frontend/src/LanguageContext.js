@@ -102,6 +102,10 @@ const translations = {
       noRoomsSuffix: "rooms found.",
       priceNight: "/night",
       writeReview: "Write Review",
+      roomNo: "Room",
+      floor: "Floor",
+      bedType: "Bed",
+      roomSize: "Size",
     },
     amenities: {
       title: "Hotel Amenities",
@@ -720,6 +724,10 @@ const translations = {
       noRoomsSuffix: "ክፍሎች አልተገኙም።",
       priceNight: "/ሌሊት",
       writeReview: "ግምገሽ ይጻፉ",
+      roomNo: "ክፍል",
+      floor: "ፎቅ",
+      bedType: "አልጋ",
+      roomSize: "ስፋት",
     },
     amenities: {
       title: "የሆቴሉ አገልግሎቶች",
