@@ -966,3 +966,47 @@
   box-shadow: 0 10px 28px rgba(201, 168, 76, 0.25);
   transform: translateY(-4px);
 }
+
+/* ═══════════════════════════════════════════════════════════
+   LEGENDARY THEME — services & menu: prime/legendary colors
+   ═══════════════════════════════════════════════════════════ */
+.svc-page { background: linear-gradient(135deg, #141428 0%, #1b1b40 50%, #241a4d 100%); }
+.svc-tabs-wrap {
+  background: linear-gradient(135deg, #1a1a2e, #23234d);
+  border-bottom: 2px solid rgba(226, 201, 126, 0.45);
+}
+.svc-card {
+  background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 60%, #4c1d95 100%);
+  border: 1px solid rgba(147, 197, 253, 0.35);
+}
+.svc-card-name { color: #ffffff; }
+.svc-card-desc { color: #c7d2fe; }
+.svc-card:hover { box-shadow: 0 8px 28px rgba(55, 48, 163, 0.5); }
+.menu-cat-tab, .sm-cat-btn, .svc-submenu-cat-btn {
+  background: linear-gradient(135deg, #fff8e1, #ffecb3);
+  border: 1px solid rgba(184, 134, 11, 0.45);
+  color: #6b4e00;
+  font-weight: 600;
+}
+.menu-item-card {
+  background: linear-gradient(135deg, #fdf6e0 0%, #f7e8c3 55%, #f0d68a 100%);
+  border: 1px solid rgba(184, 134, 11, 0.5);
+}
+.menu-item-name { color: #4a3405; }
+.menu-item-desc { color: #5c4a1a; }
+.menu-item-cat { background: rgba(122, 90, 0, 0.15); color: #6b4e00; }
+.svc-submenu-card {
+  background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 60%, #8b5cf6 100%);
+  border: 1px solid rgba(196, 181, 253, 0.4);
+}
+.svc-submenu-name { color: #ffffff; }
+.svc-submenu-desc { color: #ddd6fe; }
+.sm-modal {
+  background: linear-gradient(135deg, #141428 0%, #1b1b40 60%, #241a4d 100%);
+  border: 1px solid rgba(226, 201, 126, 0.5);
+  color: #e0e7ff;
+}
+.sm-modal-header { background: transparent; border-bottom: 1px solid rgba(226, 201, 126, 0.3); }
+.sm-modal-header h3 { color: #f7e08e; }
+.sm-modal-footer { background: transparent; border-top: 1px solid rgba(226, 201, 126, 0.3); }
+.sm-field label { color: #c7d2fe; }

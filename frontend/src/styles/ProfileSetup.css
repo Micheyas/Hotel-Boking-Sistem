@@ -502,3 +502,18 @@
   background-position: right 10px center;
   padding-right: 30px;
 }
+
+/* LEGENDARY THEME — profile setup: midnight + gold */
+.ps-card {
+  background: linear-gradient(135deg, #141428 0%, #1b1b40 55%, #2a1a4d 100%);
+  border: 1px solid rgba(226, 201, 126, 0.5);
+  box-shadow: 0 14px 44px rgba(20, 20, 40, 0.55);
+}
+.ps-title {
+  background: linear-gradient(120deg, #f7e08e, #e2c97e);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.ps-subtitle { color: #c7d2fe; }
+.ps-card label { color: #e0e7ff; }

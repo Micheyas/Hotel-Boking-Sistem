@@ -80,3 +80,11 @@
     margin-top: 10px;
   }
 }
+
+/* LEGENDARY THEME — availability search: midnight + gold */
+.availability-search-container {
+  background: linear-gradient(135deg, #141428 0%, #1b1b40 55%, #2a1a4d 100%);
+  border: 1px solid rgba(226, 201, 126, 0.5);
+  box-shadow: 0 12px 36px rgba(20, 20, 40, 0.5);
+}
+.search-field label { color: #e2c97e; }

@@ -776,3 +776,27 @@
   cursor: pointer;
 }
 .secure-doc-retry:hover { background: #ffe9a8; }
+
+/* LEGENDARY THEME — admin panel: deep indigo + gold */
+.decision-modal {
+  background: linear-gradient(135deg, #141428 0%, #1b1b40 60%, #241a4d 100%);
+  border: 1px solid rgba(226, 201, 126, 0.5);
+  color: #e0e7ff;
+}
+.decision-modal h3 { color: #f7e08e; }
+.bh-stat {
+  background: linear-gradient(135deg, #1a1a2e, #2d2d5a);
+  border: 1px solid rgba(226, 201, 126, 0.35);
+  color: #e0e7ff;
+}
+.bh-stat-num { color: #f7e08e; }
+.bh-filters {
+  background: linear-gradient(135deg, #1a1a2e, #23234d);
+  border: 1px solid rgba(226, 201, 126, 0.3);
+}
+.bh-page-btn {
+  background: linear-gradient(135deg, #fff8e1, #ffecb3);
+  border: 1px solid rgba(184, 134, 11, 0.45);
+  color: #6b4e00;
+  font-weight: 600;
+}

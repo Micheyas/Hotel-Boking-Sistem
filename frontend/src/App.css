@@ -3282,3 +3282,102 @@ table tbody td { color: #3a2f0b; }
     color: #9f1239;
     font-weight: 600;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   LEGENDARY SECTIONS — every section & grid band becomes prime color
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── HOME: highlights band → deep emerald ── */
+.highlights-section {
+    background: linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%);
+    border: 1px solid rgba(110, 231, 183, 0.3);
+}
+.highlights-section h3 {
+    background: linear-gradient(120deg, #f7e08e, #e2c97e);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: 800;
+}
+
+/* ── HOME: hotels band → legendary indigo-violet ── */
+.hotels-section {
+    background: linear-gradient(135deg, #312e81 0%, #4c1d95 60%, #6d28d9 100%);
+    border-top: 1px solid rgba(226, 201, 126, 0.35);
+    border-bottom: 1px solid rgba(226, 201, 126, 0.35);
+}
+
+/* ── HOME: FAQ band → royal blue ── */
+.faq-section {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #3730a3 100%);
+}
+.faq-section h2 {
+    background: linear-gradient(120deg, #f7e08e, #e2c97e);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: 800;
+}
+
+/* ── HOME: gallery band → legendary violet ── */
+.gallery-section {
+    background: linear-gradient(135deg, #4c1d95 0%, #5b21b6 50%, #7c3aed 100%);
+}
+.gallery-section .section-header h3 {
+    background: linear-gradient(120deg, #f7e08e, #e2c97e);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: 800;
+}
+.gallery-section .section-header p { color: #ddd6fe; }
+
+/* ── Generic page section → deep teal ── */
+.page-section {
+    background: linear-gradient(135deg, #134e4a 0%, #0f766e 50%, #14b8a6 100%);
+}
+.page-section h2 {
+    background: linear-gradient(120deg, #f7e08e, #e2c97e);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: 800;
+}
+.page-section p { color: #ccfbf1; }
+
+/* ── AMENITIES page → deep teal ── */
+.amenities-container {
+    background: linear-gradient(135deg, #134e4a 0%, #115e59 50%, #0f766e 100%);
+}
+.amenities-header h2 {
+    background: linear-gradient(120deg, #f7e08e, #e2c97e);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: 800;
+}
+.amenities-header p { color: #ccfbf1; }
+
+/* ── FAQ page → royal blue ── */
+.faq-page-container {
+    background: linear-gradient(135deg, #1e3a8a 0%, #312e81 50%, #4c1d95 100%);
+}
+.faq-header h2 {
+    background: linear-gradient(120deg, #f7e08e, #e2c97e);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: 800;
+}
+.faq-header p { color: #c7d2fe; }
+
+/* ── ADMIN: create-room form → gold tint ── */
+.create-room-form {
+    background: linear-gradient(135deg, #fdf6e0, #f7e8c3);
+    border: 1px solid rgba(184, 134, 11, 0.45);
+}
+.create-room-form h4 { color: #4a3405; }
+.create-room-form label { color: #5c4a1a; }
+
+/* ── Payment verification section → deep blue ── */
+.pv-section-title { color: #f7e08e; }
