@@ -1010,3 +1010,31 @@
 .sm-modal-header h3 { color: #f7e08e; }
 .sm-modal-footer { background: transparent; border-top: 1px solid rgba(226, 201, 126, 0.3); }
 .sm-field label { color: #c7d2fe; }
+
+/* LEGENDARY THEME FIX — tab & section titles clearly visible, bold */
+.svc-tab {
+  color: #c7d2fe;
+  font-weight: 700;
+}
+.svc-tab:hover {
+  color: #ffffff;
+  border-bottom-color: #e2c97e;
+}
+.svc-tab--active {
+  color: #f7e08e;
+  border-bottom-color: #e2c97e;
+}
+.svc-section-header { border-bottom: 2px solid rgba(226, 201, 126, 0.4); }
+.svc-section-title {
+  background: linear-gradient(120deg, #f7e08e, #e2c97e);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 800;
+}
+.svc-section-count {
+  color: #6b4e00;
+  background: linear-gradient(135deg, #fff8e1, #ffecb3);
+  border: 1px solid rgba(184, 134, 11, 0.45);
+  font-weight: 700;
+}
