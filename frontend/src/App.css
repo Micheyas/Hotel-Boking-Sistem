@@ -1682,83 +1682,132 @@ table tbody tr:hover {
 
 /* ── Site Footer ── */
 .site-footer {
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-    color: #ccc;
-    padding: 4px 10px 3px 10px;
+    position: relative;
+    background: linear-gradient(135deg, #141428 0%, #1b1b40 45%, #2a1e56 100%);
+    color: #d5d5e0;
+    padding: 60px 24px 0;
     margin-top: 0;
+    overflow: hidden;
+}
+
+.site-footer::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #8a6d2b, #e3b94e, #f7e08e, #e3b94e, #8a6d2b);
+}
+
+.site-footer::after {
+    content: "";
+    position: absolute;
+    top: -140px;
+    right: -100px;
+    width: 380px;
+    height: 380px;
+    background: radial-gradient(circle, rgba(226, 201, 126, 0.14) 0%, transparent 70%);
+    pointer-events: none;
 }
 
 .site-footer-top {
+    position: relative;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-    gap: 4px;
-    max-width: 50px;
-    margin: 0 auto 3px auto;
+    grid-template-columns: 1.5fr 1fr 1fr 1fr;
+    gap: 44px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-bottom: 44px;
 }
 
 .sf-brand h3 {
-    color: #e2c97e;
-    font-size: 0.65em;
-    margin: 0 0 1px 0;
+    margin: 0 0 12px 0;
+    font-size: 1.7rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    background: linear-gradient(120deg, #f7e08e 0%, #e2c97e 45%, #c9a84c 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
 }
 
 .sf-brand p {
-    margin: 0 0 0px 0;
-    font-size: 0.55em;
-    opacity: 0.85;
+    margin: 0 0 10px 0;
+    font-size: 0.95rem;
+    line-height: 1.65;
+    color: #b9b9c9;
 }
 
 .sf-address {
-    opacity: 0.75;
-    font-size: 0.9em;
+    color: #8f8fa3 !important;
+    font-size: 0.85rem !important;
 }
 
 .sf-links-group {
     display: flex;
     flex-direction: column;
-    gap: 1px;
+    gap: 11px;
+    align-items: flex-start;
 }
 
 .sf-links-group h4 {
-    color: #e2c97e;
-    margin: 0 0 2px 0;
-    font-size: 0.6em;
+    color: #f0d68a;
+    margin: 0 0 4px 0;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    padding-bottom: 10px;
+    border-bottom: 2px solid transparent;
+    border-image: linear-gradient(90deg, #c9a84c, transparent) 1;
 }
 
 .sf-links-group a,
 .sf-links-group span {
-    color: #ccc;
+    color: #b9b9c9;
     text-decoration: none;
-    font-size: 0.55em;
-    transition: color 0.3s ease;
+    font-size: 0.93rem;
+    transition: all 0.25s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    line-height: 1.5;
 }
 
 .sf-links-group a:hover {
-    color: #e2c97e;
+    color: #f7e08e;
+    transform: translateX(5px);
 }
 
 .sf-staff-link {
     display: inline-block;
-    background: rgba(226, 201, 126, 0.15);
-    padding: 8px 16px;
-    border-radius: 20px;
-    color: #e2c97e !important;
-    font-weight: 600;
-    border: 1px solid rgba(226, 201, 126, 0.3);
+    margin-top: 6px;
+    background: linear-gradient(120deg, rgba(226, 201, 126, 0.16), rgba(226, 201, 126, 0.08));
+    padding: 10px 22px;
+    border-radius: 999px;
+    color: #f0d68a !important;
+    font-weight: 700;
+    font-size: 0.88rem;
+    border: 1px solid rgba(226, 201, 126, 0.4);
     transition: all 0.3s ease;
 }
 
 .sf-staff-link:hover {
-    background: rgba(226, 201, 126, 0.25);
+    background: linear-gradient(120deg, rgba(226, 201, 126, 0.3), rgba(226, 201, 126, 0.15));
     transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(201, 168, 76, 0.25);
 }
 
 .site-footer-bottom {
+    position: relative;
     text-align: center;
-    padding-top: 2px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    font-size: 0.5em;
-    opacity: 0.7;
+    padding: 22px 16px;
+    border-top: 1px solid rgba(226, 201, 126, 0.18);
+    font-size: 0.85rem;
+    color: #8f8fa3;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 /* ── Responsive FAQ & Location & Footer ── */
@@ -1798,12 +1847,16 @@ table tbody tr:hover {
     }
 
     .site-footer {
-        padding: 3px 8px 2px 8px;
+        padding: 44px 20px 0;
     }
 
     .site-footer-top {
-        grid-template-columns: 1fr;
-        gap: 30px;
+        grid-template-columns: 1fr 1fr;
+        gap: 32px;
+    }
+
+    .sf-brand {
+        grid-column: 1 / -1;
     }
 }
 
