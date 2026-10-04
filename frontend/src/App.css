@@ -1902,11 +1902,11 @@ table tbody tr:hover {
 
 /* ── Room Card ── */
 .room-card {
-    background: linear-gradient(135deg, #fdf9f0 0%, #f8efdb 45%, #f1e6f9 100%);
+    background: linear-gradient(135deg, #fffdf4 0%, #fbeec9 38%, #f6dc96 72%, #eec96c 100%);
     border-radius: 22px;
     overflow: hidden;
-    box-shadow: 0 4px 24px rgba(124, 58, 237, 0.10), 0 2px 12px rgba(201, 168, 76, 0.14);
-    border: 1px solid rgba(201, 168, 76, 0.5);
+    box-shadow: 0 6px 28px rgba(184, 134, 11, 0.25), 0 2px 10px rgba(0, 0, 0, 0.18);
+    border: 1px solid rgba(184, 134, 11, 0.6);
     transition:
         transform 0.3s ease,
         box-shadow 0.3s ease;
@@ -1924,19 +1924,19 @@ table tbody tr:hover {
     left: 0;
     right: 0;
     height: 5px;
-    background: linear-gradient(90deg, #8a6d2b, #e3b94e, #7c3aed, #e3b94e, #8a6d2b);
+    background: linear-gradient(90deg, #7a5a00, #d4af37, #ffe9a8, #d4af37, #7a5a00);
     z-index: 2;
 }
 
 /* Alternate: image on the right for even cards (1st, 3rd, 5th…) */
 .room-card--img-right {
     flex-direction: row-reverse;
-    background: linear-gradient(225deg, #f4edfb 0%, #eee2fa 45%, #f8efdb 100%);
+    background: linear-gradient(225deg, #fffdf4 0%, #fbeec9 38%, #f6dc96 72%, #eec96c 100%);
 }
 
 .room-card:hover {
     transform: translateY(-7px);
-    box-shadow: 0 18px 52px rgba(124, 58, 237, 0.24), 0 8px 26px rgba(201, 168, 76, 0.28);
+    box-shadow: 0 20px 55px rgba(184, 134, 11, 0.4), 0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
 /* ── Room Image ── */
@@ -2016,14 +2016,14 @@ table tbody tr:hover {
     font-weight: 800;
     margin: 0 0 10px 0;
     letter-spacing: 0.1px;
-    background: linear-gradient(120deg, #5b21b6 0%, #7c3aed 45%, #a16207 100%);
+    background: linear-gradient(120deg, #6b4e00 0%, #b8860b 50%, #7a5a00 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
 }
 
 .room-description {
-    color: #6b7280;
+    color: #5c4a1a;
     font-size: 0.95rem;
     line-height: 1.7;
     margin: 0 0 18px 0;
@@ -2035,11 +2035,11 @@ table tbody tr:hover {
     grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
     gap: 10px;
     margin-bottom: 18px;
-    background: linear-gradient(135deg, #3b1470 0%, #6d28d9 60%, #8b5cf6 100%);
-    border: 1px solid rgba(226, 201, 126, 0.55);
+    background: linear-gradient(135deg, #4a3405 0%, #7a5a00 60%, #a67c00 100%);
+    border: 1px solid rgba(255, 235, 170, 0.55);
     border-radius: 14px;
     padding: 14px 16px;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 4px 14px rgba(76, 29, 149, 0.25);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 4px 14px rgba(122, 90, 0, 0.3);
 }
 
 .room-spec {
@@ -2063,7 +2063,7 @@ table tbody tr:hover {
     font-size: 0.68rem;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: #e2c97e;
+    color: #ffe9a8;
     font-weight: 700;
 }
 
@@ -2081,25 +2081,14 @@ table tbody tr:hover {
     margin-bottom: 18px;
 }
 
-.room-amenities .amenity-tag:nth-child(odd) {
-    background: linear-gradient(135deg, rgba(226, 201, 126, 0.25), rgba(226, 201, 126, 0.08));
-    border: 1px solid rgba(201, 168, 76, 0.5);
+.room-amenities .amenity-tag {
+    background: linear-gradient(135deg, rgba(122, 90, 0, 0.16), rgba(122, 90, 0, 0.06));
+    border: 1px solid rgba(122, 90, 0, 0.45);
     padding: 4px 11px;
     border-radius: 12px;
     font-size: 0.78rem;
-    font-weight: 600;
-    color: #6b4f1d;
-    letter-spacing: 0.1px;
-}
-
-.room-amenities .amenity-tag:nth-child(even) {
-    background: linear-gradient(135deg, rgba(124, 58, 237, 0.16), rgba(124, 58, 237, 0.06));
-    border: 1px solid rgba(124, 58, 237, 0.4);
-    padding: 4px 11px;
-    border-radius: 12px;
-    font-size: 0.78rem;
-    font-weight: 600;
-    color: #5b21b6;
+    font-weight: 700;
+    color: #6b4e00;
     letter-spacing: 0.1px;
 }
 
@@ -2111,7 +2100,7 @@ table tbody tr:hover {
     gap: 12px;
     margin-top: auto;
     padding-top: 14px;
-    border-top: 1px solid #f0f0f0;
+    border-top: 1px solid rgba(122, 90, 0, 0.3);
 }
 
 .room-guests {
@@ -2130,7 +2119,7 @@ table tbody tr:hover {
 .room-price-amount {
     font-size: 1.5rem;
     font-weight: 800;
-    background: linear-gradient(120deg, #c9a84c, #e2c97e);
+    background: linear-gradient(120deg, #6b4e00, #a67c00);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -2139,15 +2128,15 @@ table tbody tr:hover {
 
 .room-price-per {
     font-size: 0.85rem;
-    color: #9ca3af;
-    font-weight: 500;
+    color: #7a5a00;
+    font-weight: 600;
 }
 
 /* ── Book Now Button ── */
 .book-room-btn {
     display: inline-block;
-    background: linear-gradient(135deg, #c9a84c 0%, #e2c97e 100%);
-    color: #1a1a2e;
+    background: linear-gradient(135deg, #3d2c00 0%, #6b4e00 100%);
+    color: #ffe9a8;
     text-align: center;
     padding: 9px 22px;
     border-radius: 22px;
@@ -2155,16 +2144,16 @@ table tbody tr:hover {
     font-weight: 700;
     font-size: 0.88rem;
     letter-spacing: 0.2px;
-    border: none;
+    border: 1px solid rgba(255, 233, 168, 0.4);
     cursor: pointer;
     transition: all 0.25s ease;
-    box-shadow: 0 2px 8px rgba(201, 168, 76, 0.35);
+    box-shadow: 0 2px 8px rgba(61, 44, 0, 0.4);
     white-space: nowrap;
 }
 
 .book-room-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(201, 168, 76, 0.5);
+    box-shadow: 0 6px 18px rgba(61, 44, 0, 0.55);
 }
 
 /* ── Review Button ── */
@@ -2176,8 +2165,8 @@ table tbody tr:hover {
 
 .review-room-btn {
     display: inline-block;
-    background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
-    color: #1a1a2e;
+    background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 100%);
+    color: #ffffff;
     text-align: center;
     padding: 9px 18px;
     border-radius: 22px;
@@ -2185,16 +2174,16 @@ table tbody tr:hover {
     font-weight: 600;
     font-size: 0.85rem;
     letter-spacing: 0.2px;
-    border: none;
+    border: 1px solid rgba(255, 255, 255, 0.25);
     cursor: pointer;
     transition: all 0.25s ease;
-    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);
+    box-shadow: 0 2px 8px rgba(91, 33, 182, 0.4);
     white-space: nowrap;
 }
 
 .review-room-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(245, 158, 11, 0.5);
+    box-shadow: 0 6px 18px rgba(91, 33, 182, 0.55);
 }
 
 .no-rooms {
