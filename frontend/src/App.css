@@ -22,7 +22,30 @@
   --color-warning:      #e65100;
   --color-warning-bg:   #fff3e0;
 
-  /* Spacing */
+  /* Jewel-tone accents (vibrant decor) */
+  --color-emerald:      #10b981;
+  --color-emerald-deep: #059669;
+  --color-teal:         #14b8a6;
+  --color-teal-deep:    #0d9488;
+  --color-rose:         #f43f5e;
+  --color-rose-deep:    #e11d48;
+  --color-amber:        #f59e0b;
+  --color-amber-deep:   #d97706;
+  --color-violet:       #8b5cf6;
+  --color-violet-deep:  #7c3aed;
+  --color-sky:          #0ea5e9;
+  --color-sky-deep:     #0284c7;
+
+  /* Signature gradients */
+  --grad-gold:    linear-gradient(135deg, #f3d78b 0%, #e2c97e 40%, #c9a84c 100%);
+  --grad-emerald: linear-gradient(135deg, #34d399 0%, #10b981 55%, #059669 100%);
+  --grad-teal:    linear-gradient(135deg, #2dd4bf 0%, #14b8a6 55%, #0d9488 100%);
+  --grad-rose:    linear-gradient(135deg, #fb7185 0%, #f43f5e 55%, #e11d48 100%);
+  --grad-amber:   linear-gradient(135deg, #fbbf24 0%, #f59e0b 55%, #d97706 100%);
+  --grad-violet:  linear-gradient(135deg, #a78bfa 0%, #8b5cf6 55%, #7c3aed 100%);
+  --grad-sky:     linear-gradient(135deg, #38bdf8 0%, #0ea5e9 55%, #0284c7 100%);
+  --grad-sunset:  linear-gradient(135deg, #fbbf24 0%, #f97316 55%, #e11d48 100%);
+  --grad-ocean:   linear-gradient(135deg, #22d3ee 0%, #0ea5e9 55%, #1e3a8a 100%);
   --space-xs:  4px;
   --space-sm:  8px;
   --space-md:  16px;
@@ -6856,4 +6879,206 @@ table tbody tr:hover {
     }
     .room-modal-left { border-right: none; border-bottom: 1px solid #f0f0f0; }
     .admin-search-box { min-width: unset; width: 100%; }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   VIBRANT DECOR — jewel tones + gold (visual only)
+   ════════════════════════════════════════════════════════════════ */
+
+/* ── Gradient text helpers ── */
+.grad-text-gold {
+  background: linear-gradient(120deg, #f7e08e 0%, #e2c97e 35%, #c9a84c 60%, #f3d78b 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ── Hero: richer, layered ── */
+.hero-overlay {
+  background:
+    radial-gradient(ellipse 60% 45% at 50% 0%, rgba(226, 201, 126, 0.22), transparent 70%),
+    linear-gradient(
+      to bottom,
+      rgba(15, 52, 96, 0.55) 0%,
+      rgba(10, 20, 40, 0.55) 55%,
+      rgba(10, 14, 30, 0.78) 100%
+    );
+}
+
+.hero-title {
+  background: linear-gradient(115deg, #fff8e1 10%, #f3d78b 35%, #e2c97e 55%, #fff3c4 80%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: none;
+  filter: drop-shadow(0 2px 14px rgba(0, 0, 0, 0.55));
+}
+
+/* floating decorative orbs (pure CSS, no JSX changes) */
+.hero::before,
+.hero::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 1;
+  animation: hero-orb-float 9s ease-in-out infinite;
+}
+.hero::before {
+  width: 340px; height: 340px;
+  left: -90px; top: 12%;
+  background: radial-gradient(circle, rgba(226, 201, 126, 0.55), transparent 70%);
+}
+.hero::after {
+  width: 420px; height: 420px;
+  right: -110px; bottom: 6%;
+  background: radial-gradient(circle, rgba(20, 184, 166, 0.4), transparent 70%);
+  animation-delay: -4.5s;
+}
+@keyframes hero-orb-float {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50%      { transform: translateY(-26px) scale(1.06); }
+}
+.hero-overlay { z-index: 2; }
+
+/* ── Buttons: richer gradient + shine sweep ── */
+.btn-primary, .btn {
+  background: linear-gradient(135deg, #f3d78b 0%, #e2c97e 35%, #c9a84c 70%, #b8933f 100%);
+  position: relative;
+  overflow: hidden;
+}
+.btn-primary::after, .btn::after {
+  content: "";
+  position: absolute;
+  top: 0; left: -80%;
+  width: 55%; height: 100%;
+  background: linear-gradient(105deg, transparent, rgba(255,255,255,0.55), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.55s ease;
+}
+.btn-primary:hover::after, .btn:hover::after { left: 130%; }
+
+/* colorful button variants */
+.btn-emerald {
+  background: var(--grad-emerald);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+}
+.btn-rose {
+  background: var(--grad-rose);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(244, 63, 94, 0.4);
+}
+.btn-violet {
+  background: var(--grad-violet);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+}
+.btn-emerald:hover, .btn-rose:hover, .btn-violet:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.06);
+}
+
+/* ── Room cards: color ── */
+.room-image::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(26,26,46,0.45) 0%, transparent 45%);
+  pointer-events: none;
+}
+.room-price-badge {
+  background: linear-gradient(135deg, #f3d78b 0%, #e2c97e 45%, #d97706 100%);
+  box-shadow: 0 2px 10px rgba(217, 119, 6, 0.45);
+}
+
+/* amenity chips cycle through jewel tints */
+.amenity-tag:nth-child(6n+1) { background: #ecfdf5; border-color: #a7f3d0; color: #047857; }
+.amenity-tag:nth-child(6n+2) { background: #f0f9ff; border-color: #bae6fd; color: #0369a1; }
+.amenity-tag:nth-child(6n+3) { background: #f5f3ff; border-color: #ddd6fe; color: #6d28d9; }
+.amenity-tag:nth-child(6n+4) { background: #fffbeb; border-color: #fde68a; color: #b45309; }
+.amenity-tag:nth-child(6n+5) { background: #fff1f2; border-color: #fecdd3; color: #be123c; }
+.amenity-tag:nth-child(6n)   { background: #f0fdfa; border-color: #99f6e4; color: #0f766e; }
+
+/* featured room cards: gradient top accent */
+.featured-room-card { position: relative; }
+.featured-room-card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 4px;
+  background: linear-gradient(90deg, #e2c97e, #f59e0b, #f43f5e, #8b5cf6, #0ea5e9);
+  border-radius: 18px 18px 0 0;
+  z-index: 2;
+}
+
+/* ── What-we-offer icons: gradient circles ── */
+.wwo-icon {
+  background: var(--grad-gold);
+  box-shadow: 0 3px 10px rgba(201, 168, 76, 0.45);
+}
+.wwo-card:nth-child(2) .wwo-icon { background: var(--grad-teal);   box-shadow: 0 3px 10px rgba(20,184,166,.45); }
+.wwo-card:nth-child(3) .wwo-icon { background: var(--grad-emerald);box-shadow: 0 3px 10px rgba(16,185,129,.45); }
+.wwo-card:nth-child(4) .wwo-icon { background: var(--grad-rose);   box-shadow: 0 3px 10px rgba(244,63,94,.45); }
+.wwo-card:nth-child(5) .wwo-icon { background: var(--grad-violet); box-shadow: 0 3px 10px rgba(139,92,246,.45); }
+
+/* ── Section headers: gradient underline bar ── */
+.wwo-header h2::after,
+.highlights-section h2::after {
+  content: "";
+  display: block;
+  width: 72px; height: 4px;
+  margin: 12px auto 0;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #e2c97e, #f59e0b, #e2c97e);
+}
+
+/* ── CTA banner: richer ── */
+.cta-banner {
+  background:
+    radial-gradient(ellipse 50% 80% at 80% 20%, rgba(139, 92, 246, 0.35), transparent 70%),
+    radial-gradient(ellipse 50% 80% at 15% 85%, rgba(226, 201, 126, 0.18), transparent 70%),
+    linear-gradient(135deg, #0f3460 0%, #1a1a2e 55%, #2b1a4e 100%);
+  border-top: 1px solid rgba(226, 201, 126, 0.25);
+  border-bottom: 1px solid rgba(226, 201, 126, 0.25);
+}
+.cta-banner h3 {
+  background: linear-gradient(115deg, #fff8e1, #f3d78b 40%, #e2c97e 70%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ── Footer: gold top border ── */
+.App-footer {
+  border-top: 3px solid transparent;
+  border-image: linear-gradient(90deg, #c9a84c, #f3d78b, #f59e0b, #f3d78b, #c9a84c) 1;
+}
+
+/* ── Decorative patterned divider (use: <div className="pattern-divider" />) ── */
+.pattern-divider {
+  height: 26px;
+  background-image: radial-gradient(circle, rgba(226,201,126,0.55) 2.2px, transparent 2.6px);
+  background-size: 26px 26px;
+  background-position: center;
+  opacity: 0.7;
+  margin: 8px 0;
+}
+
+/* ── Availability search card: jewel border ── */
+.hero-search-card .availability-search {
+  border: 1px solid rgba(226, 201, 126, 0.35);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35), 0 0 0 4px rgba(226, 201, 126, 0.08);
+}
+
+/* ── Toast accents stay, add colored left borders ── */
+.toast--success { border-left: 4px solid var(--color-emerald); }
+.toast--error   { border-left: 4px solid var(--color-rose); }
+.toast--info    { border-left: 4px solid var(--color-sky); }
+.toast--warning { border-left: 4px solid var(--color-amber); }
+
+/* ── Skeleton shimmer with warm tint ── */
+.skeleton {
+  background: linear-gradient(90deg, #f1ead9 25%, #faf5e9 50%, #f1ead9 75%);
 }

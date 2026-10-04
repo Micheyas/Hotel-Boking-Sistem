@@ -867,3 +867,102 @@
   .svc-submenu-grid { grid-template-columns: 1fr 1fr; }
   .svc-submenu-img-wrap { height: 120px; }
 }
+
+/* ════════════════════════════════════════════════════════════════
+   VIBRANT DECOR — services page (visual only)
+   ════════════════════════════════════════════════════════════════ */
+
+/* Category section icons: gradient chips, cycling per section */
+.svc-section-icon {
+  font-size: 26px;
+  width: 52px; height: 52px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 16px;
+  color: #fff;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #f3d78b, #c9a84c);
+  box-shadow: 0 4px 12px rgba(201, 168, 76, 0.4);
+}
+.svc-section:nth-of-type(6n+2) .svc-section-icon { background: linear-gradient(135deg, #2dd4bf, #0d9488); box-shadow: 0 4px 12px rgba(20,184,166,.4); }
+.svc-section:nth-of-type(6n+3) .svc-section-icon { background: linear-gradient(135deg, #34d399, #059669); box-shadow: 0 4px 12px rgba(16,185,129,.4); }
+.svc-section:nth-of-type(6n+4) .svc-section-icon { background: linear-gradient(135deg, #fb7185, #e11d48); box-shadow: 0 4px 12px rgba(244,63,94,.4); }
+.svc-section:nth-of-type(6n+5) .svc-section-icon { background: linear-gradient(135deg, #a78bfa, #7c3aed); box-shadow: 0 4px 12px rgba(139,92,246,.4); }
+.svc-section:nth-of-type(6n)   .svc-section-icon { background: linear-gradient(135deg, #38bdf8, #0284c7); box-shadow: 0 4px 12px rgba(14,165,233,.4); }
+
+/* Section header: gold-to-color underline */
+.svc-section-header {
+  border-bottom: none;
+  position: relative;
+}
+.svc-section-header::after {
+  content: "";
+  position: absolute;
+  left: 0; bottom: -2px;
+  width: 120px; height: 3px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #e2c97e, #f59e0b);
+}
+
+/* Active tab: gradient pill instead of flat underline */
+.svc-tab--active {
+  color: #fff;
+  border-bottom-color: transparent;
+  background: linear-gradient(135deg, #1a1a2e, #0f3460);
+  border-radius: 20px;
+  box-shadow: 0 3px 10px rgba(15, 52, 96, 0.35);
+}
+
+/* Category count badge: colorful */
+.svc-section-count {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  color: #92400e;
+  border: 1px solid #fcd34d;
+}
+
+/* Service card: hover lift with gold glow + gradient top edge */
+.svc-card { position: relative; overflow: hidden; }
+.svc-card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, #e2c97e, #f59e0b, #f43f5e);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.svc-card:hover::before { opacity: 1; }
+.svc-card:hover {
+  box-shadow: 0 12px 32px rgba(201, 168, 76, 0.22);
+}
+
+/* Services hero: richer layered overlay */
+.svc-hero {
+  background:
+    radial-gradient(ellipse 55% 60% at 20% 20%, rgba(226, 201, 126, 0.25), transparent 70%),
+    radial-gradient(ellipse 45% 55% at 85% 80%, rgba(20, 184, 166, 0.22), transparent 70%),
+    linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%),
+    url('https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=1400&q=80')
+    center/cover no-repeat;
+  background-blend-mode: normal, normal, normal, overlay;
+}
+.svc-hero-title {
+  background: linear-gradient(115deg, #fff8e1 15%, #f3d78b 45%, #e2c97e 75%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ── Restaurant menu items: colorful ── */
+.menu-item-price {
+  background: linear-gradient(135deg, #f3d78b 0%, #e2c97e 45%, #d97706 100%);
+  color: #1a1a2e;
+  box-shadow: 0 2px 8px rgba(217, 119, 6, 0.35);
+}
+.menu-item-cat {
+  background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+.menu-item-card:hover {
+  box-shadow: 0 10px 28px rgba(201, 168, 76, 0.25);
+  transform: translateY(-4px);
+}
