@@ -3,9 +3,11 @@ let io = null;
 module.exports = {
   init: (server) => {
     const socketio = require('socket.io');
+    // init() runs after dotenv.config() in server.js, so env-based origins are loaded
+    const allowedOrigins = require('./config/allowedOrigins');
     io = new socketio.Server(server, {
       cors: {
-        origin: '*',
+        origin: allowedOrigins,
       },
     });
     io.on('connection', (socket) => {

@@ -1,21 +1,30 @@
+// Load environment variables FIRST — config modules read process.env at require time
+const dotenv = require('dotenv');
+dotenv.config();
+
 const express = require('express');
 const cors = require('cors');
-const dotenv = require('dotenv');
 const http = require('http');
 
-// Disable SSL certificate verification for development
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 const path = require('path');
 const { sequelize } = require('./models');
 const socketService = require('./socket');
-
-// Load environment variables
-dotenv.config();
+const allowedOrigins = require('./config/allowedOrigins');
+const { authenticateToken } = require('./middleware/auth');
 
 const app = express();
-app.use(cors());
+
+// Trust Render's reverse proxy so req.ip reflects the real client (needed for rate limiting)
+app.set('trust proxy', 1);
+
+// Restrict CORS to known frontend origins (see backend/config/allowedOrigins.js)
+app.use(cors({ origin: allowedOrigins }));
 app.use(express.json());
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Public: room gallery photos — guests browse rooms without logging in
+app.use('/uploads/rooms', express.static(path.join(__dirname, 'uploads', 'rooms')));
+// Protected: everything else under /uploads (payment proofs, KYC docs) requires a logged-in user
+app.use('/uploads', authenticateToken, express.static(path.join(__dirname, 'uploads')));
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));

@@ -2,11 +2,22 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const rateLimit = require('express-rate-limit');
 const User = require('../models/User');
 const { sendEmail } = require('../middleware/mailer');
 const { authenticateToken, authorizeRole } = require('../middleware/auth');
 
 const router = express.Router();
+
+// Brute-force protection on auth endpoints: 10 attempts per 15 min per IP.
+// (Requires app.set('trust proxy', 1) in server.js so req.ip is correct behind Render.)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many attempts. Please try again in 15 minutes.' },
+});
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
@@ -45,7 +56,7 @@ async function sendVerificationEmail(user, token) {
 }
 
 // ── POST /api/auth/register ──────────────────────────────────────────────────
-router.post('/register', async (req, res) => {
+router.post('/register', authLimiter, async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
 
@@ -151,7 +162,7 @@ router.post('/resend-verification', async (req, res) => {
 });
 
 // ── POST /api/auth/login ─────────────────────────────────────────────────────
-router.post('/login', async (req, res) => {
+router.post('/login', authLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ where: { email: email?.toLowerCase().trim() } });
