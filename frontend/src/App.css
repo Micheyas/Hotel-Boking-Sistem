@@ -1863,7 +1863,7 @@ table tbody tr:hover {
 /* ── Rooms Page ── */
 .rooms-container {
     padding: 40px;
-    background: linear-gradient(135deg, #faf8f5 0%, #f5f0e8 50%, #ede8e0 100%);
+    background: linear-gradient(120deg, #c3f5e4 0%, #c4e4fb 22%, #d9cffb 45%, #f7cbe0 68%, #ffe3c2 88%, #fff3bd 100%);
     min-height: 600px;
 }
 
@@ -1874,13 +1874,17 @@ table tbody tr:hover {
 
 .rooms-header h2 {
     font-size: 2.5em;
-    color: #1a1a2e;
     margin-bottom: 10px;
+    background: linear-gradient(120deg, #0f766e 0%, #7c3aed 40%, #db2777 70%, #b8860b 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: 800;
 }
 
 .rooms-header p {
     font-size: 1.1em;
-    color: #666;
+    color: #4b5563;
 }
 
 /* ── Rooms Grid ── */
