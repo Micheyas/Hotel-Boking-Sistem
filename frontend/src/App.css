@@ -3409,3 +3409,54 @@ table tbody td { color: #3a2f0b; }
 
 /* ── Payment verification section → deep blue ── */
 .pv-section-title { color: #f7e08e; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   FINAL SWEEP — last white bits + bold readable words everywhere
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Remaining small whites → gold/rose tints ── */
+.amenity-checkbox {
+    background: linear-gradient(135deg, #fff8e1, #ffecb3);
+    border: 1px solid rgba(184, 134, 11, 0.45);
+    color: #6b4e00;
+    font-weight: 600;
+}
+.file-input {
+    background: linear-gradient(135deg, #fff8e1, #ffecb3);
+    border: 1px dashed rgba(184, 134, 11, 0.6);
+}
+.pv-reject-btn {
+    background: linear-gradient(135deg, #ffe4e6, #fecdd3);
+    border: 1px solid rgba(190, 18, 60, 0.45);
+    color: #9f1239;
+    font-weight: 700;
+}
+
+/* ── Bold, clearly visible words across the legendary theme ── */
+.highlight-card h4,
+.hotel-name,
+.fr-title-row h3,
+.wwo-card h4,
+.amenity-body h3,
+.svc-card-name,
+.svc-submenu-name,
+.menu-item-name,
+.pv-guest,
+.pf-card-heading,
+.analytics-card .metric,
+.stat-card p,
+.result-info h4,
+.review-form h2,
+.admin-login-box h2,
+.page-faq-header h2,
+.faq-header h2,
+.amenities-header h2,
+.gallery-section .section-header h3,
+.page-section h2,
+.faq-section h2,
+.highlights-section h3,
+.rooms-header h2,
+.room-type-name {
+    font-weight: 800;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
