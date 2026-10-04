@@ -38,7 +38,6 @@ app.use('/api/reviews', require('./routes/reviews'));
 app.use('/api/services', require('./routes/services'));
 app.use('/api/menu', require('./routes/menu'));
 app.use('/api/staff/documents', require('./routes/documents'));
-app.use('/api/internal', require('./routes/tempSeed')); // TEMPORARY one-time seed route - removed after use
 
 app.get('/', (req, res) => {
   res.json({ message: 'Hotel Booking API is running' });
