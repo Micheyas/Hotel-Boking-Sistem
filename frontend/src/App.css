@@ -3056,3 +3056,229 @@ table tbody tr:hover {
     }
 }
 
+
+/* ═══════════════════════════════════════════════════════════════════
+   LEGENDARY THEME — every white surface becomes a prime/legendary color
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── HOME: highlight cards → legendary emerald ── */
+.highlight-card {
+    background: linear-gradient(135deg, #064e3b 0%, #047857 55%, #10b981 100%);
+    border: 1px solid rgba(110, 231, 183, 0.4);
+    box-shadow: 0 6px 24px rgba(6, 78, 59, 0.35);
+}
+.highlight-card h4 { color: #ffffff; }
+.highlight-card p { color: #d1fae5; }
+.highlight-card:hover { box-shadow: 0 10px 32px rgba(16, 185, 129, 0.45); }
+
+/* ── HOME: hotel cards → royal blue ── */
+.hotel-card {
+    background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 60%, #4c1d95 100%);
+    border: 1px solid rgba(226, 201, 126, 0.5);
+    box-shadow: 0 6px 24px rgba(30, 58, 138, 0.4);
+}
+.hotel-name { color: #ffffff; }
+.hotel-location { color: #c7d2fe; }
+.hotel-description { color: #e0e7ff; }
+.hotel-card:hover { box-shadow: 0 14px 40px rgba(55, 48, 163, 0.55); }
+
+/* ── HOME: featured rooms → legendary violet ── */
+.featured-room-card {
+    background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 60%, #8b5cf6 100%);
+    border: 1px solid rgba(226, 201, 126, 0.45);
+    box-shadow: 0 6px 24px rgba(76, 29, 149, 0.4);
+}
+.fr-title-row h3 { color: #ffffff; }
+.fr-type { background: rgba(226, 201, 126, 0.22); color: #f7e08e; }
+.fr-floor { color: #ddd6fe; }
+.fr-amenities { color: #ede9fe; }
+.fr-price { color: #f7e08e; }
+.fr-price span { color: #ddd6fe; }
+.featured-room-card:hover { box-shadow: 0 14px 40px rgba(124, 58, 237, 0.5); }
+
+/* ── HOME: why-choose cards → legendary crimson ── */
+.wwo-card {
+    background: linear-gradient(135deg, #9f1239 0%, #be123c 55%, #f43f5e 100%);
+    border: 1px solid rgba(255, 228, 230, 0.35);
+    box-shadow: 0 6px 24px rgba(159, 18, 57, 0.4);
+}
+.wwo-card h4 { color: #ffffff; }
+.wwo-card p { color: #ffe4e6; }
+.wwo-card:hover { box-shadow: 0 12px 36px rgba(225, 29, 72, 0.5); }
+
+/* ── AMENITIES page cards → legendary teal ── */
+.amenity-card {
+    background: linear-gradient(135deg, #115e59 0%, #0f766e 55%, #14b8a6 100%);
+    border: 1px solid rgba(153, 246, 228, 0.35);
+    box-shadow: 0 6px 24px rgba(17, 94, 89, 0.4);
+}
+.amenity-body h3 { color: #ffffff; }
+.amenity-body p { color: #ccfbf1; }
+.amenity-card:hover { box-shadow: 0 12px 36px rgba(20, 184, 166, 0.45); }
+.amenities-footer {
+    background: linear-gradient(135deg, rgba(226, 201, 126, 0.25), rgba(226, 201, 126, 0.1));
+    border: 1px solid rgba(201, 168, 76, 0.4);
+}
+.amenities-footer p { color: #6b4e00; }
+
+/* ── BOOKING form → midnight + gold ── */
+.booking-form {
+    background: linear-gradient(135deg, #141428 0%, #1b1b40 55%, #2a1a4d 100%);
+    border: 1px solid rgba(226, 201, 126, 0.5);
+    box-shadow: 0 10px 36px rgba(20, 20, 40, 0.5);
+}
+.booking-form h2,
+.login-container h2,
+.register-container h2 {
+    background: linear-gradient(120deg, #f7e08e, #e2c97e);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+.booking-form label { color: #e0e7ff; }
+.back-btn { color: #e2c97e; }
+.selected-room-summary {
+    background: linear-gradient(135deg, rgba(226, 201, 126, 0.18), rgba(226, 201, 126, 0.08));
+    border-left: 4px solid #e2c97e;
+}
+.selected-room-summary h3 { color: #f7e08e; }
+.selected-room-summary p { color: #e0e7ff; }
+
+/* ── AVAILABILITY result cards → legendary gold ── */
+.result-card {
+    background: linear-gradient(135deg, #fdf6e0 0%, #f7e8c3 55%, #f0d68a 100%);
+    border: 1.5px solid rgba(184, 134, 11, 0.55);
+    box-shadow: 0 4px 18px rgba(184, 134, 11, 0.25);
+}
+.result-info h4 { color: #4a3405; }
+.result-info p { color: #5c4a1a; }
+.price-per-night { color: #7a5a00; }
+.price-per-night span { color: #8a6d1f; }
+.price-total { color: #5c4a1a; }
+.result-count { color: #166534 !important; }
+
+/* ── Filter tabs → gold ── */
+.filter-tab {
+    background: linear-gradient(135deg, #fff8e1, #ffecb3);
+    border: 1px solid rgba(184, 134, 11, 0.4);
+    color: #6b4e00;
+    font-weight: 600;
+}
+
+/* ── REVIEW form → legendary violet ── */
+.review-form {
+    background: linear-gradient(135deg, #2e1065 0%, #4c1d95 55%, #6d28d9 100%);
+    border: 1px solid rgba(196, 181, 253, 0.4);
+    box-shadow: 0 8px 32px rgba(46, 16, 101, 0.5);
+}
+.review-form h2, .review-form h3 { color: #f7e08e; }
+.review-form label { color: #ede9fe; }
+.review-item {
+    background: linear-gradient(135deg, #fdf6e0, #f7e8c3);
+    border: 1px solid rgba(184, 134, 11, 0.4);
+}
+.review-comment { color: #4a3405; }
+.review-date { color: #8a6d1f; }
+.reviews-stats {
+    background: linear-gradient(135deg, #1e3a8a, #3730a3);
+    border: 1px solid rgba(147, 197, 253, 0.4);
+}
+.average-rating { color: #f7e08e; }
+.reviews-stats p { color: #c7d2fe; }
+
+/* ── ADMIN surfaces → deep indigo + gold ── */
+.analytics-card,
+.stat-card,
+.stat-card-new,
+.booking-status-breakdown,
+.admin-table-card,
+.rooms-list,
+.manual-booking-form {
+    background: linear-gradient(135deg, #1a1a2e 0%, #23234d 55%, #2d1a4d 100%);
+    border: 1px solid rgba(226, 201, 126, 0.35);
+    box-shadow: 0 6px 24px rgba(26, 26, 46, 0.5);
+    color: #e0e7ff;
+}
+.analytics-card h4, .stat-card h3 { color: #c7d2fe; }
+.analytics-card .metric, .stat-card p { color: #f7e08e; }
+.booking-status-breakdown h3 { color: #f7e08e; }
+.status-name, .status-count { color: #e0e7ff; }
+.admin-login-box {
+    background: linear-gradient(135deg, #141428 0%, #1b1b40 55%, #2a1a4d 100%);
+    border: 1px solid rgba(226, 201, 126, 0.55);
+}
+.admin-login-box h2 {
+    background: linear-gradient(120deg, #f7e08e, #e2c97e);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+.admin-login-box p, .admin-login-box label { color: #c7d2fe; }
+.room-mgmt-header {
+    background: linear-gradient(135deg, #1a1a2e, #2d2d5a);
+    border-bottom: 1px solid rgba(226, 201, 126, 0.35);
+}
+.room-mgmt-header h2 { color: #f7e08e; }
+table { background: #fdf8ec; }
+table tbody td { color: #3a2f0b; }
+.view-tab {
+    background: linear-gradient(135deg, #fff8e1, #ffecb3);
+    border: 1px solid rgba(184, 134, 11, 0.4);
+    color: #6b4e00;
+    font-weight: 600;
+}
+
+/* ── PAYMENT cards → deep royal blue ── */
+.pf-card,
+.pf-notes-card,
+.pv-card {
+    background: linear-gradient(135deg, #0f3460 0%, #1e3a8a 60%, #3730a3 100%);
+    border: 1px solid rgba(147, 197, 253, 0.4);
+    box-shadow: 0 6px 24px rgba(15, 52, 96, 0.45);
+}
+.pf-card-heading { color: #f7e08e; }
+.pf-card p, .pf-card span, .pf-notes-card p { color: #dbeafe; }
+.pf-title { color: #ffffff; }
+.pf-bank-list { background: rgba(255, 255, 255, 0.08); }
+.pf-bank-row { border-color: rgba(147, 197, 253, 0.25); }
+.pf-bank-row span { color: #dbeafe; }
+.pv-guest { color: #ffffff; }
+.pv-email, .pv-booking-id, .pv-dates { color: #bfdbfe; }
+.pv-amount { color: #f7e08e; }
+.pf-step-circle--done {
+    background: linear-gradient(135deg, #d4af37, #f7e08e);
+    color: #3d2c00;
+    font-weight: 800;
+}
+
+/* ── Room modal → midnight + gold ── */
+.room-modal {
+    background: linear-gradient(135deg, #141428 0%, #1b1b40 60%, #241a4d 100%);
+    color: #e0e7ff;
+}
+.room-modal h2, .room-modal h3 { color: #f7e08e; }
+
+/* ── Access denied → legendary dark red ── */
+.access-denied {
+    background: linear-gradient(135deg, #450a0a 0%, #7f1d1d 60%, #b91c1c 100%);
+    border: 1px solid rgba(252, 165, 165, 0.4);
+    color: #fecaca;
+}
+.access-denied h2 { color: #ffffff; }
+
+/* ── Legacy FAQ items → gold ── */
+.faq-item,
+.faq-item-page {
+    background: linear-gradient(135deg, #fdf6e0, #f0d68a);
+    border: 1px solid rgba(184, 134, 11, 0.45);
+}
+.faq-item h4, .faq-item-page h4 { color: #4a3405; }
+.faq-item p, .faq-item-page p { color: #5c4a1a; }
+
+/* ── Cancel button → soft rose ── */
+.cancel-btn {
+    background: linear-gradient(135deg, #ffe4e6, #fecdd3);
+    border: 1px solid rgba(190, 18, 60, 0.4);
+    color: #9f1239;
+    font-weight: 600;
+}
