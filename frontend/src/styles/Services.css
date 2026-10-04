@@ -1133,3 +1133,18 @@
   .svc-card-img-wrap { flex: none; min-height: 220px; height: 220px; }
   .svc-card-body { padding: 24px 22px; }
 }
+
+/* LEGENDARY THEME FIX — restaurant menu titles clearly visible, bold */
+.menu-section-title {
+  background: linear-gradient(120deg, #f7e08e, #e2c97e);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 800;
+}
+.menu-section-sub { color: #c7d2fe; font-weight: 600; }
+.menu-cat-label {
+  color: #f7e08e;
+  font-weight: 800;
+  border-bottom: 2px solid rgba(226, 201, 126, 0.4);
+}
