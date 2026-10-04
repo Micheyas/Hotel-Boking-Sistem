@@ -4232,3 +4232,124 @@
 .skeleton {
   background: linear-gradient(90deg, #f1ead9 25%, #faf5e9 50%, #f1ead9 75%);
 }
+
+/* ══════════════════════════════════════════════════════════════
+   LEGENDARY THEME — STAFF PORTAL (admin dashboard + login)
+   Midnight background with gold accents, matching the site theme.
+   ══════════════════════════════════════════════════════════════ */
+
+/* Dashboard page background: deep midnight with gold/violet glows */
+.admin-dashboard {
+    background:
+        radial-gradient(1000px 500px at 15% -5%, rgba(201, 168, 76, 0.14), transparent 60%),
+        radial-gradient(900px 500px at 90% 10%, rgba(124, 93, 250, 0.12), transparent 60%),
+        linear-gradient(160deg, #12101f 0%, #1a1a2e 45%, #0f1f3d 100%) !important;
+}
+
+/* Stat cards: dark gold-trimmed */
+.stat-card-new {
+    background: linear-gradient(150deg, #23233d 0%, #191930 100%) !important;
+    border: 1px solid rgba(201, 168, 76, 0.35) !important;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+}
+.stat-label {
+    color: #b9b3d9 !important;
+}
+.stat-value {
+    color: #ffffff !important;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+.stat-value.pending { color: #ffb74d !important; }
+.stat-value.confirmed { color: #69f0ae !important; }
+.stat-value.revenue { color: #e2c97e !important; }
+
+/* View tabs: dark with gold active state */
+.view-tab {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border: 1.5px solid rgba(201, 168, 76, 0.35) !important;
+    color: #e8e4f5 !important;
+}
+.view-tab:hover {
+    border-color: #c9a84c !important;
+    color: #e2c97e !important;
+}
+.view-tab.active {
+    background: linear-gradient(135deg, #8a6d2f, #c9a84c 55%, #8a6d2f) !important;
+    border-color: #e2c97e !important;
+    color: #1a1405 !important;
+    font-weight: 800;
+}
+
+/* Search + filter: dark */
+.admin-search-box {
+    background: rgba(255, 255, 255, 0.07) !important;
+    border: 1.5px solid rgba(201, 168, 76, 0.35) !important;
+    color: #fff !important;
+}
+.admin-search-box input {
+    color: #fff !important;
+}
+.admin-search-box input::placeholder {
+    color: #9a94b8 !important;
+}
+.admin-status-filter {
+    background: rgba(255, 255, 255, 0.07) !important;
+    border: 1.5px solid rgba(201, 168, 76, 0.35) !important;
+    color: #e8e4f5 !important;
+}
+.admin-status-filter option {
+    background: #1a1a2e;
+    color: #fff;
+}
+
+/* Table card: dark */
+.admin-table-card {
+    background: linear-gradient(160deg, #20203a 0%, #171728 100%) !important;
+    border: 1px solid rgba(201, 168, 76, 0.3) !important;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45) !important;
+}
+.admin-table-card h3 {
+    color: #e2c97e !important;
+    border-bottom: 1px solid rgba(201, 168, 76, 0.25) !important;
+}
+.admin-table thead tr {
+    background: rgba(201, 168, 76, 0.1) !important;
+}
+.admin-table th {
+    color: #e2c97e !important;
+    border-bottom: 1px solid rgba(201, 168, 76, 0.25) !important;
+}
+.admin-table td {
+    color: #e8e4f5 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+}
+.admin-table tbody tr:hover {
+    background: rgba(201, 168, 76, 0.07) !important;
+}
+.guest-name {
+    color: #ffffff !important;
+}
+.no-results {
+    color: #9a94b8 !important;
+}
+.admin-loading {
+    color: #cfc9ea !important;
+}
+.admin-error {
+    background: rgba(255, 60, 60, 0.12) !important;
+    border: 1px solid rgba(255, 90, 90, 0.4) !important;
+    color: #ff9d9d !important;
+}
+
+/* Staff login box: midnight + gold (overrides the white box) */
+.admin-login-box {
+    background: linear-gradient(160deg, #23233d 0%, #14142a 100%) !important;
+    border: 1px solid rgba(201, 168, 76, 0.45) !important;
+    box-shadow: 0 12px 44px rgba(0, 0, 0, 0.55), 0 0 30px rgba(201, 168, 76, 0.12) !important;
+}
+.admin-login-box h2 {
+    color: #e2c97e !important;
+}
+.admin-login-box .login-subtitle {
+    color: #b9b3d9 !important;
+}
