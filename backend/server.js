@@ -37,6 +37,7 @@ app.use('/api/analytics', require('./routes/analytics'));
 app.use('/api/reviews', require('./routes/reviews'));
 app.use('/api/services', require('./routes/services'));
 app.use('/api/menu', require('./routes/menu'));
+app.use('/api/staff/documents', require('./routes/documents'));
 
 app.get('/', (req, res) => {
   res.json({ message: 'Hotel Booking API is running' });

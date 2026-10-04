@@ -15,6 +15,51 @@ function imgUrl(path) {
   return API_BASE + path;
 }
 
+// SecureDoc — thumbnail + link for a staff-only Cloudinary document
+// (payment proof or KYC ID image). These are uploaded with Cloudinary
+// `type: 'authenticated'`, so the raw URL 401s; this component fetches a
+// short-lived signed URL from GET /api/staff/documents/signed-url instead.
+// kind: 'payment-proof' | 'kyc-front' | 'kyc-back'; refId: booking id or user id.
+function SecureDoc({ kind, refId, alt, imgClassName, imgStyle, linkClassName, caption }) {
+  const [signedUrl, setSignedUrl] = React.useState(null);
+  const [loading, setLoading] = React.useState(true);
+  const [failed, setFailed] = React.useState(false);
+
+  const load = async () => {
+    setLoading(true);
+    setFailed(false);
+    try {
+      const params = kind === 'payment-proof' ? { kind, bookingId: refId } : { kind, userId: refId };
+      const res = await api.get('/staff/documents/signed-url', { params });
+      setSignedUrl(res.data.signedUrl);
+    } catch (err) {
+      setFailed(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  React.useEffect(() => { load(); }, [kind, refId]);
+
+  if (loading) return <span className="secure-doc-loading" title="Loading document…">⏳</span>;
+  if (failed || !signedUrl) {
+    // Handles expiry gracefully: a failed/expired URL becomes a one-click reload
+    return <button type="button" className="secure-doc-retry" onClick={load} title="Document link expired — click to reload">↻ Reload doc</button>;
+  }
+  return (
+    <a href={signedUrl} target="_blank" rel="noopener noreferrer" className={linkClassName}>
+      <img
+        src={signedUrl}
+        alt={alt}
+        className={imgClassName}
+        style={imgStyle}
+        onError={() => { setFailed(true); setSignedUrl(null); }}
+      />
+      {caption}
+    </a>
+  );
+}
+
 const commonAmenities = [
   'Free WiFi', 'Air Conditioning', 'Flat-screen TV', 'Smart TV',
   'Mini-bar', 'Premium Mini-bar', 'Room Service', '24/7 Room Service',
@@ -1083,9 +1128,7 @@ const AdminPanel = () => {
                   <td className="payment-proof-cell">
                     {b.paymentProof ? (
                       <div className="proof-actions">
-                        <a href={imgUrl(b.paymentProof)} target="_blank" rel="noopener noreferrer">
-                          <img src={imgUrl(b.paymentProof)} alt="proof" className="proof-thumb" />
-                        </a>
+                        <SecureDoc kind="payment-proof" refId={b.id} alt="proof" imgClassName="proof-thumb" />
                         <span className={`payment-badge ${b.paymentStatus}`}>
                           {b.paymentStatus === 'proof_submitted' && '⏳ Pending'}
                           {b.paymentStatus === 'verified' && '✅ Verified'}
@@ -1378,10 +1421,8 @@ const AdminPanel = () => {
                                 {new Date(b.checkInDate).toLocaleDateString()} → {new Date(b.checkOutDate).toLocaleDateString()}
                               </span>
                             </div>
-                            <a href={imgUrl(b.paymentProof)} target="_blank" rel="noopener noreferrer" className="pv-proof-link">
-                              <img src={imgUrl(b.paymentProof)} alt="Payment proof" className="pv-proof-img" />
-                              <span className="pv-view-text">View full image</span>
-                            </a>
+                            <SecureDoc kind="payment-proof" refId={b.id} alt="Payment proof" imgClassName="pv-proof-img" linkClassName="pv-proof-link"
+                              caption={<span className="pv-view-text">View full image</span>} />
                           </div>
                           <div className="pv-actions">
                             <button className="pv-approve-btn" onClick={() => handleVerifyPayment(b.id, 'approve')}>
@@ -1945,9 +1986,7 @@ const AdminPanel = () => {
                               {b.paymentProof && (
                                 <div className="bh-detail-block">
                                   <span className="bh-detail-label">Payment Proof</span>
-                                  <a href={imgUrl(b.paymentProof)} target="_blank" rel="noopener noreferrer">
-                                    <img src={imgUrl(b.paymentProof)} alt="proof" className="proof-thumb" />
-                                  </a>
+                                  <SecureDoc kind="payment-proof" refId={b.id} alt="proof" imgClassName="proof-thumb" />
                                 </div>
                               )}
                             </div>
@@ -2300,16 +2339,14 @@ const AdminPanel = () => {
                     <td>
                       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                         {u.idFront && (
-                          <a href={imgUrl(u.idFront)} target="_blank" rel="noopener noreferrer">
-                            <img src={imgUrl(u.idFront)} alt="ID Front" style={{ width: '60px', height: '40px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #ddd' }} />
-                            <div style={{ fontSize: '10px', color: '#888', textAlign: 'center' }}>Front</div>
-                          </a>
+                          <SecureDoc kind="kyc-front" refId={u.id} alt="ID Front"
+                            imgStyle={{ width: '60px', height: '40px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #ddd' }}
+                            caption={<div style={{ fontSize: '10px', color: '#888', textAlign: 'center' }}>Front</div>} />
                         )}
                         {u.idBack && (
-                          <a href={imgUrl(u.idBack)} target="_blank" rel="noopener noreferrer">
-                            <img src={imgUrl(u.idBack)} alt="ID Back" style={{ width: '60px', height: '40px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #ddd' }} />
-                            <div style={{ fontSize: '10px', color: '#888', textAlign: 'center' }}>Back</div>
-                          </a>
+                          <SecureDoc kind="kyc-back" refId={u.id} alt="ID Back"
+                            imgStyle={{ width: '60px', height: '40px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #ddd' }}
+                            caption={<div style={{ fontSize: '10px', color: '#888', textAlign: 'center' }}>Back</div>} />
                         )}
                         {!u.idFront && '—'}
                       </div>

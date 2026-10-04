@@ -767,3 +767,12 @@
 .payment-badge.proof_submitted { background: #fff3cd; color: #856404; padding: 4px 9px; border-radius: 10px; font-size: 11px; font-weight: 600; }
 .payment-badge.verified        { background: #c8e6c9; color: #2e7d32; padding: 4px 9px; border-radius: 10px; font-size: 11px; font-weight: 600; }
 .payment-badge.unpaid          { background: #ffcdd2; color: #c62828; padding: 4px 9px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+
+/* ── SecureDoc (staff-only Cloudinary documents via signed URLs) ── */
+.secure-doc-loading { display: inline-block; padding: 6px 10px; font-size: 14px; }
+.secure-doc-retry {
+  background: #fff3cd; color: #856404; border: 1px solid #e0c36a;
+  border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 600;
+  cursor: pointer;
+}
+.secure-doc-retry:hover { background: #ffe9a8; }

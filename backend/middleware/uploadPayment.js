@@ -15,6 +15,9 @@ const storage = new CloudinaryStorage({
   params: {
     folder: 'hotel-payments',
     allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+    // Authenticated delivery: the raw Cloudinary URL returns 401 without a
+    // signed URL. Staff view proofs via GET /api/staff/documents/signed-url.
+    type: 'authenticated',
     public_id: (req, file) => 'payment-' + Date.now() + '-' + Math.round(Math.random() * 1e9),
   },
 });

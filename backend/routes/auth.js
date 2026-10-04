@@ -309,6 +309,9 @@ const kycStorage = new KycCloudinaryStorage({
   params: {
     folder: 'hotel-kyc',
     allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'pdf'],
+    // Authenticated delivery: the raw Cloudinary URL returns 401 without a
+    // signed URL. Staff view KYC docs via GET /api/staff/documents/signed-url.
+    type: 'authenticated',
     public_id: (req, file) => 'kyc-' + Date.now() + '-' + Math.round(Math.random() * 1e9),
   },
 });
