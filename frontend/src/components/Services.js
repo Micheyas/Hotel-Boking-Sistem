@@ -627,8 +627,8 @@ const Services = () => {
                 <span className="svc-section-count">{items.length} {t('services.serviceCount', { count: items.length })}</span>
               </div>
               <div className="svc-grid">
-                {items.map(s => (
-                  <ServiceCard key={s.id} service={s} formatHours={formatHours} formatPrice={formatPrice} translateServiceName={translateServiceName} translateDescription={translateDescription} translateLocation={translateLocation} />
+                {items.map((s, i) => (
+                  <ServiceCard key={s.id} index={i} service={s} formatHours={formatHours} formatPrice={formatPrice} translateServiceName={translateServiceName} translateDescription={translateDescription} translateLocation={translateLocation} />
                 ))}
               </div>
               {/* Sub-menu items for this service category */}
@@ -640,8 +640,8 @@ const Services = () => {
         ) : (
           // Single category flat grid
           <div className="svc-grid svc-grid--single">
-            {displayed.map(s => (
-              <ServiceCard key={s.id} service={s} formatHours={formatHours} formatPrice={formatPrice} translateServiceName={translateServiceName} translateDescription={translateDescription} translateLocation={translateLocation} />
+            {displayed.map((s, i) => (
+              <ServiceCard key={s.id} index={i} service={s} formatHours={formatHours} formatPrice={formatPrice} translateServiceName={translateServiceName} translateDescription={translateDescription} translateLocation={translateLocation} />
             ))}
           </div>
         )}
@@ -705,13 +705,13 @@ const Services = () => {
   );
 };
 
-const ServiceCard = ({ service: s, formatHours, formatPrice, translateServiceName, translateDescription, translateLocation }) => {
+const ServiceCard = ({ service: s, index = 0, formatHours, formatPrice, translateServiceName, translateDescription, translateLocation }) => {
   const hours = formatHours(s.availableFrom, s.availableTo);
   const price = formatPrice(s);
   const isFree = !s.price && !s.priceLabel;
 
   return (
-    <div className={`svc-card ${s.status === 'inactive' ? 'svc-card--inactive' : ''} ${s.image ? 'svc-card--has-img' : ''}`}>
+    <div className={`svc-card ${s.status === 'inactive' ? 'svc-card--inactive' : ''} ${s.image ? 'svc-card--has-img' : ''} ${index % 2 === 0 ? 'svc-card--flip' : ''}`}>
       {s.image && (
         <div className="svc-card-img-wrap">
           <img src={s.image} alt={s.name} className="svc-card-img" loading="lazy" />

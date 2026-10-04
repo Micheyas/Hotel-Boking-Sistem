@@ -1038,3 +1038,110 @@
   border: 1px solid rgba(184, 134, 11, 0.45);
   font-weight: 700;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   ROOM-STYLE SERVICE CARDS — alternating golden horizontal cards
+   ═══════════════════════════════════════════════════════════ */
+.svc-grid,
+.svc-grid--single {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.svc-card {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  min-height: 250px;
+  padding: 0;
+  gap: 0;
+  background: linear-gradient(135deg, #fffdf4 0%, #fbeec9 38%, #f6dc96 72%, #eec96c 100%);
+  border: 1px solid rgba(184, 134, 11, 0.6);
+  border-radius: 22px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 6px 28px rgba(184, 134, 11, 0.25), 0 2px 10px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.svc-card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 5px;
+  background: linear-gradient(90deg, #7a5a00, #d4af37, #ffe9a8, #d4af37, #7a5a00);
+  z-index: 2;
+}
+
+.svc-card--flip { flex-direction: row-reverse; }
+
+.svc-card:hover {
+  transform: translateY(-7px);
+  box-shadow: 0 20px 55px rgba(184, 134, 11, 0.4), 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.svc-card-img-wrap {
+  flex: 0 0 40%;
+  min-height: 250px;
+  height: auto;
+  width: auto;
+  overflow: hidden;
+}
+
+.svc-card-body {
+  flex: 1;
+  padding: 30px 34px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+}
+
+.svc-card-icon { font-size: 44px; }
+
+.svc-card-name {
+  background: linear-gradient(120deg, #6b4e00, #b8860b 55%, #7a5a00);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.svc-card-desc { color: #5c4a1a; font-size: 0.95rem; line-height: 1.65; }
+
+.svc-meta-item {
+  background: linear-gradient(135deg, rgba(122, 90, 0, 0.16), rgba(122, 90, 0, 0.06));
+  border: 1px solid rgba(122, 90, 0, 0.4);
+  color: #6b4e00;
+  font-weight: 600;
+}
+
+/* ── Entrance animations (same as rooms) ── */
+@keyframes svcInLeft {
+  from { opacity: 0; transform: translateX(-70px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes svcInRight {
+  from { opacity: 0; transform: translateX(70px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.svc-grid .svc-card { animation: svcInLeft 0.8s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
+.svc-grid .svc-card--flip { animation-name: svcInRight; }
+.svc-grid .svc-card:nth-child(1) { animation-delay: 0.05s; }
+.svc-grid .svc-card:nth-child(2) { animation-delay: 0.16s; }
+.svc-grid .svc-card:nth-child(3) { animation-delay: 0.27s; }
+.svc-grid .svc-card:nth-child(4) { animation-delay: 0.38s; }
+.svc-grid .svc-card:nth-child(5) { animation-delay: 0.49s; }
+.svc-grid .svc-card:nth-child(6) { animation-delay: 0.6s; }
+.svc-grid .svc-card:nth-child(7) { animation-delay: 0.71s; }
+.svc-grid .svc-card:nth-child(8) { animation-delay: 0.82s; }
+
+@media (max-width: 768px) {
+  .svc-card, .svc-card--flip { flex-direction: column; min-height: 0; }
+  .svc-card-img-wrap { flex: none; min-height: 220px; height: 220px; }
+  .svc-card-body { padding: 24px 22px; }
+}
