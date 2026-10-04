@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+
+# Environment variables
+.env
+.env.production
+
+# User uploads (payment proofs, KYC documents — never commit)
+uploads/
+*.png
+*.jpg
+*.jpeg
+*.pdf
+
+# Logs
+*.log
+npm-debug.log*
