@@ -24,6 +24,9 @@ const translations = {
       staff: "Staff",
       bookNow: "Book Now",
     },
+    theme: {
+      chooseTheme: "Choose theme",
+    },
     currency: {
       loadingRates: "Loading rates…",
       liveRates: "Live exchange rates",
@@ -645,6 +648,9 @@ const translations = {
       reviews: "ግምገማዎች",
       staff: "ሰራተኞች",
       bookNow: "አሁን ያስይዙ",
+    },
+    theme: {
+      chooseTheme: "ገጽታ ምረጥ",
     },
     currency: {
       loadingRates: "ተመኖች በመጫን ላይ…",

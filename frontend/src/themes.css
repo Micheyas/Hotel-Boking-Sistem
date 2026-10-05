@@ -1,0 +1,200 @@
+/* ═══════════════════════════════════════════════════════════════════
+   USER-SELECTABLE THEMES — picked from the navbar theme picker.
+   The `data-theme` attribute on <html> re-maps design tokens and
+   the main themed surfaces. Default (gold) needs no overrides.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── EMERALD ── */
+html[data-theme="emerald"] {
+  --color-primary: #052e22;
+  --color-primary-mid: #064e3b;
+  --color-primary-dark: #065f46;
+  --color-gold: #a7f3d0;
+  --color-gold-dark: #10b981;
+  --color-gold-deeper: #059669;
+  --grad-gold: linear-gradient(135deg, #a7f3d0 0%, #10b981 40%, #059669 100%);
+}
+html[data-theme="emerald"] .navbar { background: linear-gradient(135deg, #052e22 0%, #064e3b 60%, #065f46 100%); }
+html[data-theme="emerald"] .navbar-logo { color: #a7f3d0; }
+html[data-theme="emerald"] .navbar-book-btn { background: #10b981 !important; color: #052e22 !important; }
+html[data-theme="emerald"] .navbar-book-btn:hover { background: #a7f3d0 !important; }
+html[data-theme="emerald"] .navbar-login-btn { border-color: #10b981; }
+html[data-theme="emerald"] .hero-overlay { background: radial-gradient(ellipse 60% 45% at 50% 0%, #10b98138, transparent 70%), linear-gradient(to bottom, #065f468c 0%, #052e228c 55%, #052e22c7 100%); }
+html[data-theme="emerald"] .hero-title { background: linear-gradient(115deg, #ffffff 10%, #a7f3d0 35%, #10b981 55%, #ffffff 80%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+html[data-theme="emerald"] .grad-text-gold { background: linear-gradient(120deg, #a7f3d0 0%, #10b981 60%, #059669 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+html[data-theme="emerald"] .highlight-card { background: linear-gradient(135deg, #052e22 0%, #064e3b 55%, #059669 100%); border: 1px solid #a7f3d066; box-shadow: 0 6px 24px #052e2259; }
+html[data-theme="emerald"] .highlight-card h4 { color: #ffffff; }
+html[data-theme="emerald"] .highlight-card p { color: #a7f3d0; }
+html[data-theme="emerald"] .hotel-card { background: linear-gradient(135deg, #064e3b 0%, #065f46 60%, #059669 100%); border: 1px solid #a7f3d080; box-shadow: 0 6px 24px #064e3b66; }
+html[data-theme="emerald"] .hotel-name { color: #ffffff; }
+html[data-theme="emerald"] .hotel-location { color: #a7f3d0; }
+html[data-theme="emerald"] .hotel-description { color: #eef2ff; }
+html[data-theme="emerald"] .featured-room-card { background: linear-gradient(135deg, #064e3b 0%, #065f46 60%, #059669 100%); border: 1px solid #a7f3d073; box-shadow: 0 6px 24px #064e3b66; }
+html[data-theme="emerald"] .fr-title-row h3 { color: #ffffff; }
+html[data-theme="emerald"] .fr-desc { color: #a7f3d0; }
+html[data-theme="emerald"] .fr-type { background: #10b98138; color: #a7f3d0; }
+html[data-theme="emerald"] .fr-price { color: #a7f3d0; }
+html[data-theme="emerald"] .fr-footer { border-top-color: #a7f3d033; }
+html[data-theme="emerald"] .view-all-btn { color: #10b981; border-bottom-color: #10b981; }
+html[data-theme="emerald"] .fr-book-btn { background: linear-gradient(135deg, #059669, #10b981); color: #052e22; }
+html[data-theme="emerald"] .cta-banner { background: radial-gradient(ellipse 50% 80% at 80% 20%, #10b98159, transparent 70%), radial-gradient(ellipse 50% 80% at 15% 85%, #a7f3d02e, transparent 70%), linear-gradient(135deg, #065f46 0%, #052e22 55%, #064e3b 100%); border-top-color: #10b98140; border-bottom-color: #10b98140; }
+html[data-theme="emerald"] .cta-banner h3 { background: linear-gradient(115deg, #ffffff, #a7f3d0 40%, #10b981 70%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+html[data-theme="emerald"] .App-footer { border-image: linear-gradient(90deg, #059669, #a7f3d0, #10b981, #a7f3d0, #059669) 1; }
+html[data-theme="emerald"] .footer-logo { color: #a7f3d0; }
+html[data-theme="emerald"] .footer-section h4 { color: #10b981; }
+
+/* ── SAPPHIRE ── */
+html[data-theme="sapphire"] {
+  --color-primary: #172554;
+  --color-primary-mid: #1e3a8a;
+  --color-primary-dark: #1d4ed8;
+  --color-gold: #bfdbfe;
+  --color-gold-dark: #60a5fa;
+  --color-gold-deeper: #2563eb;
+  --grad-gold: linear-gradient(135deg, #bfdbfe 0%, #60a5fa 40%, #2563eb 100%);
+}
+html[data-theme="sapphire"] .navbar { background: linear-gradient(135deg, #172554 0%, #1e3a8a 60%, #1d4ed8 100%); }
+html[data-theme="sapphire"] .navbar-logo { color: #bfdbfe; }
+html[data-theme="sapphire"] .navbar-book-btn { background: #60a5fa !important; color: #172554 !important; }
+html[data-theme="sapphire"] .navbar-book-btn:hover { background: #bfdbfe !important; }
+html[data-theme="sapphire"] .navbar-login-btn { border-color: #60a5fa; }
+html[data-theme="sapphire"] .hero-overlay { background: radial-gradient(ellipse 60% 45% at 50% 0%, #60a5fa38, transparent 70%), linear-gradient(to bottom, #1d4ed88c 0%, #1725548c 55%, #172554c7 100%); }
+html[data-theme="sapphire"] .hero-title { background: linear-gradient(115deg, #ffffff 10%, #bfdbfe 35%, #60a5fa 55%, #ffffff 80%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+html[data-theme="sapphire"] .grad-text-gold { background: linear-gradient(120deg, #bfdbfe 0%, #60a5fa 60%, #2563eb 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+html[data-theme="sapphire"] .highlight-card { background: linear-gradient(135deg, #172554 0%, #1e3a8a 55%, #2563eb 100%); border: 1px solid #bfdbfe66; box-shadow: 0 6px 24px #17255459; }
+html[data-theme="sapphire"] .highlight-card h4 { color: #ffffff; }
+html[data-theme="sapphire"] .highlight-card p { color: #bfdbfe; }
+html[data-theme="sapphire"] .hotel-card { background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 60%, #2563eb 100%); border: 1px solid #bfdbfe80; box-shadow: 0 6px 24px #1e3a8a66; }
+html[data-theme="sapphire"] .hotel-name { color: #ffffff; }
+html[data-theme="sapphire"] .hotel-location { color: #bfdbfe; }
+html[data-theme="sapphire"] .hotel-description { color: #eef2ff; }
+html[data-theme="sapphire"] .featured-room-card { background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 60%, #2563eb 100%); border: 1px solid #bfdbfe73; box-shadow: 0 6px 24px #1e3a8a66; }
+html[data-theme="sapphire"] .fr-title-row h3 { color: #ffffff; }
+html[data-theme="sapphire"] .fr-desc { color: #bfdbfe; }
+html[data-theme="sapphire"] .fr-type { background: #60a5fa38; color: #bfdbfe; }
+html[data-theme="sapphire"] .fr-price { color: #bfdbfe; }
+html[data-theme="sapphire"] .fr-footer { border-top-color: #bfdbfe33; }
+html[data-theme="sapphire"] .view-all-btn { color: #60a5fa; border-bottom-color: #60a5fa; }
+html[data-theme="sapphire"] .fr-book-btn { background: linear-gradient(135deg, #2563eb, #60a5fa); color: #172554; }
+html[data-theme="sapphire"] .cta-banner { background: radial-gradient(ellipse 50% 80% at 80% 20%, #60a5fa59, transparent 70%), radial-gradient(ellipse 50% 80% at 15% 85%, #bfdbfe2e, transparent 70%), linear-gradient(135deg, #1d4ed8 0%, #172554 55%, #1e3a8a 100%); border-top-color: #60a5fa40; border-bottom-color: #60a5fa40; }
+html[data-theme="sapphire"] .cta-banner h3 { background: linear-gradient(115deg, #ffffff, #bfdbfe 40%, #60a5fa 70%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+html[data-theme="sapphire"] .App-footer { border-image: linear-gradient(90deg, #2563eb, #bfdbfe, #60a5fa, #bfdbfe, #2563eb) 1; }
+html[data-theme="sapphire"] .footer-logo { color: #bfdbfe; }
+html[data-theme="sapphire"] .footer-section h4 { color: #60a5fa; }
+
+/* ── VIOLET ── */
+html[data-theme="violet"] {
+  --color-primary: #2e1065;
+  --color-primary-mid: #4c1d95;
+  --color-primary-dark: #6d28d9;
+  --color-gold: #ddd6fe;
+  --color-gold-dark: #a78bfa;
+  --color-gold-deeper: #7c3aed;
+  --grad-gold: linear-gradient(135deg, #ddd6fe 0%, #a78bfa 40%, #7c3aed 100%);
+}
+html[data-theme="violet"] .navbar { background: linear-gradient(135deg, #2e1065 0%, #4c1d95 60%, #6d28d9 100%); }
+html[data-theme="violet"] .navbar-logo { color: #ddd6fe; }
+html[data-theme="violet"] .navbar-book-btn { background: #a78bfa !important; color: #2e1065 !important; }
+html[data-theme="violet"] .navbar-book-btn:hover { background: #ddd6fe !important; }
+html[data-theme="violet"] .navbar-login-btn { border-color: #a78bfa; }
+html[data-theme="violet"] .hero-overlay { background: radial-gradient(ellipse 60% 45% at 50% 0%, #a78bfa38, transparent 70%), linear-gradient(to bottom, #6d28d98c 0%, #2e10658c 55%, #2e1065c7 100%); }
+html[data-theme="violet"] .hero-title { background: linear-gradient(115deg, #ffffff 10%, #ddd6fe 35%, #a78bfa 55%, #ffffff 80%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+html[data-theme="violet"] .grad-text-gold { background: linear-gradient(120deg, #ddd6fe 0%, #a78bfa 60%, #7c3aed 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+html[data-theme="violet"] .highlight-card { background: linear-gradient(135deg, #2e1065 0%, #4c1d95 55%, #7c3aed 100%); border: 1px solid #ddd6fe66; box-shadow: 0 6px 24px #2e106559; }
+html[data-theme="violet"] .highlight-card h4 { color: #ffffff; }
+html[data-theme="violet"] .highlight-card p { color: #ddd6fe; }
+html[data-theme="violet"] .hotel-card { background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 60%, #7c3aed 100%); border: 1px solid #ddd6fe80; box-shadow: 0 6px 24px #4c1d9566; }
+html[data-theme="violet"] .hotel-name { color: #ffffff; }
+html[data-theme="violet"] .hotel-location { color: #ddd6fe; }
+html[data-theme="violet"] .hotel-description { color: #eef2ff; }
+html[data-theme="violet"] .featured-room-card { background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 60%, #7c3aed 100%); border: 1px solid #ddd6fe73; box-shadow: 0 6px 24px #4c1d9566; }
+html[data-theme="violet"] .fr-title-row h3 { color: #ffffff; }
+html[data-theme="violet"] .fr-desc { color: #ddd6fe; }
+html[data-theme="violet"] .fr-type { background: #a78bfa38; color: #ddd6fe; }
+html[data-theme="violet"] .fr-price { color: #ddd6fe; }
+html[data-theme="violet"] .fr-footer { border-top-color: #ddd6fe33; }
+html[data-theme="violet"] .view-all-btn { color: #a78bfa; border-bottom-color: #a78bfa; }
+html[data-theme="violet"] .fr-book-btn { background: linear-gradient(135deg, #7c3aed, #a78bfa); color: #2e1065; }
+html[data-theme="violet"] .cta-banner { background: radial-gradient(ellipse 50% 80% at 80% 20%, #a78bfa59, transparent 70%), radial-gradient(ellipse 50% 80% at 15% 85%, #ddd6fe2e, transparent 70%), linear-gradient(135deg, #6d28d9 0%, #2e1065 55%, #4c1d95 100%); border-top-color: #a78bfa40; border-bottom-color: #a78bfa40; }
+html[data-theme="violet"] .cta-banner h3 { background: linear-gradient(115deg, #ffffff, #ddd6fe 40%, #a78bfa 70%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+html[data-theme="violet"] .App-footer { border-image: linear-gradient(90deg, #7c3aed, #ddd6fe, #a78bfa, #ddd6fe, #7c3aed) 1; }
+html[data-theme="violet"] .footer-logo { color: #ddd6fe; }
+html[data-theme="violet"] .footer-section h4 { color: #a78bfa; }
+
+/* ── CRIMSON ── */
+html[data-theme="crimson"] {
+  --color-primary: #450a0a;
+  --color-primary-mid: #7f1d1d;
+  --color-primary-dark: #b91c1c;
+  --color-gold: #fecdd3;
+  --color-gold-dark: #fb7185;
+  --color-gold-deeper: #e11d48;
+  --grad-gold: linear-gradient(135deg, #fecdd3 0%, #fb7185 40%, #e11d48 100%);
+}
+html[data-theme="crimson"] .navbar { background: linear-gradient(135deg, #450a0a 0%, #7f1d1d 60%, #b91c1c 100%); }
+html[data-theme="crimson"] .navbar-logo { color: #fecdd3; }
+html[data-theme="crimson"] .navbar-book-btn { background: #fb7185 !important; color: #450a0a !important; }
+html[data-theme="crimson"] .navbar-book-btn:hover { background: #fecdd3 !important; }
+html[data-theme="crimson"] .navbar-login-btn { border-color: #fb7185; }
+html[data-theme="crimson"] .hero-overlay { background: radial-gradient(ellipse 60% 45% at 50% 0%, #fb718538, transparent 70%), linear-gradient(to bottom, #b91c1c8c 0%, #450a0a8c 55%, #450a0ac7 100%); }
+html[data-theme="crimson"] .hero-title { background: linear-gradient(115deg, #ffffff 10%, #fecdd3 35%, #fb7185 55%, #ffffff 80%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+html[data-theme="crimson"] .grad-text-gold { background: linear-gradient(120deg, #fecdd3 0%, #fb7185 60%, #e11d48 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+html[data-theme="crimson"] .highlight-card { background: linear-gradient(135deg, #450a0a 0%, #7f1d1d 55%, #e11d48 100%); border: 1px solid #fecdd366; box-shadow: 0 6px 24px #450a0a59; }
+html[data-theme="crimson"] .highlight-card h4 { color: #ffffff; }
+html[data-theme="crimson"] .highlight-card p { color: #fecdd3; }
+html[data-theme="crimson"] .hotel-card { background: linear-gradient(135deg, #7f1d1d 0%, #b91c1c 60%, #e11d48 100%); border: 1px solid #fecdd380; box-shadow: 0 6px 24px #7f1d1d66; }
+html[data-theme="crimson"] .hotel-name { color: #ffffff; }
+html[data-theme="crimson"] .hotel-location { color: #fecdd3; }
+html[data-theme="crimson"] .hotel-description { color: #eef2ff; }
+html[data-theme="crimson"] .featured-room-card { background: linear-gradient(135deg, #7f1d1d 0%, #b91c1c 60%, #e11d48 100%); border: 1px solid #fecdd373; box-shadow: 0 6px 24px #7f1d1d66; }
+html[data-theme="crimson"] .fr-title-row h3 { color: #ffffff; }
+html[data-theme="crimson"] .fr-desc { color: #fecdd3; }
+html[data-theme="crimson"] .fr-type { background: #fb718538; color: #fecdd3; }
+html[data-theme="crimson"] .fr-price { color: #fecdd3; }
+html[data-theme="crimson"] .fr-footer { border-top-color: #fecdd333; }
+html[data-theme="crimson"] .view-all-btn { color: #fb7185; border-bottom-color: #fb7185; }
+html[data-theme="crimson"] .fr-book-btn { background: linear-gradient(135deg, #e11d48, #fb7185); color: #450a0a; }
+html[data-theme="crimson"] .cta-banner { background: radial-gradient(ellipse 50% 80% at 80% 20%, #fb718559, transparent 70%), radial-gradient(ellipse 50% 80% at 15% 85%, #fecdd32e, transparent 70%), linear-gradient(135deg, #b91c1c 0%, #450a0a 55%, #7f1d1d 100%); border-top-color: #fb718540; border-bottom-color: #fb718540; }
+html[data-theme="crimson"] .cta-banner h3 { background: linear-gradient(115deg, #ffffff, #fecdd3 40%, #fb7185 70%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+html[data-theme="crimson"] .App-footer { border-image: linear-gradient(90deg, #e11d48, #fecdd3, #fb7185, #fecdd3, #e11d48) 1; }
+html[data-theme="crimson"] .footer-logo { color: #fecdd3; }
+html[data-theme="crimson"] .footer-section h4 { color: #fb7185; }
+
+/* ── OCEAN ── */
+html[data-theme="ocean"] {
+  --color-primary: #082f49;
+  --color-primary-mid: #0c4a6e;
+  --color-primary-dark: #0369a1;
+  --color-gold: #bae6fd;
+  --color-gold-dark: #38bdf8;
+  --color-gold-deeper: #0284c7;
+  --grad-gold: linear-gradient(135deg, #bae6fd 0%, #38bdf8 40%, #0284c7 100%);
+}
+html[data-theme="ocean"] .navbar { background: linear-gradient(135deg, #082f49 0%, #0c4a6e 60%, #0369a1 100%); }
+html[data-theme="ocean"] .navbar-logo { color: #bae6fd; }
+html[data-theme="ocean"] .navbar-book-btn { background: #38bdf8 !important; color: #082f49 !important; }
+html[data-theme="ocean"] .navbar-book-btn:hover { background: #bae6fd !important; }
+html[data-theme="ocean"] .navbar-login-btn { border-color: #38bdf8; }
+html[data-theme="ocean"] .hero-overlay { background: radial-gradient(ellipse 60% 45% at 50% 0%, #38bdf838, transparent 70%), linear-gradient(to bottom, #0369a18c 0%, #082f498c 55%, #082f49c7 100%); }
+html[data-theme="ocean"] .hero-title { background: linear-gradient(115deg, #ffffff 10%, #bae6fd 35%, #38bdf8 55%, #ffffff 80%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+html[data-theme="ocean"] .grad-text-gold { background: linear-gradient(120deg, #bae6fd 0%, #38bdf8 60%, #0284c7 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+html[data-theme="ocean"] .highlight-card { background: linear-gradient(135deg, #082f49 0%, #0c4a6e 55%, #0284c7 100%); border: 1px solid #bae6fd66; box-shadow: 0 6px 24px #082f4959; }
+html[data-theme="ocean"] .highlight-card h4 { color: #ffffff; }
+html[data-theme="ocean"] .highlight-card p { color: #bae6fd; }
+html[data-theme="ocean"] .hotel-card { background: linear-gradient(135deg, #0c4a6e 0%, #0369a1 60%, #0284c7 100%); border: 1px solid #bae6fd80; box-shadow: 0 6px 24px #0c4a6e66; }
+html[data-theme="ocean"] .hotel-name { color: #ffffff; }
+html[data-theme="ocean"] .hotel-location { color: #bae6fd; }
+html[data-theme="ocean"] .hotel-description { color: #eef2ff; }
+html[data-theme="ocean"] .featured-room-card { background: linear-gradient(135deg, #0c4a6e 0%, #0369a1 60%, #0284c7 100%); border: 1px solid #bae6fd73; box-shadow: 0 6px 24px #0c4a6e66; }
+html[data-theme="ocean"] .fr-title-row h3 { color: #ffffff; }
+html[data-theme="ocean"] .fr-desc { color: #bae6fd; }
+html[data-theme="ocean"] .fr-type { background: #38bdf838; color: #bae6fd; }
+html[data-theme="ocean"] .fr-price { color: #bae6fd; }
+html[data-theme="ocean"] .fr-footer { border-top-color: #bae6fd33; }
+html[data-theme="ocean"] .view-all-btn { color: #38bdf8; border-bottom-color: #38bdf8; }
+html[data-theme="ocean"] .fr-book-btn { background: linear-gradient(135deg, #0284c7, #38bdf8); color: #082f49; }
+html[data-theme="ocean"] .cta-banner { background: radial-gradient(ellipse 50% 80% at 80% 20%, #38bdf859, transparent 70%), radial-gradient(ellipse 50% 80% at 15% 85%, #bae6fd2e, transparent 70%), linear-gradient(135deg, #0369a1 0%, #082f49 55%, #0c4a6e 100%); border-top-color: #38bdf840; border-bottom-color: #38bdf840; }
+html[data-theme="ocean"] .cta-banner h3 { background: linear-gradient(115deg, #ffffff, #bae6fd 40%, #38bdf8 70%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+html[data-theme="ocean"] .App-footer { border-image: linear-gradient(90deg, #0284c7, #bae6fd, #38bdf8, #bae6fd, #0284c7) 1; }
+html[data-theme="ocean"] .footer-logo { color: #bae6fd; }
+html[data-theme="ocean"] .footer-section h4 { color: #38bdf8; }

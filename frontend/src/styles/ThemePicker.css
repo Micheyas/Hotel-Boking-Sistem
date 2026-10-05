@@ -1,0 +1,91 @@
+/* ── Theme picker (navbar 🎨 button + dropdown) ── */
+.theme-picker {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.theme-picker-toggle {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  font-size: 1.05rem;
+  line-height: 1;
+  padding: 6px 9px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.theme-picker-toggle:hover {
+  background: rgba(255, 255, 255, 0.16);
+  transform: translateY(-1px);
+}
+
+.theme-picker-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 210px;
+  background: #14142b;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+  padding: 8px;
+  z-index: 1200;
+}
+
+.theme-picker-heading {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #9ca3af;
+  padding: 6px 10px 8px;
+}
+
+.theme-picker-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #e5e7eb;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.theme-picker-option:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.theme-picker-option.active {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.theme-picker-swatch {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  flex-shrink: 0;
+}
+
+.theme-picker-name {
+  flex: 1;
+  text-align: left;
+}
+
+.theme-picker-check {
+  color: #34d399;
+  font-weight: 800;
+}
+
+/* Keep the picker readable inside the mobile drawer */
+.navbar-drawer .theme-picker-menu {
+  position: fixed;
+  right: 12px;
+}

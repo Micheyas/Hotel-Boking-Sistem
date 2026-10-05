@@ -1,6 +1,9 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import "./App.css";
+import "./themes.css";
+import { ThemeProvider } from "./ThemeContext";
+import ThemePicker from "./components/ThemePicker";
 import BookingForm from "./components/BookingForm";
 import AdminPanel from "./components/AdminPanel";
 import PaymentForm from "./components/PaymentForm";
@@ -28,9 +31,11 @@ function App() {
     <LanguageProvider>
       <CurrencyProvider>
         <ToastProvider>
-          <Router>
-            <AppInner />
-          </Router>
+          <ThemeProvider>
+            <Router>
+              <AppInner />
+            </Router>
+          </ThemeProvider>
         </ToastProvider>
       </CurrencyProvider>
     </LanguageProvider>
@@ -122,6 +127,7 @@ function AppInner() {
           >
             {languageButtonLabel}
           </button>
+          <ThemePicker />
           {customerUser ? (
             <div className="navbar-customer-menu">
               <span className="navbar-customer-name">
@@ -188,6 +194,7 @@ function AppInner() {
         >
           {languageButtonLabel}
         </button>
+        <ThemePicker onSelect={closeMenu} />
         <div className="navbar-drawer-divider" />
         {customerUser ? (
           <div className="navbar-customer-menu">
