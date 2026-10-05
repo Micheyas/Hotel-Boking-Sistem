@@ -721,10 +721,11 @@
 
 .svc-submenu {
   margin-top: 24px;
-  padding: 20px;
-  background: #f8f9fb;
+  padding: 24px;
+  background: linear-gradient(135deg, #f3d78b 0%, #e2c97e 40%, #c9a84c 100%);
   border-radius: 14px;
-  border: 1px solid #e8eaf0;
+  border: 1px solid rgba(160, 125, 45, 0.55);
+  box-shadow: 0 10px 32px rgba(201, 168, 76, 0.4);
 }
 
 .svc-submenu-header {
@@ -737,7 +738,7 @@
 
 .svc-submenu-title {
   font-size: 15px;
-  font-weight: 700;
+  font-weight: 800;
   color: #1a1a2e;
   white-space: nowrap;
 }
@@ -751,11 +752,11 @@
 .svc-submenu-cat-btn {
   padding: 5px 14px;
   border-radius: 20px;
-  border: 1.5px solid #dde0e8;
-  background: #fff;
+  border: 1.5px solid rgba(26, 26, 46, 0.3);
+  background: rgba(255, 255, 255, 0.55);
   font-size: 12px;
   font-weight: 600;
-  color: #555;
+  color: #1a1a2e;
   cursor: pointer;
   transition: all 0.15s;
 }
@@ -764,7 +765,7 @@
 .svc-submenu-cat-btn.active {
   background: #1a1a2e;
   border-color: #1a1a2e;
-  color: #e2c97e;
+  color: #f3d78b;
 }
 
 /* Grid */
