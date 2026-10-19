@@ -43,19 +43,6 @@ app.get('/', (req, res) => {
   res.json({ message: 'Hotel Booking API is running' });
 });
 
-// Keep Render free tier awake — ping self every 14 minutes
-if (process.env.NODE_ENV === 'production') {
-  const SELF_URL = process.env.RENDER_EXTERNAL_URL || 'https://hotel-boking-sistem.onrender.com';
-  setInterval(async () => {
-    try {
-      await fetch(SELF_URL + '/');
-      console.log('[Keep-alive] pinged self');
-    } catch (e) {
-      console.warn('[Keep-alive] ping failed:', e.message);
-    }
-  }, 14 * 60 * 1000); // every 14 minutes
-}
-
 // Sync database and seed if needed
 const seedData = async () => {
   const { Room, RoomType } = require('./models');
@@ -86,6 +73,22 @@ const seedData = async () => {
   } else {
     console.log(`${roomCount} rooms already in database — skipping room seed`);
   }
+};
+
+// Start the HTTP server even when the database is unreachable (e.g. Neon
+// compute suspended) — non-DB routes like the health check stay up.
+const startServer = () => {
+  const PORT = process.env.PORT || 5000;
+  const server = http.createServer(app);
+  const io = socketService.init(server);
+
+  io.on('connection', () => {
+    console.log('Realtime connection established.');
+  });
+
+  server.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
 };
 
 sequelize.sync({ alter: false }).then(async () => {
@@ -264,17 +267,10 @@ sequelize.sync({ alter: false }).then(async () => {
     console.warn('[Currency] Startup warm failed:', e.message);
   }
 
-  const PORT = process.env.PORT || 5000;
-  const server = http.createServer(app);
-  const io = socketService.init(server);
-
-  io.on('connection', () => {
-    console.log('Realtime connection established.');
-  });
-
-  server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
+  startServer();
+}).catch((err) => {
+  console.error('[DB] sync failed — starting API without database:', err.message);
+  startServer();
 });
 
 module.exports = app;
