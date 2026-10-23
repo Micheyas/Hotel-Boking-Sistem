@@ -503,18 +503,89 @@
   padding-right: 30px;
 }
 
-/* LEGENDARY THEME — profile setup: midnight + gold */
+/* PROFILE SETUP — clean white/light card with solid black title */
 .ps-card {
-  background: linear-gradient(135deg, #141428 0%, #1b1b40 55%, #2a1a4d 100%);
-  border: 1px solid rgba(226, 201, 126, 0.5);
-  box-shadow: 0 14px 44px rgba(20, 20, 40, 0.55);
+  background: #ffffff !important;
+  border: 1.5px solid rgba(201, 168, 76, 0.45) !important;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35) !important;
+  color: #1a1a2e !important;
 }
-.ps-title {
-  background: linear-gradient(120deg, #f7e08e, #e2c97e);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-.ps-subtitle { color: #c7d2fe; }
-.ps-card label { color: #e0e7ff; }
 
+.ps-title,
+.ps-card h2 {
+  color: #000000 !important;
+  background: none !important;
+  -webkit-background-clip: initial !important;
+  background-clip: initial !important;
+  -webkit-text-fill-color: #000000 !important;
+  font-weight: 800 !important;
+}
+
+.ps-subtitle {
+  color: #4b5563 !important;
+}
+
+.ps-card label {
+  color: #1a1a2e !important;
+  font-weight: 600 !important;
+}
+
+.ps-section-title {
+  color: #000000 !important;
+  font-weight: 700 !important;
+  border-bottom: 2px solid rgba(201, 168, 76, 0.4) !important;
+}
+
+.ps-input {
+  background: #ffffff !important;
+  border: 1.5px solid #d4c4a0 !important;
+  color: #000000 !important;
+}
+
+.ps-input:focus {
+  border-color: #c9a84c !important;
+  box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.2) !important;
+}
+
+.ps-input--disabled {
+  background: #f3f4f6 !important;
+  color: #6b7280 !important;
+}
+
+.ps-id-type-btn {
+  background: #ffffff !important;
+  border: 1.5px solid #d4c4a0 !important;
+  color: #374151 !important;
+}
+
+.ps-id-type-btn--active {
+  border-color: #c9a84c !important;
+  background: linear-gradient(135deg, #1a1a2e, #0f3460) !important;
+  color: #f7e08e !important;
+}
+
+.ps-upload-area {
+  background: #fafaf9 !important;
+  border: 2px dashed #d4c4a0 !important;
+}
+
+.ps-upload-area:hover {
+  border-color: #c9a84c !important;
+  background: rgba(201, 168, 76, 0.06) !important;
+}
+
+.ps-upload-text {
+  color: #1f2937 !important;
+}
+
+.ps-cal-btn {
+  background: #ffffff !important;
+  border: 1.5px solid #d4c4a0 !important;
+  color: #374151 !important;
+}
+
+.ps-cal-btn--active {
+  border-color: #c9a84c !important;
+  background: linear-gradient(135deg, #1a1a2e, #0f3460) !important;
+  color: #f7e08e !important;
+}
