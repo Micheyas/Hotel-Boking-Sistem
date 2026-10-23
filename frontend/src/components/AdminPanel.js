@@ -124,7 +124,7 @@ const AdminPanel = () => {
   const BLANK_SERVICE = {
     name: '', description: '', category: 'Food & Beverage', icon: '🍽️',
     price: '', priceLabel: '', availableFrom: '', availableTo: '',
-    location: '', status: 'active', sortOrder: 0,
+    location: '', status: 'active', sortOrder: 0, image: '',
   };
   const [serviceForm, setServiceForm] = useState(BLANK_SERVICE);
 
@@ -591,6 +591,7 @@ const AdminPanel = () => {
       location:      svc.location     || '',
       status:        svc.status       || 'active',
       sortOrder:     svc.sortOrder    != null ? String(svc.sortOrder) : '0',
+      image:         svc.image        || '',
     });
     setShowServiceModal(true);
   };
@@ -2274,6 +2275,26 @@ const AdminPanel = () => {
                           onChange={e => setServiceForm(p => ({ ...p, sortOrder: e.target.value }))}
                         />
                       </div>
+                    </div>
+
+                    <div className="sm-field">
+                      <label>Image URL</label>
+                      <input
+                        type="url"
+                        placeholder="https://images.unsplash.com/..."
+                        value={serviceForm.image}
+                        onChange={e => setServiceForm(p => ({ ...p, image: e.target.value }))}
+                      />
+                      {serviceForm.image && (
+                        <div style={{ marginTop: '8px' }}>
+                          <img
+                            src={serviceForm.image}
+                            alt="preview"
+                            style={{ height: '60px', width: '100px', objectFit: 'cover', borderRadius: '6px' }}
+                            onError={e => { e.target.style.display = 'none'; }}
+                          />
+                        </div>
+                      )}
                     </div>
 
                     <div className="sm-modal-footer">

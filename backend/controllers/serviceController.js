@@ -4,38 +4,38 @@ const { Op } = require('sequelize');
 // Default seed data — used to pre-populate the table on first run
 const DEFAULT_SERVICES = [
   // ── Food & Beverage ──
-  { name: 'Restaurant', description: 'Fine dining with local and international cuisine, crafted by our award-winning chefs.', category: 'Food & Beverage', icon: '🍽️', price: null, priceLabel: 'À la carte', availableFrom: '06:30', availableTo: '22:30', location: 'Ground Floor — Main Dining Hall', sortOrder: 1 },
-  { name: 'Sky Bar & Lounge', description: 'Panoramic rooftop bar offering handcrafted cocktails, wines, and stunning city views.', category: 'Food & Beverage', icon: '🍸', price: null, priceLabel: 'À la carte', availableFrom: '16:00', availableTo: '00:00', location: 'Rooftop — Floor 12', sortOrder: 2 },
-  { name: 'Café & Bakery', description: 'Fresh pastries, artisan coffees, and light snacks served all day.', category: 'Food & Beverage', icon: '☕', price: null, priceLabel: 'À la carte', availableFrom: '06:00', availableTo: '20:00', location: 'Lobby Level', sortOrder: 3 },
-  { name: 'Room Service', description: '24-hour in-room dining from our full restaurant menu.', category: 'Food & Beverage', icon: '🛎️', price: null, priceLabel: 'À la carte', availableFrom: '00:00', availableTo: '23:59', location: 'All Rooms', sortOrder: 4 },
-  { name: 'Mini Bar', description: 'In-room mini bar stocked with beverages, snacks, and premium spirits.', category: 'Food & Beverage', icon: '🍾', price: null, priceLabel: 'Per item', availableFrom: '00:00', availableTo: '23:59', location: 'All Rooms', sortOrder: 5 },
+  { name: 'Restaurant', description: 'Fine dining with local and international cuisine, crafted by our award-winning chefs.', category: 'Food & Beverage', icon: '🍽️', price: null, priceLabel: 'À la carte', availableFrom: '06:30', availableTo: '22:30', location: 'Ground Floor — Main Dining Hall', sortOrder: 1, image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&auto=format&fit=crop&q=80' },
+  { name: 'Sky Bar & Lounge', description: 'Panoramic rooftop bar offering handcrafted cocktails, wines, and stunning city views.', category: 'Food & Beverage', icon: '🍸', price: null, priceLabel: 'À la carte', availableFrom: '16:00', availableTo: '00:00', location: 'Rooftop — Floor 12', sortOrder: 2, image: 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=800&auto=format&fit=crop&q=80' },
+  { name: 'Café & Bakery', description: 'Fresh pastries, artisan coffees, and light snacks served all day.', category: 'Food & Beverage', icon: '☕', price: null, priceLabel: 'À la carte', availableFrom: '06:00', availableTo: '20:00', location: 'Lobby Level', sortOrder: 3, image: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&auto=format&fit=crop&q=80' },
+  { name: 'Room Service', description: '24-hour in-room dining from our full restaurant menu.', category: 'Food & Beverage', icon: '🛎️', price: null, priceLabel: 'À la carte', availableFrom: '00:00', availableTo: '23:59', location: 'All Rooms', sortOrder: 4, image: 'https://images.unsplash.com/photo-1525610553991-2bede1a236e2?w=800&auto=format&fit=crop&q=80' },
+  { name: 'Mini Bar', description: 'In-room mini bar stocked with beverages, snacks, and premium spirits.', category: 'Food & Beverage', icon: '🍾', price: null, priceLabel: 'Per item', availableFrom: '00:00', availableTo: '23:59', location: 'All Rooms', sortOrder: 5, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&auto=format&fit=crop&q=80' },
 
   // ── Wellness & Spa ──
-  { name: 'Spa & Wellness Center', description: 'Full-service spa with massages, facials, body wraps, and aromatherapy treatments.', category: 'Wellness & Spa', icon: '💆', price: 1200, priceLabel: 'from 1,200 ETB / session', availableFrom: '09:00', availableTo: '20:00', location: 'Floor 2 — Spa Wing', sortOrder: 10 },
-  { name: 'Sauna & Steam Room', description: 'Traditional Finnish sauna and steam room for ultimate relaxation.', category: 'Wellness & Spa', icon: '🧖', price: 400, priceLabel: '400 ETB / hour', availableFrom: '07:00', availableTo: '21:00', location: 'Floor 2 — Spa Wing', sortOrder: 11 },
-  { name: 'Jacuzzi & Hot Tub', description: 'Private jacuzzi suites and shared hot tub with hydrotherapy jets.', category: 'Wellness & Spa', icon: '♨️', price: 600, priceLabel: '600 ETB / hour', availableFrom: '08:00', availableTo: '22:00', location: 'Floor 2 — Pool Area', sortOrder: 12 },
+  { name: 'Spa & Wellness Center', description: 'Full-service spa with massages, facials, body wraps, and aromatherapy treatments.', category: 'Wellness & Spa', icon: '💆', price: 1200, priceLabel: 'from 1,200 ETB / session', availableFrom: '09:00', availableTo: '20:00', location: 'Floor 2 — Spa Wing', sortOrder: 10, image: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800&auto=format&fit=crop&q=80' },
+  { name: 'Sauna & Steam Room', description: 'Traditional Finnish sauna and steam room for ultimate relaxation.', category: 'Wellness & Spa', icon: '🧖', price: 400, priceLabel: '400 ETB / hour', availableFrom: '07:00', availableTo: '21:00', location: 'Floor 2 — Spa Wing', sortOrder: 11, image: 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=800&auto=format&fit=crop&q=80' },
+  { name: 'Jacuzzi & Hot Tub', description: 'Private jacuzzi suites and shared hot tub with hydrotherapy jets.', category: 'Wellness & Spa', icon: '♨️', price: 600, priceLabel: '600 ETB / hour', availableFrom: '08:00', availableTo: '22:00', location: 'Floor 2 — Pool Area', sortOrder: 12, image: 'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=800&auto=format&fit=crop&q=80' },
 
   // ── Fitness ──
-  { name: 'Fitness Center & Gym', description: 'State-of-the-art gym with free weights, cardio machines, and personal trainers.', category: 'Fitness', icon: '🏋️', price: null, priceLabel: 'Complimentary for guests', availableFrom: '05:00', availableTo: '23:00', location: 'Floor 1 — East Wing', sortOrder: 20 },
-  { name: 'Swimming Pool', description: 'Heated outdoor pool and indoor lap pool, open year-round.', category: 'Fitness', icon: '🏊', price: null, priceLabel: 'Complimentary for guests', availableFrom: '06:00', availableTo: '22:00', location: 'Floor 1 — Pool Deck', sortOrder: 21 },
-  { name: 'Yoga & Meditation', description: 'Daily guided yoga and meditation classes for all skill levels.', category: 'Fitness', icon: '🧘', price: 300, priceLabel: '300 ETB / class', availableFrom: '07:00', availableTo: '19:00', location: 'Floor 2 — Wellness Studio', sortOrder: 22 },
+  { name: 'Fitness Center & Gym', description: 'State-of-the-art gym with free weights, cardio machines, and personal trainers.', category: 'Fitness', icon: '🏋️', price: null, priceLabel: 'Complimentary for guests', availableFrom: '05:00', availableTo: '23:00', location: 'Floor 1 — East Wing', sortOrder: 20, image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&auto=format&fit=crop&q=80' },
+  { name: 'Swimming Pool', description: 'Heated outdoor pool and indoor lap pool, open year-round.', category: 'Fitness', icon: '🏊', price: null, priceLabel: 'Complimentary for guests', availableFrom: '06:00', availableTo: '22:00', location: 'Floor 1 — Pool Deck', sortOrder: 21, image: 'https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?w=800&auto=format&fit=crop&q=80' },
+  { name: 'Yoga & Meditation', description: 'Daily guided yoga and meditation classes for all skill levels.', category: 'Fitness', icon: '🧘', price: 300, priceLabel: '300 ETB / class', availableFrom: '07:00', availableTo: '19:00', location: 'Floor 2 — Wellness Studio', sortOrder: 22, image: 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=800&auto=format&fit=crop&q=80' },
 
   // ── Transport ──
-  { name: 'Airport Shuttle', description: 'Comfortable and punctual airport transfers in air-conditioned vehicles.', category: 'Transport', icon: '🚐', price: 800, priceLabel: '800 ETB per trip', availableFrom: '00:00', availableTo: '23:59', location: 'Hotel Entrance — advance booking required', sortOrder: 30 },
-  { name: 'Car Rental', description: 'Daily car rental with a choice of sedans, SUVs, and luxury vehicles.', category: 'Transport', icon: '🚗', price: 2500, priceLabel: 'from 2,500 ETB / day', availableFrom: '07:00', availableTo: '20:00', location: 'Concierge Desk', sortOrder: 31 },
-  { name: 'City Tour', description: 'Guided half-day and full-day city tours with a professional guide.', category: 'Transport', icon: '🗺️', price: 1500, priceLabel: 'from 1,500 ETB / person', availableFrom: '08:00', availableTo: '18:00', location: 'Concierge Desk', sortOrder: 32 },
+  { name: 'Airport Shuttle', description: 'Comfortable and punctual airport transfers in air-conditioned vehicles.', category: 'Transport', icon: '🚐', price: 800, priceLabel: '800 ETB per trip', availableFrom: '00:00', availableTo: '23:59', location: 'Hotel Entrance — advance booking required', sortOrder: 30, image: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800&auto=format&fit=crop&q=80' },
+  { name: 'Car Rental', description: 'Daily car rental with a choice of sedans, SUVs, and luxury vehicles.', category: 'Transport', icon: '🚗', price: 2500, priceLabel: 'from 2,500 ETB / day', availableFrom: '07:00', availableTo: '20:00', location: 'Concierge Desk', sortOrder: 31, image: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&auto=format&fit=crop&q=80' },
+  { name: 'City Tour', description: 'Guided half-day and full-day city tours with a professional guide.', category: 'Transport', icon: '🗺️', price: 1500, priceLabel: 'from 1,500 ETB / person', availableFrom: '08:00', availableTo: '18:00', location: 'Concierge Desk', sortOrder: 32, image: 'https://images.unsplash.com/photo-1477959858617-67f30bc75b82?w=800&auto=format&fit=crop&q=80' },
 
   // ── Facilities ──
-  { name: 'Business Center', description: 'Fully equipped business center with printing, scanning, and high-speed internet.', category: 'Facilities', icon: '💼', price: null, priceLabel: 'Complimentary for guests', availableFrom: '07:00', availableTo: '22:00', location: 'Floor 1 — Business Lounge', sortOrder: 40 },
-  { name: 'Conference Rooms', description: 'Modern meeting and conference rooms for 10–200 guests with AV equipment.', category: 'Facilities', icon: '🏢', price: 5000, priceLabel: 'from 5,000 ETB / half-day', availableFrom: '08:00', availableTo: '20:00', location: 'Floor 3 — Conference Center', sortOrder: 41 },
-  { name: 'Laundry & Dry Cleaning', description: 'Same-day laundry and dry cleaning service for all garments.', category: 'Facilities', icon: '👔', price: 200, priceLabel: 'from 200 ETB / item', availableFrom: '07:00', availableTo: '18:00', location: 'Request via Reception', sortOrder: 42 },
-  { name: 'Concierge Service', description: 'Our concierge team is available 24/7 to arrange bookings, tours, and special requests.', category: 'Facilities', icon: '🛎️', price: null, priceLabel: 'Complimentary', availableFrom: '00:00', availableTo: '23:59', location: 'Lobby — Concierge Desk', sortOrder: 43 },
-  { name: 'Valet Parking', description: 'Secure valet parking service for all hotel guests.', category: 'Facilities', icon: '🅿️', price: 150, priceLabel: '150 ETB / night', availableFrom: '00:00', availableTo: '23:59', location: 'Hotel Main Entrance', sortOrder: 44 },
+  { name: 'Business Center', description: 'Fully equipped business center with printing, scanning, and high-speed internet.', category: 'Facilities', icon: '💼', price: null, priceLabel: 'Complimentary for guests', availableFrom: '07:00', availableTo: '22:00', location: 'Floor 1 — Business Lounge', sortOrder: 40, image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&auto=format&fit=crop&q=80' },
+  { name: 'Conference Rooms', description: 'Modern meeting and conference rooms for 10–200 guests with AV equipment.', category: 'Facilities', icon: '🏢', price: 5000, priceLabel: 'from 5,000 ETB / half-day', availableFrom: '08:00', availableTo: '20:00', location: 'Floor 3 — Conference Center', sortOrder: 41, image: 'https://images.unsplash.com/photo-1517502884422-41eaead166d4?w=800&auto=format&fit=crop&q=80' },
+  { name: 'Laundry & Dry Cleaning', description: 'Same-day laundry and dry cleaning service for all garments.', category: 'Facilities', icon: '👔', price: 200, priceLabel: 'from 200 ETB / item', availableFrom: '07:00', availableTo: '18:00', location: 'Request via Reception', sortOrder: 42, image: 'https://images.unsplash.com/photo-1545173168-9f1947eebb7f?w=800&auto=format&fit=crop&q=80' },
+  { name: 'Concierge Service', description: 'Our concierge team is available 24/7 to arrange bookings, tours, and special requests.', category: 'Facilities', icon: '🛎️', price: null, priceLabel: 'Complimentary', availableFrom: '00:00', availableTo: '23:59', location: 'Lobby — Concierge Desk', sortOrder: 43, image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&auto=format&fit=crop&q=80' },
+  { name: 'Valet Parking', description: 'Secure valet parking service for all hotel guests.', category: 'Facilities', icon: '🅿️', price: 150, priceLabel: '150 ETB / night', availableFrom: '00:00', availableTo: '23:59', location: 'Hotel Main Entrance', sortOrder: 44, image: 'https://images.unsplash.com/photo-1590674899484-d5640e854abe?w=800&auto=format&fit=crop&q=80' },
 
   // ── Recreation ──
-  { name: 'Kids Club', description: 'Supervised indoor and outdoor activities for children aged 4–12.', category: 'Recreation', icon: '🎠', price: null, priceLabel: 'Complimentary', availableFrom: '09:00', availableTo: '18:00', location: 'Floor 1 — Garden Level', sortOrder: 50 },
-  { name: 'Games Room', description: 'Pool table, table tennis, arcade games, and board games for all ages.', category: 'Recreation', icon: '🎱', price: null, priceLabel: 'Complimentary for guests', availableFrom: '10:00', availableTo: '23:00', location: 'Floor B1 — Recreation Center', sortOrder: 51 },
-  { name: 'Library & Reading Lounge', description: 'Quiet reading lounge with a curated selection of books and periodicals.', category: 'Recreation', icon: '📚', price: null, priceLabel: 'Complimentary', availableFrom: '08:00', availableTo: '22:00', location: 'Floor 1 — East Lounge', sortOrder: 52 },
+  { name: 'Kids Club', description: 'Supervised indoor and outdoor activities for children aged 4–12.', category: 'Recreation', icon: '🎠', price: null, priceLabel: 'Complimentary', availableFrom: '09:00', availableTo: '18:00', location: 'Floor 1 — Garden Level', sortOrder: 50, image: 'https://images.unsplash.com/photo-1566454544259-f4b94c3d758c?w=800&auto=format&fit=crop&q=80' },
+  { name: 'Games Room', description: 'Pool table, table tennis, arcade games, and board games for all ages.', category: 'Recreation', icon: '🎱', price: null, priceLabel: 'Complimentary for guests', availableFrom: '10:00', availableTo: '23:00', location: 'Floor B1 — Recreation Center', sortOrder: 51, image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&auto=format&fit=crop&q=80' },
+  { name: 'Library & Reading Lounge', description: 'Quiet reading lounge with a curated selection of books and periodicals.', category: 'Recreation', icon: '📚', price: null, priceLabel: 'Complimentary', availableFrom: '08:00', availableTo: '22:00', location: 'Floor 1 — East Lounge', sortOrder: 52, image: 'https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=800&auto=format&fit=crop&q=80' },
 ];
 
 // GET /api/services  — public (active services only)
@@ -86,7 +86,7 @@ exports.createService = async (req, res) => {
   try {
     const {
       name, description, category, icon, price, priceLabel,
-      availableFrom, availableTo, availableDays, location, status, sortOrder,
+      availableFrom, availableTo, availableDays, location, status, sortOrder, image,
     } = req.body;
 
     if (!name || !category) {
@@ -108,6 +108,7 @@ exports.createService = async (req, res) => {
       location: location || '',
       status: status || 'active',
       sortOrder: sortOrder != null ? Number(sortOrder) : 0,
+      image: image || null,
     });
     res.status(201).json(service);
   } catch (err) {
@@ -123,7 +124,7 @@ exports.updateService = async (req, res) => {
 
     const {
       name, description, category, icon, price, priceLabel,
-      availableFrom, availableTo, availableDays, location, status, sortOrder,
+      availableFrom, availableTo, availableDays, location, status, sortOrder, image,
     } = req.body;
 
     await service.update({
@@ -141,6 +142,7 @@ exports.updateService = async (req, res) => {
       location:      location      ?? service.location,
       status:        status        ?? service.status,
       sortOrder:     sortOrder != null ? Number(sortOrder) : service.sortOrder,
+      image:         image         ?? service.image,
     });
     res.json(service);
   } catch (err) {
@@ -166,5 +168,20 @@ exports.seedDefaultServices = async () => {
   if (count === 0) {
     await HotelService.bulkCreate(DEFAULT_SERVICES);
     console.log(`Seeded ${DEFAULT_SERVICES.length} default hotel services`);
+  } else {
+    // Populate or update images for default services
+    for (const def of DEFAULT_SERVICES) {
+      if (def.image) {
+        await HotelService.update(
+          { image: def.image },
+          {
+            where: {
+              name: def.name,
+              [Op.or]: [{ image: null }, { image: '' }],
+            },
+          }
+        );
+      }
+    }
   }
 };

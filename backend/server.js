@@ -163,6 +163,7 @@ sequelize.sync({ alter: false }).then(async () => {
   await addColumnIfMissing('HotelServices', 'location',      { type: DataTypes.STRING,  allowNull: true });
   await addColumnIfMissing('HotelServices', 'availableDays', { type: DataTypes.TEXT,    allowNull: true, defaultValue: '["Daily"]' });
   await addColumnIfMissing('HotelServices', 'priceLabel',    { type: DataTypes.STRING,  allowNull: true });
+  await addColumnIfMissing('HotelServices', 'image',         { type: DataTypes.STRING,  allowNull: true });
 
   // ── MenuItems table ──
   try {
