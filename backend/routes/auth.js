@@ -237,11 +237,12 @@ router.post('/google', async (req, res) => {
 
     // Verify the Google ID token
     const { OAuth2Client } = require('google-auth-library');
-    const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+    const googleClientId = process.env.GOOGLE_CLIENT_ID || '799209083609-g7o38t31s1jotiosi8lafkbf2smggc92.apps.googleusercontent.com';
+    const client = new OAuth2Client(googleClientId);
 
     const ticket = await client.verifyIdToken({
       idToken: credential,
-      audience: process.env.GOOGLE_CLIENT_ID,
+      audience: googleClientId,
     });
 
     const payload = ticket.getPayload();
