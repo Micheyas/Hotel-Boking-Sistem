@@ -129,6 +129,7 @@
   color: #1a1a2e;
   margin-bottom: 1.4rem;
   text-align: center;
+  -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
 }
 
@@ -148,6 +149,7 @@
   border-radius: 14px;
   padding: 6px;
   margin-bottom: 1.8rem;
+  -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
   flex-wrap: wrap;
 }
@@ -679,4 +681,62 @@
 
 .rp-review-content {
   flex: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LEGENDARY GOLD THEME — ReviewPage: Midnight & Gold
+   ═══════════════════════════════════════════════════════════ */
+
+.rp-page {
+  background:
+    radial-gradient(1000px 500px at 15% -5%, rgba(201, 168, 76, 0.18), transparent 60%),
+    radial-gradient(900px 500px at 90% 10%, rgba(124, 93, 250, 0.15), transparent 60%),
+    linear-gradient(160deg, #12101f 0%, #141428 45%, #1a1a36 100%) !important;
+  color: #e0e7ff !important;
+}
+
+.rp-banner {
+  background: linear-gradient(135deg, #141428 0%, #1b1b40 60%, #251b4d 100%) !important;
+  border: 1px solid rgba(226, 201, 126, 0.4) !important;
+}
+
+.rp-banner-num {
+  color: #f7e08e !important;
+}
+
+.rp-summary-card, .rp-form-card, .rp-review-item {
+  background: linear-gradient(135deg, #141428 0%, #1b1b40 55%, #2a1a4d 100%) !important;
+  border: 1px solid rgba(226, 201, 126, 0.35) !important;
+  box-shadow: 0 10px 32px rgba(15, 15, 35, 0.5) !important;
+  color: #e0e7ff !important;
+}
+
+.rp-summary-score, .rp-review-author, .rp-form-card h3, .rp-form-card h4 {
+  color: #f7e08e !important;
+}
+
+.rp-tabs-wrap {
+  background: rgba(20, 20, 40, 0.95) !important;
+  border-bottom: 1px solid rgba(226, 201, 126, 0.3) !important;
+}
+
+.rp-tab {
+  color: #c7d2fe !important;
+}
+
+.rp-tab--active {
+  color: #f7e08e !important;
+  border-bottom-color: #f7e08e !important;
+}
+
+.rp-form-card textarea, .rp-form-card input, .rp-form-card select {
+  background: rgba(20, 20, 40, 0.75) !important;
+  border: 1px solid rgba(226, 201, 126, 0.3) !important;
+  color: #ffffff !important;
+}
+
+.rp-submit-btn {
+  background: linear-gradient(135deg, #c9a84c 0%, #f7e08e 50%, #e2c97e 100%) !important;
+  color: #141428 !important;
+  font-weight: 700 !important;
 }

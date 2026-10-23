@@ -88,3 +88,25 @@
   box-shadow: 0 12px 36px rgba(20, 20, 40, 0.5);
 }
 .search-field label { color: #e2c97e; }
+.search-field input,
+.search-field select {
+  background-color: rgba(20, 20, 40, 0.75);
+  border: 1px solid rgba(226, 201, 126, 0.35);
+  color: #fff;
+}
+.search-field input:focus,
+.search-field select:focus {
+  border-color: #f7e08e;
+  box-shadow: 0 0 0 3px rgba(226, 201, 126, 0.25);
+}
+.search-btn {
+  background: linear-gradient(135deg, #c9a84c 0%, #f7e08e 50%, #e2c97e 100%);
+  color: #141428;
+  font-weight: 700;
+  border: none;
+  box-shadow: 0 4px 16px rgba(201, 168, 76, 0.4);
+}
+.search-btn:hover {
+  background: linear-gradient(135deg, #e2c97e 0%, #f7e08e 100%);
+}
+

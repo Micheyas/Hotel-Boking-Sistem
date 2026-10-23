@@ -4,9 +4,11 @@ node_modules/
 # Build output
 build/
 
-# Environment variables (use Vercel dashboard / .env.local instead)
+# Environment variables
+.env
 .env.local
 .env.production
+.env.*.local
 
 # Logs
 *.log

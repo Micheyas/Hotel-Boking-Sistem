@@ -1,16 +1,6 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import "./App.css";
-import "./theme-emerald.css";
-import "./theme-sapphire.css";
-import "./theme-violet.css";
-import "./theme-crimson.css";
-import "./theme-ocean.css";
-import "./theme-emerald-x.css";
-import "./theme-sapphire-x.css";
-import "./theme-violet-x.css";
-import "./theme-crimson-x.css";
-import "./theme-ocean-x.css";
 import { ThemeProvider } from "./ThemeContext";
 import ThemePicker from "./components/ThemePicker";
 import BookingForm from "./components/BookingForm";

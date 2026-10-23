@@ -9,7 +9,13 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f5f5f5;
+  background:
+    radial-gradient(1000px 500px at 15% -5%, rgba(201, 168, 76, 0.18), transparent 60%),
+    radial-gradient(900px 500px at 90% 10%, rgba(124, 93, 250, 0.15), transparent 60%),
+    linear-gradient(160deg, #12101f 0%, #141428 45%, #1a1a36 100%);
+  background-attachment: fixed;
+  color: #e0e7ff;
+  min-height: 100vh;
 }
 
 code {

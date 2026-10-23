@@ -25,6 +25,8 @@ export default function ThemePicker({ onSelect, className = "" }) {
     if (onSelect) onSelect();
   };
 
+  if (!themes || themes.length <= 1) return null;
+
   return (
     <div className={`theme-picker ${className}`} ref={wrapRef}>
       <button

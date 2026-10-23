@@ -1,0 +1,1 @@
+{"buildCommand":"npm --prefix frontend run build","github":{"silent":true},"installCommand":"npm --prefix frontend install","outputDirectory":"frontend/build","rewrites":[{"destination":"/index.html","source":"/(.*)"}]}

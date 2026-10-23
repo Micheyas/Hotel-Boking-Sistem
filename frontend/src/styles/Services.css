@@ -5,7 +5,7 @@
 /* ── Page wrapper ── */
 .svc-page {
   min-height: 100vh;
-  background: #f8f9fb;
+  background: #f5f0e8;
 }
 
 /* ── Hero ── */
@@ -752,7 +752,7 @@
 .svc-submenu-cat-btn {
   padding: 5px 14px;
   border-radius: 20px;
-  border: 1.5px solid rgba(26, 26, 46, 0.3);
+  border: 1.5px solid rgba(5, 46, 34, 0.3);
   background: rgba(255, 255, 255, 0.55);
   font-size: 12px;
   font-weight: 600;
@@ -884,11 +884,15 @@
   background: linear-gradient(135deg, #f3d78b, #c9a84c);
   box-shadow: 0 4px 12px rgba(201, 168, 76, 0.4);
 }
-.svc-section:nth-of-type(6n+2) .svc-section-icon { background: linear-gradient(135deg, #2dd4bf, #0d9488); box-shadow: 0 4px 12px rgba(20,184,166,.4); }
-.svc-section:nth-of-type(6n+3) .svc-section-icon { background: linear-gradient(135deg, #34d399, #059669); box-shadow: 0 4px 12px rgba(16,185,129,.4); }
-.svc-section:nth-of-type(6n+4) .svc-section-icon { background: linear-gradient(135deg, #fb7185, #e11d48); box-shadow: 0 4px 12px rgba(244,63,94,.4); }
-.svc-section:nth-of-type(6n+5) .svc-section-icon { background: linear-gradient(135deg, #a78bfa, #7c3aed); box-shadow: 0 4px 12px rgba(139,92,246,.4); }
-.svc-section:nth-of-type(6n)   .svc-section-icon { background: linear-gradient(135deg, #38bdf8, #0284c7); box-shadow: 0 4px 12px rgba(14,165,233,.4); }
+.svc-section:nth-of-type(6n+2) .svc-section-icon,
+.svc-section:nth-of-type(6n+3) .svc-section-icon,
+.svc-section:nth-of-type(6n+4) .svc-section-icon,
+.svc-section:nth-of-type(6n+5) .svc-section-icon,
+.svc-section:nth-of-type(6n)   .svc-section-icon {
+  background: linear-gradient(135deg, #f3d78b, #c9a84c);
+  box-shadow: 0 4px 12px rgba(201, 168, 76, 0.4);
+  color: #1a1a2e;
+}
 
 /* Section header: gold-to-color underline */
 .svc-section-header {
@@ -977,12 +981,12 @@
   border-bottom: 2px solid rgba(226, 201, 126, 0.45);
 }
 .svc-card {
-  background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 60%, #4c1d95 100%);
-  border: 1px solid rgba(147, 197, 253, 0.35);
+  background: linear-gradient(135deg, #141428 0%, #1a1a2e 55%, #16213e 100%);
+  border: 1px solid rgba(226, 201, 126, 0.45);
 }
-.svc-card-name { color: #ffffff; }
+.svc-card-name { color: #f7e08e; }
 .svc-card-desc { color: #c7d2fe; }
-.svc-card:hover { box-shadow: 0 8px 28px rgba(55, 48, 163, 0.5); }
+.svc-card:hover { box-shadow: 0 16px 45px rgba(201, 168, 76, 0.35); }
 .menu-cat-tab, .sm-cat-btn, .svc-submenu-cat-btn {
   background: linear-gradient(135deg, #fff8e1, #ffecb3);
   border: 1px solid rgba(184, 134, 11, 0.45);
@@ -997,11 +1001,11 @@
 .menu-item-desc { color: #5c4a1a; }
 .menu-item-cat { background: rgba(122, 90, 0, 0.15); color: #6b4e00; }
 .svc-submenu-card {
-  background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 60%, #8b5cf6 100%);
-  border: 1px solid rgba(196, 181, 253, 0.4);
+  background: linear-gradient(135deg, #141428 0%, #1a1a2e 60%, #16213e 100%);
+  border: 1px solid rgba(226, 201, 126, 0.4);
 }
-.svc-submenu-name { color: #ffffff; }
-.svc-submenu-desc { color: #ddd6fe; }
+.svc-submenu-name { color: #f7e08e; }
+.svc-submenu-desc { color: #e2e8f0; }
 .sm-modal {
   background: linear-gradient(135deg, #141428 0%, #1b1b40 60%, #241a4d 100%);
   border: 1px solid rgba(226, 201, 126, 0.5);
@@ -1059,8 +1063,8 @@
   min-height: 250px;
   padding: 0;
   gap: 0;
-  background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 60%, #4c1d95 100%);
-  border: 1px solid rgba(147, 197, 253, 0.35);
+  background: linear-gradient(135deg, #141428 0%, #1a1a2e 55%, #16213e 100%);
+  border: 1px solid rgba(226, 201, 126, 0.45);
   border-radius: 22px;
   overflow: hidden;
   position: relative;
@@ -1072,7 +1076,7 @@
 
 .svc-card:hover {
   transform: translateY(-7px);
-  box-shadow: 0 20px 55px rgba(55, 48, 163, 0.55), 0 8px 24px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 20px 55px rgba(201, 168, 76, 0.4), 0 8px 24px rgba(0, 0, 0, 0.25);
 }
 
 .svc-card-img-wrap {
@@ -1095,16 +1099,16 @@
 .svc-card-icon { font-size: 44px; }
 
 .svc-card-name {
-  color: #ffffff;
+  color: #f7e08e;
   font-size: 1.4rem;
   font-weight: 800;
 }
 
-.svc-card-desc { color: #c7d2fe; font-size: 0.95rem; line-height: 1.65; }
+.svc-card-desc { color: #e2e8f0; font-size: 0.95rem; line-height: 1.65; }
 
 .svc-meta-item {
   background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(147, 197, 253, 0.35);
+  border: 1px solid rgba(226, 201, 126, 0.45);
   color: #e0e7ff;
   font-weight: 600;
 }
@@ -1148,4 +1152,42 @@
   color: #f7e08e;
   font-weight: 800;
   border-bottom: 2px solid rgba(226, 201, 126, 0.4);
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   LEGENDARY GOLD THEME — Services: Midnight & Gold
+   ═══════════════════════════════════════════════════════════ */
+
+.svc-page {
+  background:
+    radial-gradient(1000px 500px at 15% -5%, rgba(201, 168, 76, 0.18), transparent 60%),
+    radial-gradient(900px 500px at 90% 10%, rgba(124, 93, 250, 0.15), transparent 60%),
+    linear-gradient(160deg, #12101f 0%, #141428 45%, #1a1a36 100%) !important;
+  color: #e0e7ff !important;
+}
+
+.svc-tabs-wrap {
+  background: rgba(20, 20, 40, 0.95) !important;
+  border-bottom: 1px solid rgba(226, 201, 126, 0.3) !important;
+  box-shadow: 0 4px 20px rgba(10, 10, 25, 0.5) !important;
+}
+
+.svc-tab {
+  color: #c7d2fe !important;
+}
+
+.svc-tab--active {
+  color: #f7e08e !important;
+  border-bottom-color: #f7e08e !important;
+}
+
+.svc-section-title {
+  color: #f7e08e !important;
+}
+
+.svc-price-badge {
+  background: rgba(226, 201, 126, 0.2) !important;
+  color: #f7e08e !important;
+  border: 1px solid rgba(226, 201, 126, 0.4) !important;
 }

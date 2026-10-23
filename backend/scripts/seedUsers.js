@@ -6,6 +6,10 @@ const Room = require('../models/Room');
 
 async function seedDatabase() {
   try {
+    // Ensure all tables exist before seeding
+    await sequelize.sync({ alter: false });
+    console.log('✅ Database tables synchronized.');
+
     // Hash passwords
     const salt = await bcrypt.genSalt(10);
     const adminPassword = await bcrypt.hash('admin123', salt);

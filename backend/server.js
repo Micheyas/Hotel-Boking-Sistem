@@ -2,6 +2,14 @@
 const dotenv = require('dotenv');
 dotenv.config();
 
+// Prevent transient connection drops from terminating the process
+process.on('uncaughtException', (err) => {
+  console.error('[Process] Uncaught Exception:', err.message);
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('[Process] Unhandled Rejection:', reason && reason.message ? reason.message : reason);
+});
+
 const express = require('express');
 const cors = require('cors');
 const http = require('http');

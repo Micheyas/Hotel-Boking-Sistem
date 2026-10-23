@@ -16,13 +16,13 @@
 
 /* ── Card ─────────────────────────────────────────────────── */
 .ca-card {
-  background: #fffdf5;
+  background: #ffffff;
   border-radius: 20px;
   padding: 2.4rem 2rem 2rem;
   max-width: 460px;
   width: 100%;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(226, 201, 126, 0.3);
+  border: 1px solid rgba(10, 102, 64, 0.3);
 }
 
 /* ── Header ───────────────────────────────────────────────── */
@@ -59,7 +59,7 @@
 .ca-tabs {
   display: flex;
   gap: 0;
-  background: #f0e8d5;
+  background: #f0ebe1;
   border-radius: 10px;
   padding: 4px;
   margin-bottom: 1.6rem;
@@ -73,7 +73,7 @@
   background: transparent;
   font-size: 0.92rem;
   font-weight: 600;
-  color: #777;
+  color: #6b7280;
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
 }
@@ -81,7 +81,7 @@
 .ca-tab--active {
   background: linear-gradient(135deg, #1a1a2e, #0f3460);
   color: #e2c97e;
-  box-shadow: 0 2px 8px rgba(26, 26, 46, 0.25);
+  box-shadow: 0 2px 8px rgba(5, 46, 34, 0.3);
 }
 
 /* ── Form ─────────────────────────────────────────────────── */
@@ -116,19 +116,19 @@
 
 .ca-field input {
   padding: 0.65rem 0.9rem;
-  border: 1.5px solid #d4c4a0;
+  border: 1.5px solid #e2e8f0;
   border-radius: 9px;
   font-size: 0.92rem;
   font-family: inherit;
-  background: #fffef8;
+  background: #f8fdf9;
   color: #1a1a2e;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .ca-field input:focus {
   outline: none;
-  border-color: #c9a84c;
-  box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.18);
+  border-color: #0f3460;
+  box-shadow: 0 0 0 3px rgba(10, 102, 64, 0.18);
 }
 
 /* ── Submit button ────────────────────────────────────────── */
@@ -144,7 +144,7 @@
   cursor: pointer;
   letter-spacing: 0.3px;
   transition: transform 0.15s, box-shadow 0.2s, opacity 0.2s;
-  box-shadow: 0 4px 14px rgba(26, 26, 46, 0.25);
+  box-shadow: 0 4px 14px rgba(5, 46, 34, 0.3);
   margin-top: 0.3rem;
   text-decoration: none;
   display: inline-block;
@@ -153,7 +153,7 @@
 
 .ca-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(26, 26, 46, 0.35);
+  box-shadow: 0 6px 20px rgba(5, 46, 34, 0.4);
 }
 
 .ca-btn:disabled {
@@ -365,17 +365,81 @@
   letter-spacing: 0.5px;
 }
 
-/* LEGENDARY THEME — auth card: midnight + gold */
+/* ═══════════════════════════════════════════════════════════
+   LEGENDARY GOLD THEME — CustomerAuth: Midnight & Gold
+   ═══════════════════════════════════════════════════════════ */
+
+.ca-page {
+  background:
+    radial-gradient(1000px 500px at 15% -5%, rgba(201, 168, 76, 0.18), transparent 60%),
+    radial-gradient(900px 500px at 90% 10%, rgba(124, 93, 250, 0.15), transparent 60%),
+    linear-gradient(160deg, #12101f 0%, #141428 45%, #1a1a36 100%) !important;
+  color: #e0e7ff !important;
+}
+
 .ca-card {
-  background: linear-gradient(135deg, #141428 0%, #1b1b40 55%, #2a1a4d 100%);
-  border: 1px solid rgba(226, 201, 126, 0.5);
-  box-shadow: 0 14px 44px rgba(20, 20, 40, 0.55);
+  background: linear-gradient(135deg, #141428 0%, #1b1b40 55%, #2a1a4d 100%) !important;
+  border: 1px solid rgba(226, 201, 126, 0.5) !important;
+  box-shadow: 0 14px 44px rgba(20, 20, 40, 0.6) !important;
+  color: #e0e7ff !important;
 }
+
 .ca-title {
-  background: linear-gradient(120deg, #f7e08e, #e2c97e);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  background: linear-gradient(120deg, #f7e08e, #e2c97e) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
 }
-.ca-subtitle { color: #c7d2fe; }
-.ca-card label { color: #e0e7ff; }
+
+.ca-subtitle {
+  color: #c7d2fe !important;
+}
+
+.ca-card label {
+  color: #e0e7ff !important;
+}
+
+.ca-input {
+  background: rgba(20, 20, 40, 0.75) !important;
+  border: 1px solid rgba(226, 201, 126, 0.3) !important;
+  color: #ffffff !important;
+}
+
+.ca-input:focus {
+  border-color: #f7e08e !important;
+  box-shadow: 0 0 0 3px rgba(226, 201, 126, 0.25) !important;
+}
+
+.ca-btn {
+  background: linear-gradient(135deg, #c9a84c 0%, #f7e08e 50%, #e2c97e 100%) !important;
+  color: #141428 !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 16px rgba(201, 168, 76, 0.4) !important;
+}
+
+.ca-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #e2c97e 0%, #f7e08e 100%) !important;
+  box-shadow: 0 6px 22px rgba(201, 168, 76, 0.6) !important;
+}
+
+.ca-switch-text {
+  color: #9ca3af !important;
+}
+
+.ca-link-btn {
+  color: #e2c97e !important;
+}
+
+.ca-or-line {
+  background: rgba(226, 201, 126, 0.2) !important;
+}
+
+.ca-or-text {
+  color: #9ca3af !important;
+}
+
+.ca-google-btn {
+  background: rgba(20, 20, 40, 0.7) !important;
+  border: 1px solid rgba(226, 201, 126, 0.3) !important;
+  color: #e0e7ff !important;
+}
