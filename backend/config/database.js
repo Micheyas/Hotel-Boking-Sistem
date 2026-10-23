@@ -20,14 +20,31 @@ const dialectOptions = isRemoteOrSSL
   ? {
       ssl: { require: true, rejectUnauthorized: false },
       keepAlive: true,
+      connectionTimeoutMillis: 30000,
+      idle_in_transaction_session_timeout: 30000,
     }
   : {};
 
 const poolConfig = {
   max: 10,
   min: 0,
-  acquire: 30000,
+  acquire: 60000,
   idle: 10000,
+};
+
+const retryConfig = {
+  max: 3,
+  match: [
+    /ConnectionError/,
+    /SequelizeConnectionError/,
+    /SequelizeConnectionRefusedError/,
+    /SequelizeHostNotFoundError/,
+    /SequelizeHostNotReachableError/,
+    /SequelizeInvalidConnectionError/,
+    /SequelizeConnectionTimedOutError/,
+    /TimeoutError/,
+    /EAUTHTIMEOUT/,
+  ],
 };
 
 let sequelize;
@@ -38,6 +55,7 @@ if (connectionUri) {
     logging: false,
     dialectOptions,
     pool: poolConfig,
+    retry: retryConfig,
   });
 } else {
   sequelize = new Sequelize(
@@ -51,6 +69,7 @@ if (connectionUri) {
       logging: false,
       dialectOptions,
       pool: poolConfig,
+      retry: retryConfig,
     }
   );
 }
