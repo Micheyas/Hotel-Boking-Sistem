@@ -9,6 +9,7 @@ if (!fs.existsSync(buildDir)) {
 }
 
 const PORT = process.env.PORT || 3000;
+const BACKEND_PORT = process.env.BACKEND_PORT || 5000;
 
 const mimeTypes = {
   '.html': 'text/html',
@@ -27,6 +28,36 @@ const mimeTypes = {
 };
 
 const server = http.createServer((req, res) => {
+  // Proxy API and upload requests directly to backend
+  if (req.url.startsWith('/api') || req.url.startsWith('/uploads')) {
+    const options = {
+      hostname: 'localhost',
+      port: BACKEND_PORT,
+      path: req.url,
+      method: req.method,
+      headers: {
+        ...req.headers,
+        host: `localhost:${BACKEND_PORT}`,
+      },
+    };
+
+    const proxyReq = http.request(options, (proxyRes) => {
+      res.writeHead(proxyRes.statusCode, proxyRes.headers);
+      proxyRes.pipe(res, { end: true });
+    });
+
+    proxyReq.on('error', (err) => {
+      console.error('[Proxy Error]', err.message);
+      if (!res.headersSent) {
+        res.writeHead(502, { 'Content-Type': 'application/json' });
+      }
+      res.end(JSON.stringify({ error: `Backend unavailable on port ${BACKEND_PORT}: ${err.message}` }));
+    });
+
+    req.pipe(proxyReq, { end: true });
+    return;
+  }
+
   let relativePath = req.url.split('?')[0];
   let filePath = path.join(buildDir, relativePath);
 
@@ -57,4 +88,5 @@ const server = http.createServer((req, res) => {
 server.listen(PORT, () => {
   console.log(`Frontend running at http://localhost:${PORT}`);
   console.log(`Serving build from: ${buildDir}`);
+  console.log(`Proxying /api and /uploads to http://localhost:${BACKEND_PORT}`);
 });
